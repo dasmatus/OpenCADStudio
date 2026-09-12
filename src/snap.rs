@@ -180,7 +180,7 @@ impl Default for Snapper {
         enabled.insert(SnapType::Intersection);
         enabled.insert(SnapType::Nearest);
         Self {
-            snap_enabled: false,
+            snap_enabled: true,
             enabled,
             grid_snap_on: false,
             grid_spacing: 1.0,
