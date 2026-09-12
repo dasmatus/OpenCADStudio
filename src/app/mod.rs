@@ -681,6 +681,9 @@ pub(super) struct OpenCADStudio {
     show_properties: bool,
     /// Docked Insert Block panel visibility.
     pub(crate) show_block_palette: bool,
+    /// Whether the Browser panel is shown. Off until BROWSER opens it, so
+    /// the default layout is unchanged for existing users.
+    pub(crate) show_browser: bool,
     /// General edge-stack dock layout for the side panels.
     pub(crate) dock: crate::ui::dock::DockState,
     /// Which panel is currently floated at full height (hovered, or a pinned
@@ -3589,6 +3592,7 @@ impl OpenCADStudio {
             render_mode_preview: None,
             show_properties: true,
             show_block_palette: false,
+            show_browser: false,
             block_palette: Default::default(),
             dock: Default::default(),
             dock_expanded: None,

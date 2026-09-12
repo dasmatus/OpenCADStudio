@@ -599,6 +599,9 @@ pub(super) fn on_ribbon_tool_click(&mut self, tool_id: String, event: ModuleEven
                         self.show_block_palette = false;
                         self.block_palette.placing = None;
                     }
+                    PanelId::Browser => {
+                        self.show_browser = false;
+                    }
                     PanelId::Properties => {
                         self.show_properties = false;
                         self.ribbon.set_properties(false);
@@ -692,6 +695,7 @@ pub(super) fn on_ribbon_tool_click(&mut self, tool_id: String, event: ModuleEven
         match id {
             PanelId::Properties => self.show_properties,
             PanelId::BlockPalette => self.show_block_palette,
+            PanelId::Browser => self.show_browser,
         }
     }
 

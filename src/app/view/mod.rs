@@ -1734,6 +1734,7 @@ bg={bg_ms:.1}ms n={view_count}"
             match id {
                 crate::ui::dock::PanelId::Properties => self.show_properties,
                 crate::ui::dock::PanelId::BlockPalette => self.show_block_palette,
+                crate::ui::dock::PanelId::Browser => self.show_browser,
             }
         };
         let edge_stack =
@@ -2773,6 +2774,12 @@ impl OpenCADStudio {
             crate::ui::dock::PanelId::BlockPalette => {
                 crate::ui::window::block_palette::view(&self.block_palette, width, auto_collapse)
             }
+            crate::ui::dock::PanelId::Browser => crate::ui::window::browser::view(
+                &tab.scene.document,
+                tab.sketch_session.as_ref().map(|session| session.name.as_str()),
+                width,
+                auto_collapse,
+            ),
         };
         let divider = dock_divider(id);
         match side {
