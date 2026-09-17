@@ -4191,7 +4191,10 @@ impl OpenCADStudio {
                             acadrust::EntityType::Dimension(_) | acadrust::EntityType::Leader(_)
                         )
                     })
-                    .map(|e| crate::entities::dim_override::pairs(&e.common().extended_data));
+                    .map(|e| {
+                        crate::entities::dim_override::pairs(&e.common().extended_data)
+                            .collect::<Vec<_>>()
+                    });
 
                 if let Some(common) = src_common {
                     self.apply_property_op(i, "MATCHPROP", &dest, |app, handle| {

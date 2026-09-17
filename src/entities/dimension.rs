@@ -302,8 +302,8 @@ fn linear_like_props(
     first: acadrust::types::Vector3,
     second: acadrust::types::Vector3,
     definition: acadrust::types::Vector3,
-) -> Vec<crate::scene::model::object::Property> {
-    vec![
+) -> impl Iterator<Item = crate::scene::model::object::Property> {
+    [
         edit(t!("First X").as_ref(), "first_x", first.x),
         edit(t!("First Y").as_ref(), "first_y", first.y),
         edit(t!("First Z").as_ref(), "first_z", first.z),
@@ -314,13 +314,14 @@ fn linear_like_props(
         edit(t!("Definition Y").as_ref(), "definition_y", definition.y),
         edit(t!("Definition Z").as_ref(), "definition_z", definition.z),
     ]
+    .into_iter()
 }
 
 fn radius_like_props(
     center: acadrust::types::Vector3,
     point: acadrust::types::Vector3,
-) -> Vec<crate::scene::model::object::Property> {
-    vec![
+) -> impl Iterator<Item = crate::scene::model::object::Property> {
+    [
         edit(t!("Center X").as_ref(), "center_x", center.x),
         edit(t!("Center Y").as_ref(), "center_y", center.y),
         edit(t!("Center Z").as_ref(), "center_z", center.z),
@@ -328,6 +329,7 @@ fn radius_like_props(
         edit(t!("Point Y").as_ref(), "point_y", point.y),
         edit(t!("Point Z").as_ref(), "point_z", point.z),
     ]
+    .into_iter()
 }
 
 fn angular_props(
@@ -335,8 +337,8 @@ fn angular_props(
     first: acadrust::types::Vector3,
     second: acadrust::types::Vector3,
     definition: acadrust::types::Vector3,
-) -> Vec<crate::scene::model::object::Property> {
-    vec![
+) -> impl Iterator<Item = crate::scene::model::object::Property> {
+    [
         edit(t!("Vertex X").as_ref(), "vertex_x", vertex.x),
         edit(t!("Vertex Y").as_ref(), "vertex_y", vertex.y),
         edit(t!("Vertex Z").as_ref(), "vertex_z", vertex.z),
@@ -350,6 +352,7 @@ fn angular_props(
         edit(t!("Definition Y").as_ref(), "definition_y", definition.y),
         edit(t!("Definition Z").as_ref(), "definition_z", definition.z),
     ]
+    .into_iter()
 }
 
 fn apply_base_prop(base: &mut DimensionBase, field: &str, value: &str) -> bool {

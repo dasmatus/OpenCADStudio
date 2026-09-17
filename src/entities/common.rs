@@ -771,27 +771,23 @@ pub fn bulge_arc_to_tangent(
 /// Directly triangulates a band polygon (either a 4-vertex straight trapezoid or
 /// a 2m-vertex annular sector quad strip) into non-overlapping triangles.
 /// Falls back to `triangulate_planar` if the vertex count is odd or less than 4.
-pub(crate) fn triangulate_band_ring(ring: &[[f64; 3]]) -> Vec<[f64; 3]> {
+#[doc(hidden)]
+pub fn triangulate_band_ring(ring: &[[f64; 3]]) -> impl Iterator<Item = [f64; 3]> + '_ {
     let n = ring.len();
-    if n >= 4 && n % 2 == 0 {
-        let m = n / 2;
-        let mut tris = Vec::with_capacity((m - 1) * 6);
-        for j in 0..m - 1 {
+    let banded = n >= 4 && n % 2 == 0;
+    let m = n / 2;
+    // `banded` implies `m >= 2`, so the subtraction below cannot underflow.
+    let range = if banded { 0..m - 1 } else { 0..0 };
+    let fallback = (!banded).then(|| crate::entities::mesh::triangulate_planar(ring));
+    range
+        .flat_map(move |j| {
             let p0 = ring[j];
             let p1 = ring[j + 1];
             let p2 = ring[2 * m - 2 - j];
             let p3 = ring[2 * m - 1 - j];
-            tris.push(p0);
-            tris.push(p1);
-            tris.push(p2);
-            tris.push(p0);
-            tris.push(p2);
-            tris.push(p3);
-        }
-        tris
-    } else {
-        crate::entities::mesh::triangulate_planar(ring)
-    }
+            [p0, p1, p2, p0, p2, p3]
+        })
+        .chain(fallback.into_iter().flatten())
 }
 
 pub(crate) fn wide_band_tris(origin: [f64; 2], fills: &[Vec<[f32; 2]>]) -> Vec<[f64; 3]> {

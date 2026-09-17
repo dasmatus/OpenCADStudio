@@ -69,15 +69,18 @@ use crate::scene::model::wire_model::{SnapHint, TangentGeom};
 /// Catmull-Rom spline tessellation through `ctrl` points, `segs_per_span` segments each.
 /// Operates in f64 so it can be applied to either WCS-direct coordinates (entity path)
 /// or offset-relative coordinates (scene path) without precision loss.
-pub(crate) fn catmull_rom_pts(ctrl: &[[f64; 3]], segs_per_span: u32) -> Vec<[f64; 3]> {
+#[doc(hidden)]
+pub fn catmull_rom_pts(
+    ctrl: &[[f64; 3]],
+    segs_per_span: u32,
+) -> impl Iterator<Item = [f64; 3]> + '_ {
     let n = ctrl.len();
-    let mut out = Vec::new();
-    for i in 0..n.saturating_sub(1) {
+    (0..n.saturating_sub(1)).flat_map(move |i| {
         let p0 = if i == 0 { ctrl[0] } else { ctrl[i - 1] };
         let p1 = ctrl[i];
         let p2 = ctrl[i + 1];
         let p3 = if i + 2 < n { ctrl[i + 2] } else { ctrl[n - 1] };
-        for j in 0..=segs_per_span {
+        (0..=segs_per_span).map(move |j| {
             let t = j as f64 / segs_per_span as f64;
             let t2 = t * t;
             let t3 = t2 * t;
@@ -89,10 +92,9 @@ pub(crate) fn catmull_rom_pts(ctrl: &[[f64; 3]], segs_per_span: u32) -> Vec<[f64
                         + (2.0 * p0[k] - 5.0 * p1[k] + 4.0 * p2[k] - p3[k]) * t2
                         + (-p0[k] + 3.0 * p1[k] - 3.0 * p2[k] + p3[k]) * t3);
             }
-            out.push(pt);
-        }
-    }
-    out
+            pt
+        })
+    })
 }
 
 fn to_render(ml: &MultiLeader, document: &acadrust::CadDocument) -> Option<RenderEntity> {
@@ -271,10 +273,7 @@ fn to_render(ml: &MultiLeader, document: &acadrust::CadDocument) -> Option<Rende
                     // Catmull-Rom spline through the bend points. Use the leader
                     // line's own path type — a spline-style MultiLeader can carry
                     // straight lines, and splining a straight run bows it.
-                    let pts = catmull_rom_pts(&ctrl, 8);
-                    for &pt in &pts {
-                        points.push(pt);
-                    }
+                    points.extend(catmull_rom_pts(&ctrl, 8));
                 } else {
                     for &c in &ctrl {
                         points.push(c);

@@ -99,16 +99,16 @@ impl<'a> WrapBar<'a> {
     }
 
     /// Elements in row order: lead, [middle], trail.
-    fn refs(&self) -> Vec<&Element<'a, Message>> {
-        let mut v = Vec::with_capacity(3);
-        v.push(&self.lead);
-        if let Some(m) = &self.middle {
-            v.push(m);
-        }
-        v.push(&self.trail);
-        v
+    fn refs(&self) -> impl Iterator<Item = &Element<'a, Message>> + '_ {
+        std::iter::once(&self.lead)
+            .chain(self.middle.as_ref())
+            .chain(std::iter::once(&self.trail))
     }
 
+    /// Stays a `Vec` rather than an iterator: `diff` feeds this to iced's
+    /// `Tree::diff_children`, which takes `&mut [impl BorrowMut<dyn Widget>]` —
+    /// a slice. An iterator cannot satisfy that, and the length varies with
+    /// `middle`, so a fixed-size array will not either.
     fn refs_mut(&mut self) -> Vec<&mut Element<'a, Message>> {
         let mut v = Vec::with_capacity(3);
         v.push(&mut self.lead);
@@ -328,7 +328,6 @@ impl<'a> Widget<Message, Theme, Renderer> for WrapBar<'a> {
         let mut interaction = mouse::Interaction::default();
         for ((child, state), child_layout) in self
             .refs()
-            .into_iter()
             .zip(tree.children.iter())
             .zip(layout.children())
         {
@@ -377,7 +376,6 @@ impl<'a> Widget<Message, Theme, Renderer> for WrapBar<'a> {
     ) {
         for ((child, state), child_layout) in self
             .refs()
-            .into_iter()
             .zip(tree.children.iter())
             .zip(layout.children())
         {

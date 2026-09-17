@@ -428,12 +428,11 @@ fn block_object_names(
     doc: &CadDocument,
     entity: &EntityType,
     anno_scale: f32,
-) -> Vec<String> {
+) -> impl Iterator<Item = String> {
     crate::scene::render_graph::entity_render_block_uses(doc, entity, anno_scale)
         .into_iter()
         .filter(|block_use| !block_use.block.is_null())
         .map(|block_use| block_use.insert.block_name)
-        .collect()
 }
 
 /// Collect block definitions needed by rendered representations.

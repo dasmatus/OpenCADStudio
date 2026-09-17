@@ -9309,7 +9309,7 @@ impl Scene {
             };
             let test = |set: &MeshLodSet| {
                 set.geometry_lods().first().is_some_and(|mesh| {
-                    !pick::hit_test::mesh_box_hit(
+                    pick::hit_test::mesh_box_hit(
                         a,
                         b,
                         crossing,
@@ -9318,7 +9318,8 @@ impl Scene {
                         eye,
                         bounds,
                     )
-                    .is_empty()
+                    .next()
+                    .is_some()
                 })
             };
             let mut sets = indices
@@ -9492,7 +9493,7 @@ impl Scene {
             };
             let test = |set: &MeshLodSet| {
                 set.geometry_lods().first().is_some_and(|mesh| {
-                    !pick::hit_test::mesh_poly_hit(
+                    pick::hit_test::mesh_poly_hit(
                         poly,
                         crossing,
                         std::iter::once((handle, mesh, set.instance_transform)),
@@ -9500,7 +9501,8 @@ impl Scene {
                         eye,
                         bounds,
                     )
-                    .is_empty()
+                    .next()
+                    .is_some()
                 })
             };
             let mut sets = indices
@@ -9737,7 +9739,7 @@ impl Scene {
             };
             let test = |set: &MeshLodSet| {
                 set.geometry_lods().first().is_some_and(|mesh| {
-                    !pick::hit_test::mesh_box_hit(
+                    pick::hit_test::mesh_box_hit(
                         a,
                         b,
                         crossing,
@@ -9746,7 +9748,8 @@ impl Scene {
                         eye,
                         bounds,
                     )
-                    .is_empty()
+                    .next()
+                    .is_some()
                 })
             };
             let mut sets = indices
@@ -9797,7 +9800,7 @@ impl Scene {
             };
             let test = |set: &MeshLodSet| {
                 set.geometry_lods().first().is_some_and(|mesh| {
-                    !pick::hit_test::mesh_poly_hit(
+                    pick::hit_test::mesh_poly_hit(
                         poly,
                         crossing,
                         std::iter::once((handle, mesh, set.instance_transform)),
@@ -9805,7 +9808,8 @@ impl Scene {
                         eye,
                         bounds,
                     )
-                    .is_empty()
+                    .next()
+                    .is_some()
                 })
             };
             let mut sets = indices

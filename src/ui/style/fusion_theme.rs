@@ -75,8 +75,8 @@ pub fn fusion_white() -> Theme {
 
 /// Both Fusion themes, in the order the theme picker should show them.
 #[must_use]
-pub fn fusion_themes() -> Vec<Theme> {
-    vec![fusion_black(), fusion_white()]
+pub fn fusion_themes() -> impl Iterator<Item = Theme> {
+    [fusion_black(), fusion_white()].into_iter()
 }
 
 /// The canvas colour a Fusion theme asks for, or `None` for any other theme.

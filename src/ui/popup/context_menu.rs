@@ -523,9 +523,9 @@ fn snap_override_items() -> Vec<MenuItem> {
 
 /// Pan / Zoom rows. While a command runs they execute transparently (the
 /// `'` prefix, as in commercial solutions) so the command resumes afterwards.
-fn navigation_rows(transparent: bool) -> Vec<MenuRow> {
+fn navigation_rows(transparent: bool) -> impl Iterator<Item = MenuRow> {
     let prefix = if transparent { "'" } else { "" };
-    vec![
+    [
         MenuRow::Item(
             MenuItem::new(t!("Pan").into_owned(), MenuAction::Command(format!("{prefix}PAN")))
                 .icon(MenuIcon::Pan),
@@ -538,6 +538,7 @@ fn navigation_rows(transparent: bool) -> Vec<MenuRow> {
             .icon(MenuIcon::Zoom),
         ),
     ]
+    .into_iter()
 }
 
 #[allow(clippy::too_many_arguments)]

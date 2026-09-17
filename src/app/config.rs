@@ -180,16 +180,15 @@ impl UiThemePalette {
 /// pair. The Fusion themes are `Theme::Custom`, so they are not in
 /// `iced::Theme::ALL`; anything enumerating themes for display or for test
 /// coverage must use this instead, or they silently vanish from the list.
-pub fn all_themes() -> Vec<iced::Theme> {
+pub fn all_themes() -> impl Iterator<Item = iced::Theme> {
     iced::Theme::ALL
         .iter()
         .cloned()
         .chain(crate::ui::style::fusion_theme::fusion_themes())
-        .collect()
 }
 
 pub fn builtin_theme(name: &str) -> Option<iced::Theme> {
-    all_themes().into_iter().find(|theme| theme.to_string() == name)
+    all_themes().find(|theme| theme.to_string() == name)
 }
 
 fn color_to_rgb(color: iced::Color) -> [u8; 3] {

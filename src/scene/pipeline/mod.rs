@@ -2972,7 +2972,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
             text_gpu::upload_block_vertex_refs(
                 device,
                 queue,
-                &selected_blocks,
+                selected_blocks,
                 depth_map,
                 Some(tint),
             )
@@ -2982,7 +2982,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
         block_gpu.extend(text_gpu::upload_block_vertex_refs(
             device,
             queue,
-            &hover_blocks,
+            hover_blocks,
             depth_map,
             Some(WireModel::HOVER),
         ));

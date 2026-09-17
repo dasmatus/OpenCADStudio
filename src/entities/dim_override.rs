@@ -93,7 +93,7 @@ pub const DIMLTEX2: i16 = 347;
 pub const DIMLWE: i16 = 372;
 
 /// Every (code, value) override present in the `ACAD`/`DSTYLE` record.
-pub fn pairs(xd: &ExtendedData) -> Vec<(i16, XDataValue)> {
+pub fn pairs(xd: &ExtendedData) -> impl Iterator<Item = (i16, XDataValue)> + '_ {
     let values = xd
         .get_record("ACAD")
         .and_then(|rec| match rec.values.first() {
@@ -104,28 +104,26 @@ pub fn pairs(xd: &ExtendedData) -> Vec<(i16, XDataValue)> {
         .or_else(|| {
             xd.get_record("ACAD_DSTYLE")
                 .map(|rec| rec.values.as_slice())
-        });
-    let Some(values) = values else {
-        return Vec::new();
-    };
-    let mut out = Vec::new();
+        })
+        .unwrap_or(&[]);
     let mut it = values.iter();
     // The record is a flat stream: a 1070 code marker followed by its typed
     // value, bracketed by 1002 "{" / "}" control strings (which are skipped).
-    while let Some(v) = it.next() {
-        if let XDataValue::Integer16(code) = v {
-            if let Some(val) = it.next() {
-                out.push((*code, val.clone()));
+    std::iter::from_fn(move || {
+        while let Some(v) = it.next() {
+            if let XDataValue::Integer16(code) = v {
+                if let Some(val) = it.next() {
+                    return Some((*code, val.clone()));
+                }
             }
         }
-    }
-    out
+        None
+    })
 }
 
 /// The real-valued override for `code`, if present.
 pub fn real(xd: &ExtendedData, code: i16) -> Option<f64> {
     pairs(xd)
-        .into_iter()
         .find(|(c, _)| *c == code)
         .and_then(|(_, v)| match v {
             XDataValue::Real(r) | XDataValue::Distance(r) | XDataValue::ScaleFactor(r) => Some(r),
@@ -136,7 +134,6 @@ pub fn real(xd: &ExtendedData, code: i16) -> Option<f64> {
 /// The 16-bit-integer override for `code`, if present.
 pub fn int(xd: &ExtendedData, code: i16) -> Option<i16> {
     pairs(xd)
-        .into_iter()
         .find(|(c, _)| *c == code)
         .and_then(|(_, v)| match v {
             XDataValue::Integer16(n) => Some(n),
@@ -154,7 +151,6 @@ pub fn color(xd: &ExtendedData, code: i16) -> Option<Color> {
 /// The handle-valued override for `code`, if present.
 pub fn handle(xd: &ExtendedData, code: i16) -> Option<Handle> {
     pairs(xd)
-        .into_iter()
         .find(|(c, _)| *c == code)
         .and_then(|(_, v)| match v {
             XDataValue::Handle(h) => Some(h),
@@ -164,7 +160,6 @@ pub fn handle(xd: &ExtendedData, code: i16) -> Option<Handle> {
 
 pub fn string(xd: &ExtendedData, code: i16) -> Option<String> {
     pairs(xd)
-        .into_iter()
         .find(|(c, _)| *c == code)
         .and_then(|(_, value)| match value {
             XDataValue::String(text) => Some(text),
@@ -226,7 +221,6 @@ pub fn set(doc: &mut CadDocument, handle: Handle, code: i16, value: Option<XData
         return;
     };
     let mut kept: Vec<(i16, XDataValue)> = pairs(&entity.common().extended_data)
-        .into_iter()
         .filter(|(c, _)| *c != code)
         .collect();
     if let Some(v) = value {
@@ -247,7 +241,6 @@ pub fn set(doc: &mut CadDocument, handle: Handle, code: i16, value: Option<XData
 pub fn set_on_entity(entity: &mut EntityType, code: i16, value: Option<XDataValue>) {
     let common = entity.common_mut();
     let mut kept: Vec<(i16, XDataValue)> = pairs(&common.extended_data)
-        .into_iter()
         .filter(|(c, _)| *c != code)
         .collect();
     if let Some(v) = value {

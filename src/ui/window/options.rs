@@ -218,8 +218,7 @@ pub fn view_window<'a>(
         .find(|candidate| *candidate == default_save_format);
 
     let theme_options = crate::app::config::all_themes()
-        .iter()
-        .map(ToString::to_string)
+        .map(|theme| theme.to_string())
         .chain(std::iter::once("Custom".to_string()))
         .map(|value| Labelled {
             label: match value.as_str() {

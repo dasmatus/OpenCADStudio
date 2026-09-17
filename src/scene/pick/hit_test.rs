@@ -1072,43 +1072,39 @@ pub fn mesh_box_hit<'a>(
             &'a MeshModel,
             Option<acadrust::types::Transform>,
         ),
-    >,
+    > + 'a,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
-) -> Vec<Handle> {
+) -> impl Iterator<Item = Handle> + 'a {
     let (min_x, max_x) = (a.x.min(b.x), a.x.max(b.x));
     let (min_y, max_y) = (a.y.min(b.y), a.y.max(b.y));
-    let in_box = |p: &Point| p.x >= min_x && p.x <= max_x && p.y >= min_y && p.y <= max_y;
+    let in_box = move |p: &Point| p.x >= min_x && p.x <= max_x && p.y >= min_y && p.y <= max_y;
     let corners = [
         Point::new(min_x, min_y),
         Point::new(max_x, min_y),
         Point::new(max_x, max_y),
         Point::new(min_x, max_y),
     ];
-    let mut out = Vec::new();
-    for (h, mesh, transform) in meshes {
+    meshes.filter_map(move |(h, mesh, transform)| {
         let proj = project_mesh_verts(mesh, transform, view_rot, eye, bounds);
         if proj.is_empty() {
-            continue;
+            return None;
         }
         let hit = if crossing {
             proj.iter().any(in_box) || mesh_covers_any(&proj, &mesh.indices, &corners)
         } else {
             proj.iter().all(in_box)
         };
-        if hit {
-            out.push(h);
-        }
-    }
-    out
+        hit.then_some(h)
+    })
 }
 
 /// Solid (mesh) handles caught by a lasso polygon. Window mode needs every
 /// projected vertex inside the lasso; crossing mode needs any vertex inside,
 /// or the lasso to sit inside the solid.
 pub fn mesh_poly_hit<'a>(
-    poly: &[Point],
+    poly: &'a [Point],
     crossing: bool,
     meshes: impl Iterator<
         Item = (
@@ -1116,19 +1112,21 @@ pub fn mesh_poly_hit<'a>(
             &'a MeshModel,
             Option<acadrust::types::Transform>,
         ),
-    >,
+    > + 'a,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
-) -> Vec<Handle> {
-    if poly.len() < 3 {
-        return Vec::new();
-    }
-    let mut out = Vec::new();
-    for (h, mesh, transform) in meshes {
+) -> impl Iterator<Item = Handle> + 'a {
+    // A degenerate lasso matched nothing before; carrying the flag into the
+    // chain keeps that without an early `return` of a different type.
+    let degenerate = poly.len() < 3;
+    meshes.filter_map(move |(h, mesh, transform)| {
+        if degenerate {
+            return None;
+        }
         let proj = project_mesh_verts(mesh, transform, view_rot, eye, bounds);
         if proj.is_empty() {
-            continue;
+            return None;
         }
         let hit = if crossing {
             proj.iter().any(|p| point_in_polygon(*p, poly))
@@ -1136,11 +1134,8 @@ pub fn mesh_poly_hit<'a>(
         } else {
             proj.iter().all(|p| point_in_polygon(*p, poly))
         };
-        if hit {
-            out.push(h);
-        }
-    }
-    out
+        hit.then_some(h)
+    })
 }
 
 // ── Box / window selection ────────────────────────────────────────────────
@@ -2345,26 +2340,23 @@ fn hatch_box_hit(
             .any(|corner| point_in_polygon(corner, &screen))
 }
 
-pub fn box_hit_hatch(
+pub fn box_hit_hatch<'a>(
     corner_a: Point,
     corner_b: Point,
     crossing: bool,
-    hatches: &HashMap<Handle, HatchModel>,
+    hatches: &'a HashMap<Handle, HatchModel>,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
-    candidate_handles: Option<&HashSet<Handle>>,
-) -> Vec<Handle> {
-    hatches
-        .iter()
-        .filter_map(|(&handle, hatch)| {
-            if candidate_handles.is_some_and(|handles| !handles.contains(&handle)) {
-                return None;
-            }
-            hatch_box_hit(corner_a, corner_b, crossing, hatch, view_rot, eye, bounds)
-                .then_some(handle)
-        })
-        .collect()
+    candidate_handles: Option<&'a HashSet<Handle>>,
+) -> impl Iterator<Item = Handle> + 'a {
+    hatches.iter().filter_map(move |(&handle, hatch)| {
+        if candidate_handles.is_some_and(|handles| !handles.contains(&handle)) {
+            return None;
+        }
+        hatch_box_hit(corner_a, corner_b, crossing, hatch, view_rot, eye, bounds)
+            .then_some(handle)
+    })
 }
 
 pub fn box_hit_insert_hatch(
@@ -2472,24 +2464,21 @@ fn hatch_polygon_hit(
     }
 }
 
-pub fn poly_hit_hatch(
-    poly: &[Point],
+pub fn poly_hit_hatch<'a>(
+    poly: &'a [Point],
     crossing: bool,
-    hatches: &HashMap<Handle, HatchModel>,
+    hatches: &'a HashMap<Handle, HatchModel>,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
-    candidate_handles: Option<&HashSet<Handle>>,
-) -> Vec<Handle> {
-    hatches
-        .iter()
-        .filter_map(|(&handle, hatch)| {
-            if candidate_handles.is_some_and(|handles| !handles.contains(&handle)) {
-                return None;
-            }
-            hatch_polygon_hit(poly, crossing, hatch, view_rot, eye, bounds).then_some(handle)
-        })
-        .collect()
+    candidate_handles: Option<&'a HashSet<Handle>>,
+) -> impl Iterator<Item = Handle> + 'a {
+    hatches.iter().filter_map(move |(&handle, hatch)| {
+        if candidate_handles.is_some_and(|handles| !handles.contains(&handle)) {
+            return None;
+        }
+        hatch_polygon_hit(poly, crossing, hatch, view_rot, eye, bounds).then_some(handle)
+    })
 }
 
 pub fn poly_hit_insert_hatch(

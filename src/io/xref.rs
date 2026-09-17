@@ -816,7 +816,9 @@ fn merge_xref_into_block(
 /// (fills over outlines etc.), since the host ranks draw order by the
 /// freshly-allocated handles. Entities missing from every chain keep their
 /// stream order at the end. BLOCK/BlockEnd markers are excluded.
-fn ordered_source_entities(xref_doc: &CadDocument) -> Vec<(Handle, EntityType)> {
+fn ordered_source_entities(
+    xref_doc: &CadDocument,
+) -> impl Iterator<Item = (Handle, EntityType)> + '_ {
     let mut ordered: Vec<Handle> = Vec::new();
     let mut seen: HashSet<Handle> = HashSet::default();
     for br in xref_doc.block_records.iter() {
@@ -836,7 +838,6 @@ fn ordered_source_entities(xref_doc: &CadDocument) -> Vec<(Handle, EntityType)> 
         .into_iter()
         .filter_map(|h| xref_doc.get_entity(h).map(|e| (h, e.clone())))
         .filter(|(_, e)| !matches!(e, EntityType::Block(_) | EntityType::BlockEnd(_)))
-        .collect()
 }
 
 /// Merge one source doc's entities into `target`, routing model-space content

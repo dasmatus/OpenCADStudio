@@ -462,20 +462,21 @@ pub fn upload_block_vertices(
     wires: &[crate::scene::model::wire_model::WireModel],
     depth_map: &rustc_hash::FxHashMap<u64, [f32; 2]>,
 ) -> Vec<BlockTextGpu> {
-    let refs: Vec<&crate::scene::model::wire_model::WireModel> = wires.iter().collect();
-    upload_block_vertex_refs(device, queue, &refs, depth_map, None)
+    upload_block_vertex_refs(device, queue, wires.iter(), depth_map, None)
 }
 
-pub fn upload_block_vertex_refs(
+/// `wires` is traversed exactly once; anything needing a second pass must
+/// collect it first.
+pub fn upload_block_vertex_refs<'a>(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
-    wires: &[&crate::scene::model::wire_model::WireModel],
+    wires: impl IntoIterator<Item = &'a crate::scene::model::wire_model::WireModel>,
     depth_map: &rustc_hash::FxHashMap<u64, [f32; 2]>,
     tint: Option<[f32; 4]>,
 ) -> Vec<BlockTextGpu> {
     let mut slots = rustc_hash::FxHashMap::default();
     let mut groups: Vec<Vec<&crate::scene::model::wire_model::WireModel>> = Vec::new();
-    for &wire in wires {
+    for wire in wires {
         if tint.is_none() && !wire.display_visible {
             continue;
         }

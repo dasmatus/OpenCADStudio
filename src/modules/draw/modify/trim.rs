@@ -709,7 +709,7 @@ fn extend_spline(spl: &SplineEnt, t_click: f64, geos: &[Geo]) -> Option<EntityTy
 
 // ── Trim helpers ──────────────────────────────────────────────────────────
 
-fn trim_intervals(curve: &Curve, ts: &[f64], t_click: f64) -> Vec<(f64, f64)> {
+fn trim_intervals(curve: &Curve, ts: &[f64], t_click: f64) -> impl Iterator<Item = (f64, f64)> {
     kernel_trim_spans(
         curve,
         ts,
@@ -718,7 +718,6 @@ fn trim_intervals(curve: &Curve, ts: &[f64], t_click: f64) -> Vec<(f64, f64)> {
     )
     .into_iter()
     .map(|span| (span[0], span[1]))
-    .collect()
 }
 
 /// Trim a Line entity. Returns the surviving line segments.

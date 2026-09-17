@@ -575,39 +575,39 @@ fn marker_metadata(wire: &WireModel) -> ([f32; 4], [f32; 4], [f32; 4]) {
 }
 
 /// Emit packed per-segment instances (each carries the wire's constants).
-pub(crate) fn emit_wire_packed(
+#[doc(hidden)]
+pub fn emit_wire_packed(
     wire: &WireModel,
     color: [f32; 4],
     draw_depth: f32,
-) -> Vec<PackedWireInstance> {
+) -> impl Iterator<Item = PackedWireInstance> + '_ {
     let color_u8 = pack_color(color);
     let pat0 = [wire.pattern[0], wire.pattern[1], wire.pattern[2], wire.pattern[3]];
     let pat1 = [wire.pattern[4], wire.pattern[5], wire.pattern[6], wire.pattern[7]];
     let half_width = wire.line_weight_px * 0.5;
     let n = wire.points.len();
+    // `0..0` already yields nothing, so the old `seg_count == 0` early return is
+    // implicit. The prologue below runs regardless; it is cheap and cannot panic
+    // on a degenerate wire.
     let seg_count = n.saturating_sub(1);
-    if seg_count == 0 {
-        return Vec::new();
-    }
     let (dists, align_end, align_total) = wire_distances(wire);
     let (marker_origin_high, marker_origin_low, marker_normal_scale) = marker_metadata(wire);
     let low = |i: usize| -> [f32; 3] { wire.points_low.get(i).copied().unwrap_or([0.0; 3]) };
     let is_tapered = !wire.taper_widths.is_empty();
-    let tw = |i: usize| -> f32 {
+    let tw = move |i: usize| -> f32 {
         if is_tapered {
             wire.taper_widths.get(i).copied().unwrap_or(0.0) * 0.5
         } else {
             -1.0
         }
     };
-    let mut instances: Vec<PackedWireInstance> = Vec::with_capacity(seg_count);
-    for i in 0..seg_count {
+    (0..seg_count).filter_map(move |i| {
         let a = wire.points[i];
         let b = wire.points[i + 1];
         if !finite3(a) || !finite3(b) {
-            continue;
+            return None;
         }
-        instances.push(PackedWireInstance {
+        Some(PackedWireInstance {
             pos_a: a,
             pos_a_low: low(i),
             pos_b: b,
@@ -628,9 +628,8 @@ pub(crate) fn emit_wire_packed(
             marker_origin_high,
             marker_origin_low,
             marker_normal_scale,
-        });
-    }
-    instances
+        })
+    })
 }
 
 /// Storage path: emit slim instances (positions + distances + `wire_id`)
@@ -1179,16 +1178,12 @@ impl WireGpu {
         let _ = const_bgl;
         let max_packed_instances = super::gpu_budget::max_elements::<PackedWireInstance>(device);
         use crate::par::prelude::*;
-        let per: Vec<Vec<PackedWireInstance>> = wires
+        let instances: Vec<PackedWireInstance> = wires
             .par_iter()
-            .map(|wire| {
+            .flat_map_iter(|wire| {
                 emit_wire_packed(wire, color, wire_draw_depth(wire, depth_map))
             })
             .collect();
-        let mut instances = Vec::with_capacity(per.iter().map(Vec::len).sum());
-        for mut items in per {
-            instances.append(&mut items);
-        }
         instances
             .chunks(max_packed_instances)
             .map(|chunk| Self {
@@ -1218,9 +1213,9 @@ impl WireGpu {
         let Some(const_bgl) = const_bgl else {
             let max_instances = super::gpu_budget::max_elements::<PackedWireInstance>(device);
             use crate::par::prelude::*;
-            let per: Vec<Vec<PackedWireInstance>> = wires
+            let instances: Vec<PackedWireInstance> = wires
                 .par_iter()
-                .map(|&wire| {
+                .flat_map_iter(|&wire| {
                     let depth = if mesh_edge {
                         0.0
                     } else {
@@ -1229,11 +1224,6 @@ impl WireGpu {
                     emit_wire_packed(wire, wire.color, depth)
                 })
                 .collect();
-            let mut instances =
-                Vec::with_capacity(per.iter().map(Vec::len).sum());
-            for mut items in per {
-                instances.append(&mut items);
-            }
             return instances
                 .chunks(max_instances)
                 .map(|chunk| Self {
@@ -1337,18 +1327,13 @@ impl WireGpu {
 
         let _ = const_bgl;
         let max_packed_instances = super::gpu_budget::max_elements::<PackedWireInstance>(device);
-        let per: Vec<Vec<PackedWireInstance>> = wires
+        let instances: Vec<PackedWireInstance> = wires
             .iter()
-            .map(|w| {
+            .flat_map(|w| {
                 let dd = if mesh_edge { 0.0 } else { wire_draw_depth(w, depth_map) };
                 emit_wire_packed(w, w.color, dd)
             })
             .collect();
-        let mut instances: Vec<PackedWireInstance> =
-            Vec::with_capacity(per.iter().map(Vec::len).sum());
-        for mut v in per {
-            instances.append(&mut v);
-        }
         if instances.is_empty() {
             return vec![];
         }
