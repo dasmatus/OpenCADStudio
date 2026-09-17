@@ -202,7 +202,7 @@ iced = { git = "https://github.com/iced-rs/iced.git", rev = "23604ff22ab0aad9e00
 [profile.release]
 strip = true
 lto = true
-codegen-jobs = 1
+codegen-units = 1
 
 [[bench]]
 name = "performance_benchmarks"
