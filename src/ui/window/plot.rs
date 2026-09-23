@@ -1500,7 +1500,8 @@ pub fn view_window(
             field_row_enabled(offset_y_label, &s.offset_y, PlotDlgMsg::OffsetY, 70, common_area && !s.center),
         ]
         .spacing(7),
-    );
+        check_enabled(t!("Center the plot"), s.center, PlotFlag::Center, common_area),
+    ].spacing(7));
     let scale_options = s
         .scales
         .iter()
@@ -1591,7 +1592,7 @@ pub fn view_window(
                 .padding([4, 10]),
         ]
         .spacing(7),
-    );
+    ].spacing(7));
 
     let shaded_panel = panel(
         column![
@@ -1651,7 +1652,7 @@ pub fn view_window(
             .spacing(10),
         ]
         .spacing(7),
-    );
+    ].spacing(7));
 
     let orientation_panel = panel(
         column![
