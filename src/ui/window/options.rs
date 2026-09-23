@@ -321,7 +321,11 @@ pub fn view_window<'a>(
     let apply = button(text(crate::t!("Apply")).size(12))
         .on_press_maybe(dirty.then_some(Message::OptionsApply))
         .padding([6, 18])
-        .style(if dirty { button::secondary } else { button::text });
+        .style(if dirty {
+            button::secondary
+        } else {
+            button::text
+        });
     let close = button(text(crate::tr!("action", "close")).size(12))
         .on_press(Message::OptionsClose)
         .padding([6, 18])
@@ -1703,10 +1707,22 @@ pub fn view_window<'a>(
     let main = container(body)
         .style(container::rounded_box)
         .padding([16, 18])
-        .width(if intrinsic { iced::Length::Fixed(DIALOG_WIDTH) } else { sizing.width })
-        .height(if intrinsic { iced::Length::Fixed(DIALOG_HEIGHT) } else { sizing.height });
+        .width(if intrinsic {
+            iced::Length::Fixed(DIALOG_WIDTH)
+        } else {
+            sizing.width
+        })
+        .height(if intrinsic {
+            iced::Length::Fixed(DIALOG_HEIGHT)
+        } else {
+            sizing.height
+        });
     if !close_confirm {
         return main.into();
     }
-    crate::ui::modal::discard_guard(main, Message::OptionsCloseDiscard, Message::OptionsCloseKeep)
+    crate::ui::modal::discard_guard(
+        main,
+        Message::OptionsCloseDiscard,
+        Message::OptionsCloseKeep,
+    )
 }

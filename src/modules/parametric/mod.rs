@@ -5,9 +5,9 @@
 mod coincident;
 mod concentric;
 mod constraint_bar;
-mod equal_distance;
 #[path = "equal.rs"]
 mod equal_command;
+mod equal_distance;
 #[path = "fixed.rs"]
 mod fixed_command;
 mod geom_constraint;

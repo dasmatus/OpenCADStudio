@@ -273,13 +273,19 @@ impl PlotStyleTable {
         {
             return Err(format!("Invalid plot style name: {name}"));
         }
-        if path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("stb")) {
-            return Err(crate::tf!(
-                "Named plot style tables (.stb) are not supported yet: {name}"
-            )
-            .into_owned());
+        if path
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("stb"))
+        {
+            return Err(
+                crate::tf!("Named plot style tables (.stb) are not supported yet: {name}")
+                    .into_owned(),
+            );
         }
-        if !path.extension().is_some_and(|ext| ext.eq_ignore_ascii_case("ctb")) {
+        if !path
+            .extension()
+            .is_some_and(|ext| ext.eq_ignore_ascii_case("ctb"))
+        {
             return Err(format!("Invalid plot style name: {name}"));
         }
 
@@ -936,14 +942,20 @@ mod lenient_loading_tests {
         bytes[52..56].copy_from_slice(&(text_len - 1).to_le_bytes());
         let table = PlotStyleTable::from_bytes("foreign.ctb", &bytes).expect("loads");
         assert_pens_kept(&table);
-        assert!(table.load_warnings.iter().any(|w| w.contains("bytes of text")));
+        assert!(table
+            .load_warnings
+            .iter()
+            .any(|w| w.contains("bytes of text")));
 
         let mut bytes = compressed(&table_with_description("ok"));
         let compressed_len = u32::from_le_bytes(bytes[56..60].try_into().unwrap());
         bytes[56..60].copy_from_slice(&(compressed_len + 100).to_le_bytes());
         let table = PlotStyleTable::from_bytes("foreign.ctb", &bytes).expect("loads");
         assert_pens_kept(&table);
-        assert!(table.load_warnings.iter().any(|w| w.contains("compressed bytes")));
+        assert!(table
+            .load_warnings
+            .iter()
+            .any(|w| w.contains("compressed bytes")));
     }
 
     #[test]
@@ -961,7 +973,10 @@ mod lenient_loading_tests {
         let table = PlotStyleTable::from_bytes("foreign.ctb", &compressed).expect("loads");
         assert_pens_kept(&table);
         assert_eq!(table.description, "Plumas – señal");
-        assert!(table.load_warnings.iter().any(|w| w.contains("Windows-1252")));
+        assert!(table
+            .load_warnings
+            .iter()
+            .any(|w| w.contains("Windows-1252")));
         // Clean UTF-8 gets no note.
         let (text, note) = decode_plot_style_text("Ελληνικά".as_bytes().to_vec());
         assert_eq!(text, "Ελληνικά");

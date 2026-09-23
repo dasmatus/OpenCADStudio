@@ -3371,13 +3371,11 @@ impl OpenCADStudio {
                 for other in others {
                     let refs = [first, other];
                     if other == first
-                        || self
-                            .tabs[i]
+                        || self.tabs[i]
                             .scene
                             .validate_parametric_constraint(ConstraintKind::Equal, &refs, None)
                             .is_err()
-                        || equal_size_follower(&self.tabs[i].scene.document, first, other)
-                            .is_none()
+                        || equal_size_follower(&self.tabs[i].scene.document, first, other).is_none()
                     {
                         self.command_line
                             .push_error(EqualConstraintCommand::INVALID_OBJECT);
@@ -3401,8 +3399,10 @@ impl OpenCADStudio {
                     followers.push(other);
                 }
                 if multiple && !finishing {
-                    if let Some(prompt) =
-                        self.tabs[i].active_cmd.as_ref().map(|command| command.prompt())
+                    if let Some(prompt) = self.tabs[i]
+                        .active_cmd
+                        .as_ref()
+                        .map(|command| command.prompt())
                     {
                         self.command_line.push_info(&prompt);
                     }
@@ -3447,10 +3447,11 @@ impl OpenCADStudio {
                     {
                         self.tabs[i].scene.update_entity(resized);
                     }
-                    let id = self.tabs[i]
-                        .scene
-                        .parametric_constraint_set_mut(scope)
-                        .add(ConstraintKind::Equal, vec![first, *follower], None);
+                    let id = self.tabs[i].scene.parametric_constraint_set_mut(scope).add(
+                        ConstraintKind::Equal,
+                        vec![first, *follower],
+                        None,
+                    );
                     self.tabs[i].scene.note_parametric_constraint_applied(
                         scope,
                         id,
@@ -3739,8 +3740,7 @@ impl OpenCADStudio {
                     if length > 1.0e-9 && angle.abs() > 1.0e-9 {
                         match vertex {
                             Some(index) => {
-                                let moved =
-                                    self.tabs[i].scene.document.get_entity(handle).cloned();
+                                let moved = self.tabs[i].scene.document.get_entity(handle).cloned();
                                 if let Some(mut entity) = moved {
                                     if crate::scene::parametric_constraints::set_polyline_vertex(
                                         &mut entity,

@@ -3266,8 +3266,12 @@ impl OpenCADStudio {
     /// corner unless `PLOTOFFSET` says from the paper edge.
     fn dialog_plot_origin_mm(&self) -> (f64, f64) {
         let d = &self.plot_dialog;
-        let x = d.paper_units.to_mm(d.offset_x.trim().parse::<f64>().unwrap_or(0.0));
-        let y = d.paper_units.to_mm(d.offset_y.trim().parse::<f64>().unwrap_or(0.0));
+        let x = d
+            .paper_units
+            .to_mm(d.offset_x.trim().parse::<f64>().unwrap_or(0.0));
+        let y = d
+            .paper_units
+            .to_mm(d.offset_y.trim().parse::<f64>().unwrap_or(0.0));
         if d.plot_offset_from_edge {
             return (x, y);
         }
@@ -3360,8 +3364,10 @@ impl OpenCADStudio {
             (0.0, 0.0)
         } else {
             (
-                d.paper_units.to_mm(d.offset_x.trim().parse::<f64>().unwrap_or(0.0)),
-                d.paper_units.to_mm(d.offset_y.trim().parse::<f64>().unwrap_or(0.0)),
+                d.paper_units
+                    .to_mm(d.offset_x.trim().parse::<f64>().unwrap_or(0.0)),
+                d.paper_units
+                    .to_mm(d.offset_y.trim().parse::<f64>().unwrap_or(0.0)),
             )
         };
         ps.origin_x = origin_x;
@@ -5156,7 +5162,8 @@ impl OpenCADStudio {
     ) {
         for warning in &table.load_warnings {
             let name = &table.name;
-            self.command_line.push_warning(&format!("{name}: {warning}"));
+            self.command_line
+                .push_warning(&format!("{name}: {warning}"));
         }
     }
 
@@ -6056,8 +6063,8 @@ mod plot_paper_tests {
 
     #[test]
     fn switching_the_page_setup_unit_respells_offsets_and_keeps_the_output() {
-        use acadrust::objects::{PlotPaperUnits, ScaledType};
         use crate::ui::window::plot::PlotFlag;
+        use acadrust::objects::{PlotPaperUnits, ScaledType};
         let mut app = app_with_printer_named_sheet();
         let _ = app.on_plot_dialog_open();
         let sheet_before = app.tabs[app.active_tab].scene.paper_limits().unwrap();
@@ -6069,11 +6076,20 @@ mod plot_paper_tests {
         let _ = app.on_plot_dlg(PlotDlgMsg::PaperUnits("Inches".into()));
         let d = &app.plot_dialog;
         assert_eq!(d.offset_x, "1", "25.4 mm is 1 inch");
-        assert_eq!((d.custom_scale_paper.as_str(), d.custom_scale_drawing.as_str()), ("1", "2540"));
+        assert_eq!(
+            (
+                d.custom_scale_paper.as_str(),
+                d.custom_scale_drawing.as_str()
+            ),
+            ("1", "2540")
+        );
         let _ = app.on_plot_dlg(PlotDlgMsg::SetCurrent);
         let ps = layout_settings(&app);
         assert_eq!(ps.paper_units, PlotPaperUnits::Inches);
-        assert!((ps.origin_x - 25.4).abs() < 1e-9, "the file keeps millimetres");
+        assert!(
+            (ps.origin_x - 25.4).abs() < 1e-9,
+            "the file keeps millimetres"
+        );
         assert_eq!(ps.scale_type, ScaledType::OneToHundred);
         assert_eq!((ps.scale_numerator, ps.scale_denominator), (1.0, 2540.0));
         // Back to millimetres: the same physical setup, spelled in mm.
@@ -6095,15 +6111,21 @@ mod plot_paper_tests {
 
     #[test]
     fn custom_scale_fields_follow_and_drive_the_picker() {
-        use acadrust::objects::ScaledType;
         use crate::ui::window::plot::PlotFlag;
+        use acadrust::objects::ScaledType;
         let mut app = app_with_printer_named_sheet();
         let _ = app.on_plot_dialog_open();
         let _ = app.on_plot_dlg(PlotDlgMsg::Area("Extents".into()));
         let _ = app.on_plot_dlg(PlotDlgMsg::Flag(PlotFlag::FitToPaper));
         let _ = app.on_plot_dlg(PlotDlgMsg::Scale("1:100".into()));
         let d = &app.plot_dialog;
-        assert_eq!((d.custom_scale_paper.as_str(), d.custom_scale_drawing.as_str()), ("1", "100"));
+        assert_eq!(
+            (
+                d.custom_scale_paper.as_str(),
+                d.custom_scale_drawing.as_str()
+            ),
+            ("1", "100")
+        );
         // A typed ratio the list knows is picked under its name…
         let _ = app.on_plot_dlg(PlotDlgMsg::CustomScalePaper("2".into()));
         assert_eq!(app.plot_dialog.scale, "1:50");
@@ -6147,7 +6169,10 @@ mod plot_paper_tests {
         use crate::ui::window::plot::PlotFlag;
         let mut app = app_with_printer_named_sheet();
         let _ = app.on_plot_dialog_open();
-        assert!(app.plot_dialog.save_to_layout, "on by default, as expected of a page setup");
+        assert!(
+            app.plot_dialog.save_to_layout,
+            "on by default, as expected of a page setup"
+        );
         let _ = app.on_plot_dlg(PlotDlgMsg::Printer(crate::ui::window::plot::OUT_PDF.into()));
         let _ = app.on_plot_dlg(PlotDlgMsg::Paper("ISO_A3_(297.00_x_420.00_MM)".into()));
         // A preview never writes the layout.
@@ -6170,8 +6195,15 @@ mod plot_paper_tests {
         use crate::io::paper_catalog::{resolve, Margins};
         use crate::io::plot_device::{PrinterCapabilities, PrinterMedia};
         let a3 = resolve("ISO_A3_(297.00_x_420.00_MM)").unwrap();
-        let media = PrinterMedia { paper: a3.clone(), margins: Margins::uniform(3.0), borderless: false };
-        let caps = std::sync::Arc::new(PrinterCapabilities { media: vec![media], default_paper: Some(a3) });
+        let media = PrinterMedia {
+            paper: a3.clone(),
+            margins: Margins::uniform(3.0),
+            borderless: false,
+        };
+        let caps = std::sync::Arc::new(PrinterCapabilities {
+            media: vec![media],
+            default_paper: Some(a3),
+        });
         let mut app = app_with_printer_named_sheet();
         let _ = app.on_plot_dialog_open();
         let _ = app.on_plot_dlg(PlotDlgMsg::Printer("OCS Test Printer".into()));
@@ -6179,14 +6211,24 @@ mod plot_paper_tests {
         let media = |caps| PlotDlgMsg::PrinterMedia("OCS Test Printer".into(), Some(caps));
         let _ = app.on_plot_dlg(media(caps.clone()));
         assert_eq!(app.plot_dialog.paper, "ISO_A4_(210.00_x_297.00_MM)");
-        let last = app.command_line.history.last().map(|line| line.text.clone());
-        assert!(last.as_deref().unwrap_or("").contains("PAPERUPDATE = 0"), "{last:?}");
+        let last = app
+            .command_line
+            .history
+            .last()
+            .map(|line| line.text.clone());
+        assert!(
+            last.as_deref().unwrap_or("").contains("PAPERUPDATE = 0"),
+            "{last:?}"
+        );
         // PAPERUPDATE 1: the printer's default sheet takes over, in the
         // dialog's orientation.
         let _ = app.run_command_line("PAPERUPDATE 1");
         let _ = app.on_plot_dlg(media(caps));
         assert_eq!(app.plot_dialog.paper, "ISO_A3_(297.00_x_420.00_MM)");
-        assert_eq!(super::plot_dialog_sheet_mm(&app.plot_dialog), (420.0, 297.0));
+        assert_eq!(
+            super::plot_dialog_sheet_mm(&app.plot_dialog),
+            (420.0, 297.0)
+        );
     }
 
     #[test]

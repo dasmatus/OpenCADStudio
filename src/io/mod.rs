@@ -21,15 +21,15 @@ pub mod recovery;
 pub mod single_instance;
 pub mod step;
 pub mod stl;
-pub mod xref;
-pub mod xref_model;
-pub mod update_check;
-pub mod windows_media;
 pub mod thumbnail;
+pub mod update_check;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod web_recent;
 #[cfg(target_arch = "wasm32")]
 mod web_worker;
+pub mod windows_media;
+pub mod xref;
+pub mod xref_model;
 
 use crate::scene::DerivedCaches;
 use acadrust::entities::EntityType;
@@ -310,81 +310,81 @@ async fn open_path_with_phase_attempt(
             let initial_fingerprint = crate::io::edit_lock::FileFingerprint::capture(&path2).ok();
             let attempted = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 (|| -> Result<_, OpenAttemptFailure> {
-        use iced::time::Instant;
-                progress2.set(crate::app::OPEN_PHASE_PARSING, 200, 0, 1000);
-        let t_parse = Instant::now();
-        let parser_progress = {
-                    let progress = Arc::clone(&progress2);
-                    let callback: Arc<dyn Fn(u16) + Send + Sync> = Arc::new(move |value| {
-                        progress.set_fraction(
-                            crate::app::OPEN_PHASE_PARSING,
-                            200,
-                            5600,
-                            value as usize,
-                            1000,
-                        );
-                    });
-                    callback
-                };
-                std::fs::File::open(&path2).map_err(|error| {
-                    // 32 = ERROR_SHARING_VIOLATION, 33 = ERROR_LOCK_VIOLATION:
-                    // another program holds the drawing without read sharing,
-                    // so nothing on the machine can read the bytes until it
-                    // closes the file — not even read-only.
-                    let message = match error.raw_os_error() {
-                        Some(32) | Some(33) => format!(
-                            "\"{}\" is in use by another program. Close the file there and \
-                             reopen it here, or open a copy of the file.",
-                            path2.display()
-                        ),
-                        _ => format!("failed to open drawing: {error}"),
-                    };
-                    OpenAttemptFailure {
-                        message,
-                        read_stats: None,
-                        recoverable: false,
-                    }
-                })?;
-                let outcome = load_file_for_open(&path2, Some(parser_progress), &attempt)?;
-                let read_stats = outcome.stats;
-                let mut doc = outcome.document;
-        let parse_ms = t_parse.elapsed().as_millis() as u32;
-                progress2.set(crate::app::OPEN_PHASE_PARSING, 5800, 1000, 1000);
-        let t_purge = Instant::now();
-        let dropped = purge_corrupt_entities(&mut doc);
-        let purge_ms = t_purge.elapsed().as_millis() as u32;
-                if matches!(attempt, OpenAttempt::Strict) && dropped > 0 {
-                    return Err(OpenAttemptFailure {
-                        message: format!(
-                            "normal read found {dropped} structurally invalid drawing records"
-                        ),
-                        read_stats: Some(read_stats),
-                        recoverable: true,
-                    });
-                }
-                progress2.set(crate::app::OPEN_PHASE_XREF, 6000, 0, 1);
-                let t_xref = Instant::now();
-                let (xref_infos, xref_dropped) = if let Some(base_dir) = path2.parent() {
-                    let xref_progress = {
+                    use iced::time::Instant;
+                    progress2.set(crate::app::OPEN_PHASE_PARSING, 200, 0, 1000);
+                    let t_parse = Instant::now();
+                    let parser_progress = {
                         let progress = Arc::clone(&progress2);
-                        let callback: Arc<dyn Fn(usize, usize) + Send + Sync> =
-                            Arc::new(move |completed, total| {
-                                progress.set_fraction(
-                                    crate::app::OPEN_PHASE_XREF,
-                                    6000,
-                                    1400,
-                                    completed,
-                                    total,
-                                );
-                            });
+                        let callback: Arc<dyn Fn(u16) + Send + Sync> = Arc::new(move |value| {
+                            progress.set_fraction(
+                                crate::app::OPEN_PHASE_PARSING,
+                                200,
+                                5600,
+                                value as usize,
+                                1000,
+                            );
+                        });
                         callback
                     };
-                    crate::io::xref::resolve_xrefs_with_progress(
-                        &mut doc,
-                        base_dir,
-                        Some(xref_progress),
-                    )
-                } else {
+                    std::fs::File::open(&path2).map_err(|error| {
+                        // 32 = ERROR_SHARING_VIOLATION, 33 = ERROR_LOCK_VIOLATION:
+                        // another program holds the drawing without read sharing,
+                        // so nothing on the machine can read the bytes until it
+                        // closes the file — not even read-only.
+                        let message = match error.raw_os_error() {
+                            Some(32) | Some(33) => format!(
+                                "\"{}\" is in use by another program. Close the file there and \
+                             reopen it here, or open a copy of the file.",
+                                path2.display()
+                            ),
+                            _ => format!("failed to open drawing: {error}"),
+                        };
+                        OpenAttemptFailure {
+                            message,
+                            read_stats: None,
+                            recoverable: false,
+                        }
+                    })?;
+                    let outcome = load_file_for_open(&path2, Some(parser_progress), &attempt)?;
+                    let read_stats = outcome.stats;
+                    let mut doc = outcome.document;
+                    let parse_ms = t_parse.elapsed().as_millis() as u32;
+                    progress2.set(crate::app::OPEN_PHASE_PARSING, 5800, 1000, 1000);
+                    let t_purge = Instant::now();
+                    let dropped = purge_corrupt_entities(&mut doc);
+                    let purge_ms = t_purge.elapsed().as_millis() as u32;
+                    if matches!(attempt, OpenAttempt::Strict) && dropped > 0 {
+                        return Err(OpenAttemptFailure {
+                            message: format!(
+                                "normal read found {dropped} structurally invalid drawing records"
+                            ),
+                            read_stats: Some(read_stats),
+                            recoverable: true,
+                        });
+                    }
+                    progress2.set(crate::app::OPEN_PHASE_XREF, 6000, 0, 1);
+                    let t_xref = Instant::now();
+                    let (xref_infos, xref_dropped) = if let Some(base_dir) = path2.parent() {
+                        let xref_progress = {
+                            let progress = Arc::clone(&progress2);
+                            let callback: Arc<dyn Fn(usize, usize) + Send + Sync> =
+                                Arc::new(move |completed, total| {
+                                    progress.set_fraction(
+                                        crate::app::OPEN_PHASE_XREF,
+                                        6000,
+                                        1400,
+                                        completed,
+                                        total,
+                                    );
+                                });
+                            callback
+                        };
+                        crate::io::xref::resolve_xrefs_with_progress(
+                            &mut doc,
+                            base_dir,
+                            Some(xref_progress),
+                        )
+                    } else {
                         (Vec::new(), 0)
                     };
                     let xref_ms = t_xref.elapsed().as_millis() as u32;
@@ -1056,20 +1056,16 @@ fn read_dwg_path(
         if let Some(progress) = progress {
             reader.set_progress_callback(progress);
         }
-        reader
-            .read_with_stats()
-            .map_err(ReaderFailure::from_reader)
+        reader.read_with_stats().map_err(ReaderFailure::from_reader)
     }
     #[cfg(target_arch = "wasm32")]
     {
-        let mut reader = DwgReader::from_file_with_options(path, options)
-            .map_err(ReaderFailure::from_reader)?;
+        let mut reader =
+            DwgReader::from_file_with_options(path, options).map_err(ReaderFailure::from_reader)?;
         if let Some(progress) = progress {
             reader.set_progress_callback(progress);
         }
-        reader
-            .read_with_stats()
-            .map_err(ReaderFailure::from_reader)
+        reader.read_with_stats().map_err(ReaderFailure::from_reader)
     }
 }
 

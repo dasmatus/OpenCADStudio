@@ -526,9 +526,10 @@ mod layer_usage_tests {
         let usage = build_layer_usage(&doc);
 
         assert!(
-            usage.iter().all(|bucket| !bucket.iter().any(|n| n == "TRUECOLOR")),
+            usage
+                .iter()
+                .all(|bucket| !bucket.iter().any(|n| n == "TRUECOLOR")),
             "truecolor layer must not appear in any ACI bucket"
         );
     }
-
 }

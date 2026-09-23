@@ -908,19 +908,17 @@ impl Snapper {
                 if sd < r && best_x.as_ref().map_or(true, |(bd, _)| sd < *bd) {
                     // Report an acquired tracking ray (not an auxiliary
                     // last_point ray) as base/dir for typed-distance entry.
-                    let (ot, other) = if rays[i].group != POLAR_GROUP
-                        && rays[i].group != ORTHO_GROUP
-                    {
-                        (&rays[i], &rays[j])
-                    } else {
-                        (&rays[j], &rays[i])
-                    };
+                    let (ot, other) =
+                        if rays[i].group != POLAR_GROUP && rays[i].group != ORTHO_GROUP {
+                            (&rays[i], &rays[j])
+                        } else {
+                            (&rays[j], &rays[i])
+                        };
                     // Point each ray the way the crossing lies from its own
                     // origin, so the guide drawn for it runs through the lock
                     // rather than away from it.
                     let outward = |ray: &Ray| {
-                        let t = (x.x - ray.origin.x) * ray.dir.x
-                            + (x.y - ray.origin.y) * ray.dir.y;
+                        let t = (x.x - ray.origin.x) * ray.dir.x + (x.y - ray.origin.y) * ray.dir.y;
                         if t >= 0.0 {
                             ray.dir
                         } else {
@@ -4809,9 +4807,19 @@ mod ext_tests {
         let mut pts = exact_curve_intersections(&mark, &xy_circle(0.0, 0.0, 5.0))
             .expect("the extension lines cross the circle");
         pts.sort_by(|a, b| a.x.total_cmp(&b.x));
-        assert_eq!(pts.len(), 2, "only the two extension lines reach r=5: {pts:?}");
-        assert!((pts[0] - DVec3::new(0.0, 5.0, 0.0)).length() < 1e-9, "{pts:?}");
-        assert!((pts[1] - DVec3::new(5.0, 0.0, 0.0)).length() < 1e-9, "{pts:?}");
+        assert_eq!(
+            pts.len(),
+            2,
+            "only the two extension lines reach r=5: {pts:?}"
+        );
+        assert!(
+            (pts[0] - DVec3::new(0.0, 5.0, 0.0)).length() < 1e-9,
+            "{pts:?}"
+        );
+        assert!(
+            (pts[1] - DVec3::new(5.0, 0.0, 0.0)).length() < 1e-9,
+            "{pts:?}"
+        );
     }
 
     /// A block entry (`cache/block_cache.rs`) appends each entity's
@@ -4840,8 +4848,14 @@ mod ext_tests {
             .expect("the first line crosses the circle");
         pts.sort_by(|a, b| a.x.total_cmp(&b.x));
         assert_eq!(pts.len(), 2, "the seam a1->b0 is not a segment: {pts:?}");
-        assert!((pts[0] - DVec3::new(-5.0, 0.0, 0.0)).length() < 1e-9, "{pts:?}");
-        assert!((pts[1] - DVec3::new(5.0, 0.0, 0.0)).length() < 1e-9, "{pts:?}");
+        assert!(
+            (pts[0] - DVec3::new(-5.0, 0.0, 0.0)).length() < 1e-9,
+            "{pts:?}"
+        );
+        assert!(
+            (pts[1] - DVec3::new(5.0, 0.0, 0.0)).length() < 1e-9,
+            "{pts:?}"
+        );
     }
 
     /// The closing segment of a closed polyline runs from the last vertex
@@ -4867,7 +4881,10 @@ mod ext_tests {
             .expect("the circle crosses the closing edge");
         assert_eq!(pts.len(), 2, "{pts:?}");
         for p in &pts {
-            assert!((p.x - ox).abs() < 1e-9, "closing edge fell back to f32 endpoints: {p:?}");
+            assert!(
+                (p.x - ox).abs() < 1e-9,
+                "closing edge fell back to f32 endpoints: {p:?}"
+            );
         }
     }
 
@@ -4884,11 +4901,17 @@ mod ext_tests {
         };
         let mut cursor = 0usize;
         for (i, geom) in wire.tangent_geoms.iter().enumerate() {
-            let TangentGeom::Line { p1, p2 } = geom else { unreachable!() };
+            let TangentGeom::Line { p1, p2 } = geom else {
+                unreachable!()
+            };
             let (a, b) = tangent_line_endpoints(&wire, *p1, *p2, &mut cursor);
             assert_eq!(a, DVec3::from_array(verts[i]));
             assert_eq!(b, DVec3::from_array(verts[i + 1]));
-            assert_eq!(cursor, i + 1, "cursor must land on the segment's end vertex");
+            assert_eq!(
+                cursor,
+                i + 1,
+                "cursor must land on the segment's end vertex"
+            );
         }
     }
 }

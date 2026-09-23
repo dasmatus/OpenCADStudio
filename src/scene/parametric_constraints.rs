@@ -824,10 +824,16 @@ pub(crate) fn resolve_point(entity: &acadrust::EntityType, marker: i32) -> Optio
 pub(crate) fn polyline_vertex_index(entity: &acadrust::EntityType, marker: usize) -> Option<usize> {
     let (count, closed) = match entity {
         acadrust::EntityType::LwPolyline(polyline) => (polyline.vertices.len(), polyline.is_closed),
-        acadrust::EntityType::Polyline2D(polyline) => (polyline.vertices.len(), polyline.is_closed()),
+        acadrust::EntityType::Polyline2D(polyline) => {
+            (polyline.vertices.len(), polyline.is_closed())
+        }
         _ => return None,
     };
-    Some(if closed && marker == count && count > 0 { 0 } else { marker })
+    Some(if closed && marker == count && count > 0 {
+        0
+    } else {
+        marker
+    })
 }
 
 /// Below this squared distance (1e-6 world units), two points count as
@@ -1344,7 +1350,6 @@ pub(crate) fn constraint_hover_points(
             push_unique(&mut points, point);
         }
     }
-
 
     if matches!(
         constraint.kind,

@@ -16,7 +16,6 @@ mod dimension_preview_tests;
 mod document;
 mod drafting_settings;
 pub(crate) mod expr_eval;
-mod options_session;
 mod find_replace;
 pub(crate) mod helpers;
 mod history;
@@ -24,6 +23,7 @@ mod layers;
 mod model_ops;
 mod mtext_editor;
 mod navigation;
+mod options_session;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod plugin_host;
 mod presspull_ops;

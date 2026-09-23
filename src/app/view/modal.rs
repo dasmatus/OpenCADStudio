@@ -61,22 +61,10 @@ impl OpenCADStudio {
             None => String::new(),
         }
     }
-    pub(super) fn plot_modal_content<'s>(
-        &'s self,
-        extra: iced::Vector,
-    ) -> Element<'s, Message> {
-        sized_flow(
-            extra,
-            940,
-            690,
-            |flow| {
-                crate::ui::window::plot::view_window(
-                    &self.plot_dialog,
-                    self.print_all_options,
-                    flow,
-                )
-            },
-        )
+    pub(super) fn plot_modal_content<'s>(&'s self, extra: iced::Vector) -> Element<'s, Message> {
+        sized_flow(extra, 940, 690, |flow| {
+            crate::ui::window::plot::view_window(&self.plot_dialog, self.print_all_options, flow)
+        })
     }
     /// Build the currently-open modal dialog's content (Plan B), or `None`.
     /// Iced 0.15 measures the content first, so dialogs start at their natural
@@ -253,11 +241,7 @@ impl OpenCADStudio {
             super::super::ModalKind::Options => {
                 let dirty = self.options_dirty();
                 let close_confirm = self.options_close_confirm;
-                sized_flow(
-                ex,
-                880,
-                620,
-                |flow| {
+                sized_flow(ex, 880, 620, |flow| {
                     crate::ui::window::options::view_window(
                         &self.default_save_format,
                         self.file_assoc_enabled,
@@ -295,8 +279,10 @@ impl OpenCADStudio {
                             right_click_hold_ms: self.right_click_hold_ms,
                         },
                         crate::ui::window::options::spacemouse::view(
-                            self.spacemouse_preferences, self.spacemouse.status(),
-                            self.spacemouse_paused, self.spacemouse_details,
+                            self.spacemouse_preferences,
+                            self.spacemouse.status(),
+                            self.spacemouse_paused,
+                            self.spacemouse_details,
                         ),
                         &self.snap_angle_input,
                         {
@@ -307,15 +293,13 @@ impl OpenCADStudio {
                             crate::ui::window::options::DrawingPrefs {
                                 available: header.is_some(),
                                 isolines: header.map_or(4, |h| h.isolines),
-                                display_silhouette: header
-                                    .is_some_and(|h| h.display_silhouette),
+                                display_silhouette: header.is_some_and(|h| h.display_silhouette),
                                 surface_u: header.map_or(6, |h| h.surface_u_density),
                                 surface_v: header.map_or(6, |h| h.surface_v_density),
                                 surface_type: header.map_or(6, |h| h.surface_type),
                                 record_solid_history: header
                                     .is_some_and(|h| h.record_solid_history),
-                                show_solid_history: header
-                                    .map_or(1, |h| h.show_solid_history),
+                                show_solid_history: header.map_or(1, |h| h.show_solid_history),
                             }
                         },
                         {
@@ -353,8 +337,7 @@ impl OpenCADStudio {
                         close_confirm,
                         flow,
                     )
-                },
-                )
+                })
             }
             super::super::ModalKind::DraftingSettings => {
                 let state = self.drafting_settings_state.as_ref();
