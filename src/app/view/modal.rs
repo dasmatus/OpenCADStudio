@@ -300,17 +300,19 @@ impl OpenCADStudio {
                         ),
                         &self.snap_angle_input,
                         {
-                            crate::ui::window::options::Folders {
-                                config: crate::config::config_dir()
-                                    .map(|p| p.display().to_string()),
-                                plot_styles: crate::io::plot_style::plot_styles_dir()
-                                    .ok()
-                                    .map(|p| p.display().to_string()),
-                                plugins: crate::plugin::external::plugins_dir()
-                                    .map(|p| p.display().to_string()),
-                                autosave: crate::config::config_dir()
-                                    .map(|_| std::env::temp_dir().display().to_string()),
-                            }
+                            #[cfg(not(target_arch = "wasm32"))]
+                            {
+                                crate::ui::window::options::Folders {
+                                    config: crate::config::config_dir()
+                                        .map(|p| p.display().to_string()),
+                                    plot_styles: crate::io::plot_style::plot_styles_dir()
+                                        .ok()
+                                        .map(|p| p.display().to_string()),
+                                    plugins: crate::plugin::external::plugins_dir()
+                                        .map(|p| p.display().to_string()),
+                                    autosave: crate::config::config_dir()
+                                        .map(|_| std::env::temp_dir().display().to_string()),
+                                }
                             }
                             #[cfg(target_arch = "wasm32")]
                             {
