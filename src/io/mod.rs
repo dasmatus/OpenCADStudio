@@ -374,62 +374,24 @@ async fn open_path_with_phase_attempt(
                 let (xref_infos, xref_dropped) = if let Some(base_dir) = path2.parent() {
                     let xref_progress = {
                         let progress = Arc::clone(&progress2);
-                        let callback: Arc<dyn Fn(u16) + Send + Sync> = Arc::new(move |value| {
-                            progress.set_fraction(
-                                crate::app::OPEN_PHASE_PARSING,
-                                200,
-                                5600,
-                                value as usize,
-                                1000,
-                            );
-                        });
+                        let callback: Arc<dyn Fn(usize, usize) + Send + Sync> =
+                            Arc::new(move |completed, total| {
+                                progress.set_fraction(
+                                    crate::app::OPEN_PHASE_XREF,
+                                    6000,
+                                    1400,
+                                    completed,
+                                    total,
+                                );
+                            });
                         callback
                     };
-                    std::fs::File::open(&path2).map_err(|error| OpenAttemptFailure {
-                        message: format!("failed to open drawing: {error}"),
-                        read_stats: None,
-                        recoverable: false,
-                    })?;
-                    let outcome = load_file_for_open(&path2, Some(parser_progress), &attempt)?;
-                    let read_stats = outcome.stats;
-                    let mut doc = outcome.document;
-                    let parse_ms = t_parse.elapsed().as_millis() as u32;
-                    progress2.set(crate::app::OPEN_PHASE_PARSING, 5800, 1000, 1000);
-                    let t_purge = Instant::now();
-                    let dropped = purge_corrupt_entities(&mut doc);
-                    let purge_ms = t_purge.elapsed().as_millis() as u32;
-                    if matches!(attempt, OpenAttempt::Strict) && dropped > 0 {
-                        return Err(OpenAttemptFailure {
-                            message: format!(
-                                "normal read found {dropped} structurally invalid drawing records"
-                            ),
-                            read_stats: Some(read_stats),
-                            recoverable: true,
-                        });
-                    }
-                    progress2.set(crate::app::OPEN_PHASE_XREF, 6000, 0, 1);
-                    let t_xref = Instant::now();
-                    let (xref_infos, xref_dropped) = if let Some(base_dir) = path2.parent() {
-                        let xref_progress = {
-                            let progress = Arc::clone(&progress2);
-                            let callback: Arc<dyn Fn(usize, usize) + Send + Sync> =
-                                Arc::new(move |completed, total| {
-                                    progress.set_fraction(
-                                        crate::app::OPEN_PHASE_XREF,
-                                        6000,
-                                        1400,
-                                        completed,
-                                        total,
-                                    );
-                                });
-                            callback
-                        };
-                        crate::io::xref::resolve_xrefs_with_progress(
-                            &mut doc,
-                            base_dir,
-                            Some(xref_progress),
-                        )
-                    } else {
+                    crate::io::xref::resolve_xrefs_with_progress(
+                        &mut doc,
+                        base_dir,
+                        Some(xref_progress),
+                    )
+                } else {
                         (Vec::new(), 0)
                     };
                     let xref_ms = t_xref.elapsed().as_millis() as u32;
