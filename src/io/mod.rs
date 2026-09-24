@@ -23,20 +23,13 @@ pub mod step;
 pub mod stl;
 pub mod xref;
 pub mod xref_model;
-pub mod linetypes;
-pub mod patterns;
 pub mod update_check;
-pub mod paper_catalog;
-pub mod plot_device;
 pub mod windows_media;
 pub mod thumbnail;
-pub mod update_check;
 #[cfg(target_arch = "wasm32")]
 pub(crate) mod web_recent;
 #[cfg(target_arch = "wasm32")]
 mod web_worker;
-pub mod xref;
-pub mod xref_model;
 
 use crate::scene::DerivedCaches;
 use acadrust::entities::EntityType;
