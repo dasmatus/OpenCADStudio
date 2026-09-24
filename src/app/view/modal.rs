@@ -300,6 +300,25 @@ impl OpenCADStudio {
                         ),
                         &self.snap_angle_input,
                         {
+                            let header = self
+                                .tabs
+                                .get(self.active_tab)
+                                .map(|tab| &tab.scene.document.header);
+                            crate::ui::window::options::DrawingPrefs {
+                                available: header.is_some(),
+                                isolines: header.map_or(4, |h| h.isolines),
+                                display_silhouette: header
+                                    .is_some_and(|h| h.display_silhouette),
+                                surface_u: header.map_or(6, |h| h.surface_u_density),
+                                surface_v: header.map_or(6, |h| h.surface_v_density),
+                                surface_type: header.map_or(6, |h| h.surface_type),
+                                record_solid_history: header
+                                    .is_some_and(|h| h.record_solid_history),
+                                show_solid_history: header
+                                    .map_or(1, |h| h.show_solid_history),
+                            }
+                        },
+                        {
                             #[cfg(not(target_arch = "wasm32"))]
                             {
                                 crate::ui::window::options::Folders {
