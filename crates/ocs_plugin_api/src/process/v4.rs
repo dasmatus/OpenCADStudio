@@ -578,9 +578,9 @@ mod tests {
                     let resp = recv::<HostToPluginV4>(&mut runner_stream).unwrap();
                     match resp {
                         HostToPluginV4::Response {
-                            id: rid,
+                            id: 99,
                             payload: PluginResponse::Ok,
-                        } if rid == 99 => {}
+                        } => {}
                         other => panic!("unexpected nested response: {other:?}"),
                     }
                     // Now respond to the original dispatch.
