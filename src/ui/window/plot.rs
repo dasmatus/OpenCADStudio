@@ -853,7 +853,9 @@ fn page_setup_import_chooser<'a>(
     }
     let all = !draft.setups.is_empty() && draft.setups.iter().all(|(_, _, on)| *on);
     let any = draft.setups.iter().any(|(_, _, on)| *on);
-    let mut import = button(text(t!("Import")).size(11)).style(btn(true)).padding([4, 8]);
+    let mut import = button(text(t!("Import")).size(11))
+        .style(btn(true))
+        .padding([4, 8]);
     if any {
         import = import.on_press(msg(PageSetupImportMsg::Apply));
     }
@@ -910,9 +912,7 @@ fn custom_scale_row<'a>(s: &'a PlotDialogState, enabled: bool) -> Element<'a, Me
 /// the file's own problem, or where a copy would be found.
 fn style_note<'a>(s: &'a PlotDialogState) -> Element<'a, Message> {
     match &s.style_error {
-        Some(error) if s.style_missing => {
-            text(error.clone()).size(10).style(muted_style).into()
-        }
+        Some(error) if s.style_missing => text(error.clone()).size(10).style(muted_style).into(),
         _ => Space::new().height(0).into(),
     }
 }
@@ -1176,30 +1176,29 @@ pub fn view_window(
     } else {
         scrollable(column(rows).spacing(1)).height(height).into()
     };
-    let new_name: Element<'_, Message> =
-        if !s.name_rename && s.name_input.is_some() {
-            row![
-                text_input("", rename_buf)
-                    .on_input(|value| Message::PlotDlg(PlotDlgMsg::NameInput(value)))
-                    .on_submit(Message::PlotDlg(PlotDlgMsg::NameCommit))
-                    .style(form::field_style)
-                    .size(11)
-                    .padding([4, 8])
-                    .width(Length::Fill),
-                button(text(t!("Save")).size(11))
-                    .on_press(Message::PlotDlg(PlotDlgMsg::NameCommit))
-                    .style(btn(true))
-                    .padding([4, 8]),
-                button(text("×").size(11))
-                    .on_press(Message::PlotDlg(PlotDlgMsg::NameCancel))
-                    .style(btn(false))
-                    .padding([4, 8]),
-            ]
-            .spacing(4)
-            .into()
-        } else {
-            Space::new().height(0).into()
-        };
+    let new_name: Element<'_, Message> = if !s.name_rename && s.name_input.is_some() {
+        row![
+            text_input("", rename_buf)
+                .on_input(|value| Message::PlotDlg(PlotDlgMsg::NameInput(value)))
+                .on_submit(Message::PlotDlg(PlotDlgMsg::NameCommit))
+                .style(form::field_style)
+                .size(11)
+                .padding([4, 8])
+                .width(Length::Fill),
+            button(text(t!("Save")).size(11))
+                .on_press(Message::PlotDlg(PlotDlgMsg::NameCommit))
+                .style(btn(true))
+                .padding([4, 8]),
+            button(text("×").size(11))
+                .on_press(Message::PlotDlg(PlotDlgMsg::NameCancel))
+                .style(btn(false))
+                .padding([4, 8]),
+        ]
+        .spacing(4)
+        .into()
+    } else {
+        Space::new().height(0).into()
+    };
     // While an import is being chosen, the list shows the other drawing's
     // setups with a tick each instead of this drawing's.
     let list_body: Element<'_, Message> = match &s.import_draft {
@@ -1261,16 +1260,11 @@ pub fn view_window(
         .style(btn(false))
         .padding([4, 12]);
     if !print_all_options && s.import_draft.is_none() {
-        import_button = import_button
-            .on_press(Message::PlotDlg(PlotDlgMsg::Import(PageSetupImportMsg::Pick)));
+        import_button = import_button.on_press(Message::PlotDlg(PlotDlgMsg::Import(
+            PageSetupImportMsg::Pick,
+        )));
     }
-    let left_bar = row![
-        new_button,
-        copy_button,
-        delete_button,
-        import_button,
-    ]
-    .spacing(4);
+    let left_bar = row![new_button, copy_button, delete_button, import_button,].spacing(4);
 
     // ── Printer / plotter ─────────────────────────────────────────────────
     // The default entry names the printer it resolves to, when known, so the
@@ -1491,57 +1485,87 @@ pub fn view_window(
     } else {
         (t!("X (mm)"), t!("Y (mm)"))
     };
-    let area_panel = panel(column![
-        section_label(t!("Plot area")),
-        area_row,
-        section_label(t!("Plot offset")),
+    let area_panel = panel(
         column![
-            field_row_enabled(offset_x_label, &s.offset_x, PlotDlgMsg::OffsetX, 70, common_area && !s.center),
-            field_row_enabled(offset_y_label, &s.offset_y, PlotDlgMsg::OffsetY, 70, common_area && !s.center),
+            section_label(t!("Plot area")),
+            area_row,
+            section_label(t!("Plot offset")),
+            column![
+                field_row_enabled(
+                    offset_x_label,
+                    &s.offset_x,
+                    PlotDlgMsg::OffsetX,
+                    70,
+                    common_area && !s.center
+                ),
+                field_row_enabled(
+                    offset_y_label,
+                    &s.offset_y,
+                    PlotDlgMsg::OffsetY,
+                    70,
+                    common_area && !s.center
+                ),
+            ]
+            .spacing(7),
+            check_enabled(
+                t!("Center the plot"),
+                s.center,
+                PlotFlag::Center,
+                common_area
+            ),
         ]
         .spacing(7),
-        check_enabled(t!("Center the plot"), s.center, PlotFlag::Center, common_area),
-    ].spacing(7));
+    );
     let scale_options = s
         .scales
         .iter()
         .map(|(name, _)| PlotChoice::raw(name.clone()))
         .collect();
-    let scale_panel = panel(column![
-        section_label(t!("Plot scale")),
-        check_enabled(
-            t!("Fit to paper"),
-            s.fit_to_paper,
-            PlotFlag::FitToPaper,
-            common_area,
-        ),
-        // "Scale" intentionally stays untranslated: it would clash with the
-        // ribbon's zoom tool label under the same lookup key.
-        drop_row_enabled(
-            Cow::Borrowed("Scale"),
-            scale_options,
-            Some(PlotChoice::raw(s.scale.clone())),
-            PlotDlgMsg::Scale,
-            width,
-            common_area && !s.fit_to_paper,
-        ),
-        // The custom scale spells the picked ratio in the page-setup unit
-        // and accepts one of its own; the unit picker decides that unit.
-        drop_row(
-            t!("Units"),
-            vec![PlotChoice::localized("Millimeters"), PlotChoice::localized("Inches")],
-            Some(PlotChoice::localized(if inches { "Inches" } else { "Millimeters" })),
-            PlotDlgMsg::PaperUnits,
-            width,
-        ),
-        custom_scale_row(s, common_area && !s.fit_to_paper),
-        check_enabled(
-            t!("Scale lineweights"),
-            s.scale_lw && !s.fit_to_paper,
-            PlotFlag::ScaleLw,
-            !s.fit_to_paper,
-        ),
-    ].spacing(7));
+    let scale_panel = panel(
+        column![
+            section_label(t!("Plot scale")),
+            check_enabled(
+                t!("Fit to paper"),
+                s.fit_to_paper,
+                PlotFlag::FitToPaper,
+                common_area,
+            ),
+            // "Scale" intentionally stays untranslated: it would clash with the
+            // ribbon's zoom tool label under the same lookup key.
+            drop_row_enabled(
+                Cow::Borrowed("Scale"),
+                scale_options,
+                Some(PlotChoice::raw(s.scale.clone())),
+                PlotDlgMsg::Scale,
+                width,
+                common_area && !s.fit_to_paper,
+            ),
+            // The custom scale spells the picked ratio in the page-setup unit
+            // and accepts one of its own; the unit picker decides that unit.
+            drop_row(
+                t!("Units"),
+                vec![
+                    PlotChoice::localized("Millimeters"),
+                    PlotChoice::localized("Inches")
+                ],
+                Some(PlotChoice::localized(if inches {
+                    "Inches"
+                } else {
+                    "Millimeters"
+                })),
+                PlotDlgMsg::PaperUnits,
+                width,
+            ),
+            custom_scale_row(s, common_area && !s.fit_to_paper),
+            check_enabled(
+                t!("Scale lineweights"),
+                s.scale_lw && !s.fit_to_paper,
+                PlotFlag::ScaleLw,
+                !s.fit_to_paper,
+            ),
+        ]
+        .spacing(7),
+    );
 
     // ── Style and shaded viewport settings ───────────────────────────────
     let mut style_options = vec![PlotChoice::localized(STYLE_NONE)];
@@ -1558,41 +1582,43 @@ pub fn view_window(
     } else {
         PlotChoice::raw(s.style_name.clone())
     };
-    let style_panel = panel(column![
-        section_label(t!("Plot style table (pen assignments)")),
-        drop_row(
-            t!("Table"),
-            style_options,
-            Some(style_selected),
-            PlotDlgMsg::Style,
-            width,
-        ),
-        style_note(s),
-        check_enabled(
-            t!("Plot with plot styles"),
-            s.apply_plot_styles,
-            PlotFlag::PlotStyles,
-            !s.style_name.is_empty(),
-        ),
-        check_enabled(
-            t!("Display plot styles"),
-            s.show_plot_styles,
-            PlotFlag::DisplayStyles,
-            s.paper_space && !s.style_name.is_empty(),
-        ),
-        row![
-            button(text(t!("Load…")).size(11))
-                .on_press(Message::PlotDlg(PlotDlgMsg::LoadStyle))
-                .style(btn(false))
-                .padding([4, 10]),
-
-            button(text(t!("Edit…")).size(11))
-                .on_press(Message::PlotStylePanelOpen)
-                .style(btn(false))
-                .padding([4, 10]),
+    let style_panel = panel(
+        column![
+            section_label(t!("Plot style table (pen assignments)")),
+            drop_row(
+                t!("Table"),
+                style_options,
+                Some(style_selected),
+                PlotDlgMsg::Style,
+                width,
+            ),
+            style_note(s),
+            check_enabled(
+                t!("Plot with plot styles"),
+                s.apply_plot_styles,
+                PlotFlag::PlotStyles,
+                !s.style_name.is_empty(),
+            ),
+            check_enabled(
+                t!("Display plot styles"),
+                s.show_plot_styles,
+                PlotFlag::DisplayStyles,
+                s.paper_space && !s.style_name.is_empty(),
+            ),
+            row![
+                button(text(t!("Load…")).size(11))
+                    .on_press(Message::PlotDlg(PlotDlgMsg::LoadStyle))
+                    .style(btn(false))
+                    .padding([4, 10]),
+                button(text(t!("Edit…")).size(11))
+                    .on_press(Message::PlotStylePanelOpen)
+                    .style(btn(false))
+                    .padding([4, 10]),
+            ]
+            .spacing(7),
         ]
         .spacing(7),
-    ].spacing(7));
+    );
 
     let shaded_panel = panel(
         column![
@@ -1625,34 +1651,62 @@ pub fn view_window(
     );
 
     // ── Output options and orientation ────────────────────────────────────
-    let paper_space_option = |on: bool, label: Cow<'static, str>, flag: PlotFlag| -> Element<'_, Message> {
-        if s.paper_space {
-            check(label, on, flag)
-        } else {
-            Space::new().height(0).into()
-        }
-    };
-    let options_panel = panel(column![
-        section_label(t!("Plot options")),
-        row![
-            column![
-                check(t!("Plot in background"), s.background, PlotFlag::Background),
-                check(t!("Object lineweights"), s.lineweights, PlotFlag::Lineweights),
-                check(t!("Plot transparency"), s.transparency, PlotFlag::Transparency),
-                paper_space_option(s.hide_paperspace, t!("Hide paperspace objects"), PlotFlag::HidePaperspace),
+    let paper_space_option =
+        |on: bool, label: Cow<'static, str>, flag: PlotFlag| -> Element<'_, Message> {
+            if s.paper_space {
+                check(label, on, flag)
+            } else {
+                Space::new().height(0).into()
+            }
+        };
+    let options_panel = panel(
+        column![
+            section_label(t!("Plot options")),
+            row![
+                column![
+                    check(t!("Plot in background"), s.background, PlotFlag::Background),
+                    check(
+                        t!("Object lineweights"),
+                        s.lineweights,
+                        PlotFlag::Lineweights
+                    ),
+                    check(
+                        t!("Plot transparency"),
+                        s.transparency,
+                        PlotFlag::Transparency
+                    ),
+                    paper_space_option(
+                        s.hide_paperspace,
+                        t!("Hide paperspace objects"),
+                        PlotFlag::HidePaperspace
+                    ),
+                ]
+                .spacing(6)
+                .width(width),
+                column![
+                    paper_space_option(
+                        s.paperspace_last,
+                        t!("Paper space last"),
+                        PlotFlag::PaperspaceLast
+                    ),
+                    check(
+                        t!("Merge overlapping lines"),
+                        s.merge_lines,
+                        PlotFlag::MergeLines
+                    ),
+                    check(t!("Plot stamp"), s.stamp, PlotFlag::Stamp),
+                    paper_space_option(
+                        s.save_to_layout,
+                        t!("Save changes to layout"),
+                        PlotFlag::SaveToLayout
+                    ),
+                ]
+                .spacing(10),
             ]
-            .spacing(6)
-            .width(width),
-            column![
-                paper_space_option(s.paperspace_last, t!("Paper space last"), PlotFlag::PaperspaceLast),
-                check(t!("Merge overlapping lines"), s.merge_lines, PlotFlag::MergeLines),
-                check(t!("Plot stamp"), s.stamp, PlotFlag::Stamp),
-                paper_space_option(s.save_to_layout, t!("Save changes to layout"), PlotFlag::SaveToLayout),
-            ]
-            .spacing(10),
+            .spacing(7),
         ]
         .spacing(7),
-    ].spacing(7));
+    );
 
     let orientation_panel = panel(
         column![

@@ -254,12 +254,7 @@ pub fn discard_guard<'a>(
             .height(Length::Fill)
             .style(|theme: &Theme| container::Style {
                 background: Some(Background::Color(
-                    theme
-                        .palette()
-                        .background
-                        .strongest
-                        .color
-                        .scale_alpha(0.55),
+                    theme.palette().background.strongest.color.scale_alpha(0.55),
                 )),
                 ..Default::default()
             }),
@@ -288,7 +283,9 @@ pub fn discard_guard<'a>(
     stack![
         main.into(),
         shield,
-        container(panel).center_x(Length::Fill).center_y(Length::Fill)
+        container(panel)
+            .center_x(Length::Fill)
+            .center_y(Length::Fill)
     ]
     .into()
 }

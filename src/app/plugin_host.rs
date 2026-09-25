@@ -293,7 +293,9 @@ impl<'a> HostSession<'a> {
         layer.handle = handle;
         layer.color = config.color.unwrap_or(acadrust::types::Color::Index(7));
         layer.line_type = resolved_lt;
-        layer.line_weight = config.lineweight.unwrap_or(acadrust::types::LineWeight::ByLayer);
+        layer.line_weight = config
+            .lineweight
+            .unwrap_or(acadrust::types::LineWeight::ByLayer);
         layer.flags.off = config.off.unwrap_or(false);
         if let Some(frz) = config.frozen {
             if frz {
@@ -304,7 +306,9 @@ impl<'a> HostSession<'a> {
         }
         layer.flags.locked = config.locked.unwrap_or(false);
         layer.is_plottable = config.plottable.unwrap_or(true);
-        layer.transparency = config.transparency.unwrap_or(acadrust::types::Transparency::ByLayer);
+        layer.transparency = config
+            .transparency
+            .unwrap_or(acadrust::types::Transparency::ByLayer);
         layer.description = config.description.unwrap_or_default();
 
         let _ = doc.layers.add(layer);
@@ -1025,7 +1029,11 @@ mod tests {
         assert_ne!(handle, acadrust::Handle::NULL);
 
         // Verify defaults were applied
-        let layer = host.document().layers.get("ELECTRICAL").expect("layer should exist");
+        let layer = host
+            .document()
+            .layers
+            .get("ELECTRICAL")
+            .expect("layer should exist");
         assert_eq!(layer.color, acadrust::types::Color::Index(7));
         assert_eq!(layer.line_type, "Continuous");
         assert_eq!(layer.line_weight, acadrust::types::LineWeight::ByLayer);
@@ -1040,7 +1048,10 @@ mod tests {
             color: Some(acadrust::types::Color::Index(1)),
             ..Default::default()
         };
-        assert!(host.add_layer(dup_config).is_none(), "duplicate layer should return None");
+        assert!(
+            host.add_layer(dup_config).is_none(),
+            "duplicate layer should return None"
+        );
 
         // 3. Modify only color and locked; other properties should remain untouched
         let mod_config = LayerConfig {
@@ -1051,12 +1062,16 @@ mod tests {
         };
         assert!(host.modify_layer(mod_config));
 
-        let updated = host.document().layers.get("ELECTRICAL").expect("layer should exist");
+        let updated = host
+            .document()
+            .layers
+            .get("ELECTRICAL")
+            .expect("layer should exist");
         assert_eq!(updated.color, acadrust::types::Color::Index(1)); // Modified to red
-        assert!(updated.flags.locked);                               // Modified to locked
-        assert_eq!(updated.line_type, "Continuous");                 // Kept as-is
+        assert!(updated.flags.locked); // Modified to locked
+        assert_eq!(updated.line_type, "Continuous"); // Kept as-is
         assert_eq!(updated.line_weight, acadrust::types::LineWeight::ByLayer); // Kept as-is
-        assert!(!updated.flags.off);                                 // Kept as-is
+        assert!(!updated.flags.off); // Kept as-is
 
         // 4. Modify nonexistent layer returns false
         let non_existent = LayerConfig {

@@ -918,7 +918,11 @@ mod tests {
                 _ => None,
             })
             .collect();
-        assert_eq!(texts.len(), 1, "expected exactly one Text entity, got {texts:?}");
+        assert_eq!(
+            texts.len(),
+            1,
+            "expected exactly one Text entity, got {texts:?}"
+        );
         texts.into_iter().next().unwrap()
     }
 

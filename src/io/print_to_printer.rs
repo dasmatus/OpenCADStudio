@@ -129,9 +129,8 @@ pub fn printer_report() -> Vec<String> {
     #[cfg(target_os = "windows")]
     {
         match pdf_printto_command() {
-            Some(command) => lines.push(
-                crate::tf!("Plots go through the PDF application: {command}").into_owned(),
-            ),
+            Some(command) => lines
+                .push(crate::tf!("Plots go through the PDF application: {command}").into_owned()),
             None => lines.push(
                 crate::t!(
                     "Plots go straight to the printer (no PDF application registers a print verb)."
@@ -159,7 +158,11 @@ pub fn printer_media_report(printer: &str) -> Vec<String> {
     lines.push(crate::tf!("{printer}: {count} sheet(s) reported").into_owned());
     for media in &caps.media {
         let m = media.margins;
-        let borderless = if media.borderless { " (borderless available)" } else { "" };
+        let borderless = if media.borderless {
+            " (borderless available)"
+        } else {
+            ""
+        };
         lines.push(format!(
             "  {} — margins L {:.1} B {:.1} R {:.1} T {:.1} mm{borderless}",
             media.paper.display(),
@@ -230,8 +233,12 @@ pub(crate) fn pdf_printto_command() -> Option<String> {
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::UI::Shell::{AssocQueryStringW, ASSOCF_NOTRUNCATE, ASSOCSTR_COMMAND};
 
-    let wide =
-        |s: &str| -> Vec<u16> { std::ffi::OsStr::new(s).encode_wide().chain(Some(0)).collect() };
+    let wide = |s: &str| -> Vec<u16> {
+        std::ffi::OsStr::new(s)
+            .encode_wide()
+            .chain(Some(0))
+            .collect()
+    };
     let extension = wide(".pdf");
     let verb = wide("printto");
     let mut len = 0u32;
@@ -320,15 +327,21 @@ mod print_route_tests {
     fn a_named_printer_is_kept_and_blank_means_the_default() {
         assert_eq!(
             plan_print_route(Some("Office Laser"), Some("Home Inkjet"), false),
-            Ok(PrintRoute::Direct { printer: "Office Laser".into() })
+            Ok(PrintRoute::Direct {
+                printer: "Office Laser".into()
+            })
         );
         assert_eq!(
             plan_print_route(Some("  "), Some("Home Inkjet"), false),
-            Ok(PrintRoute::Direct { printer: "Home Inkjet".into() })
+            Ok(PrintRoute::Direct {
+                printer: "Home Inkjet".into()
+            })
         );
         assert_eq!(
             plan_print_route(None, Some(" Home Inkjet "), true),
-            Ok(PrintRoute::PdfApplication { printer: "Home Inkjet".into() })
+            Ok(PrintRoute::PdfApplication {
+                printer: "Home Inkjet".into()
+            })
         );
     }
 
@@ -666,7 +679,10 @@ fn with_printer_devmode(
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum DevmodeSheet {
     Id(u16),
-    UserMm { width_tenths: i16, length_tenths: i16 },
+    UserMm {
+        width_tenths: i16,
+        length_tenths: i16,
+    },
 }
 
 /// Fetch the printer driver's DEVMODE, flip its orientation to match the
@@ -682,8 +698,8 @@ fn oriented_printer_devmode(
     sheet: Option<DevmodeSheet>,
 ) -> Option<Vec<u8>> {
     use windows_sys::Win32::Graphics::Gdi::{
-        DEVMODEW, DM_IN_BUFFER, DM_ORIENTATION, DM_OUT_BUFFER, DM_PAPERLENGTH, DM_PAPERSIZE,
-        DM_PAPERWIDTH, DMORIENT_LANDSCAPE, DMORIENT_PORTRAIT,
+        DEVMODEW, DMORIENT_LANDSCAPE, DMORIENT_PORTRAIT, DM_IN_BUFFER, DM_ORIENTATION,
+        DM_OUT_BUFFER, DM_PAPERLENGTH, DM_PAPERSIZE, DM_PAPERWIDTH,
     };
     use windows_sys::Win32::Graphics::Printing::DocumentPropertiesW;
     let attempt = |sheet: Option<DevmodeSheet>| {
@@ -701,7 +717,10 @@ fn oriented_printer_devmode(
                     (*dm).dmFields &= !(DM_PAPERWIDTH | DM_PAPERLENGTH);
                     (*dm).Anonymous1.Anonymous1.dmPaperSize = id as i16;
                 }
-                Some(DevmodeSheet::UserMm { width_tenths, length_tenths }) => {
+                Some(DevmodeSheet::UserMm {
+                    width_tenths,
+                    length_tenths,
+                }) => {
                     (*dm).dmFields |= DM_PAPERSIZE | DM_PAPERWIDTH | DM_PAPERLENGTH;
                     (*dm).Anonymous1.Anonymous1.dmPaperSize =
                         crate::io::windows_media::DMPAPER_USER as i16;
@@ -770,16 +789,20 @@ pub(crate) fn windows_printer_media(
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::Foundation::POINT;
     use windows_sys::Win32::Graphics::Gdi::{
-        CreateDCW, DeleteDC, GetDeviceCaps, DEVMODEW, DM_PAPERLENGTH, DM_PAPERSIZE,
-        DM_PAPERWIDTH, HORZRES, LOGPIXELSX, LOGPIXELSY, PHYSICALHEIGHT, PHYSICALOFFSETX,
-        PHYSICALOFFSETY, PHYSICALWIDTH, VERTRES,
+        CreateDCW, DeleteDC, GetDeviceCaps, DEVMODEW, DM_PAPERLENGTH, DM_PAPERSIZE, DM_PAPERWIDTH,
+        HORZRES, LOGPIXELSX, LOGPIXELSY, PHYSICALHEIGHT, PHYSICALOFFSETX, PHYSICALOFFSETY,
+        PHYSICALWIDTH, VERTRES,
     };
     use windows_sys::Win32::Storage::Xps::{
         DeviceCapabilitiesW, DC_PAPERNAMES, DC_PAPERS, DC_PAPERSIZE,
     };
 
-    let wide =
-        |s: &str| -> Vec<u16> { std::ffi::OsStr::new(s).encode_wide().chain(Some(0)).collect() };
+    let wide = |s: &str| -> Vec<u16> {
+        std::ffi::OsStr::new(s)
+            .encode_wide()
+            .chain(Some(0))
+            .collect()
+    };
     let device_wide = wide(printer.trim());
     // SAFETY: the device name is NUL-terminated; a null output buffer asks
     // for the count only.
@@ -843,8 +866,10 @@ pub(crate) fn windows_printer_media(
             let fields = dm.dmFields;
             let paper = unsafe { dm.Anonymous1.Anonymous1 };
             let id = (fields & DM_PAPERSIZE != 0).then_some(paper.dmPaperSize as u16);
-            let size = (fields & DM_PAPERWIDTH != 0 && fields & DM_PAPERLENGTH != 0)
-                .then_some((i32::from(paper.dmPaperWidth), i32::from(paper.dmPaperLength)));
+            let size = (fields & DM_PAPERWIDTH != 0 && fields & DM_PAPERLENGTH != 0).then_some((
+                i32::from(paper.dmPaperWidth),
+                i32::from(paper.dmPaperLength),
+            ));
             (id, size)
         })
         .unwrap_or((None, None));
@@ -855,7 +880,14 @@ pub(crate) fn windows_printer_media(
         .map(|b| b.as_ptr().cast::<DEVMODEW>())
         .unwrap_or(std::ptr::null());
     // SAFETY: the strings are NUL-terminated and `devmode` outlives the DC.
-    let hdc = unsafe { CreateDCW(winspool.as_ptr(), device_wide.as_ptr(), std::ptr::null(), init) };
+    let hdc = unsafe {
+        CreateDCW(
+            winspool.as_ptr(),
+            device_wide.as_ptr(),
+            std::ptr::null(),
+            init,
+        )
+    };
     let margins = if hdc.is_null() {
         None
     } else {
@@ -1117,7 +1149,7 @@ fn shell_print_to(path: &std::path::Path, printer: &str, copies: u32) -> Result<
     use std::os::windows::ffi::OsStrExt;
     use windows_sys::Win32::Foundation::{GetLastError, ERROR_NO_ASSOCIATION};
     use windows_sys::Win32::UI::Shell::{
-        ShellExecuteExW, SHELLEXECUTEINFOW, SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SE_ERR_NOASSOC,
+        ShellExecuteExW, SEE_MASK_FLAG_NO_UI, SEE_MASK_NOASYNC, SE_ERR_NOASSOC, SHELLEXECUTEINFOW,
     };
     use windows_sys::Win32::UI::WindowsAndMessaging::SW_HIDE;
 

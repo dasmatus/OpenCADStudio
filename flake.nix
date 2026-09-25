@@ -67,7 +67,7 @@
               #   grep -B2 'source = "git+' Cargo.lock
               # Each hash must be refreshed whenever the matching rev moves.
               outputHashes = {
-                "acadrust-0.5.5" = "sha256-rYtJaJsb+lZZIDBtPTCfWRVyA1Gfinn3UqJlfzkhhGk=";
+                "acadrust-0.5.5" = "sha256-+0UdwR4FJWpSkGb/n/ivYMX427IiWi72v/N6P7296V0=";
                 "cadkernel-0.1.0" = "sha256-3VYWrQIWaiD1VzoULfGEryF770ydwEQ2T5b6NGS5KWQ=";
                 "cryoglyph-0.1.0" = "sha256-5BOJNDcjhpt17/XSri3JGtX8NwC7db18bddp5wanMes=";
                 "dpi-0.1.1" = "sha256-pQn1lCFSJMkjUfHoggEzMHnm5k+Chnzi5JEDjahnjUA=";

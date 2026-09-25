@@ -2563,18 +2563,28 @@ fn solve_scope(
     // not retained below, its other points are held and its direction is
     // kept while the edit lasts. A chain of Equal relations follows along.
     let edited = |handle: Handle| {
-        driven_refs.iter().any(|reference| reference.entity == handle)
-            || initial_fixed_refs.iter().any(|reference| reference.entity == handle)
+        driven_refs
+            .iter()
+            .any(|reference| reference.entity == handle)
+            || initial_fixed_refs
+                .iter()
+                .any(|reference| reference.entity == handle)
     };
     let mut equal_followers: Vec<ParametricRef> = Vec::new();
-    let mut moving: Vec<Handle> = cache.keys().copied().filter(|handle| edited(*handle)).collect();
+    let mut moving: Vec<Handle> = cache
+        .keys()
+        .copied()
+        .filter(|handle| edited(*handle))
+        .collect();
     loop {
         let before = equal_followers.len();
         for constraint in &constraints {
             if !constraint.enabled || constraint.kind != ConstraintKind::Equal {
                 continue;
             }
-            let [a, b] = constraint.refs.as_slice() else { continue };
+            let [a, b] = constraint.refs.as_slice() else {
+                continue;
+            };
             let follower = match (moving.contains(&a.entity), moving.contains(&b.entity)) {
                 (true, false) => *b,
                 (false, true) => *a,
@@ -2846,7 +2856,9 @@ fn solve_scope(
                         .get(2)
                         .is_some_and(|axis| axis.entity == *handle)
                 })
-                || equal_followers.iter().any(|follower| follower.entity == *handle)
+                || equal_followers
+                    .iter()
+                    .any(|follower| follower.entity == *handle)
             {
                 continue;
             }

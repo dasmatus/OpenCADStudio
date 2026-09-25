@@ -178,7 +178,11 @@ mod tests {
         let _ = app.update(Message::ZoomFactorChanged(before + 9));
         let _ = app.update(Message::OptionsClose);
         let _ = app.update(Message::OptionsCloseDiscard);
-        assert_eq!(app.zoom_factor, before + 7, "back to the applied value, not the original");
+        assert_eq!(
+            app.zoom_factor,
+            before + 7,
+            "back to the applied value, not the original"
+        );
     }
 
     #[test]
