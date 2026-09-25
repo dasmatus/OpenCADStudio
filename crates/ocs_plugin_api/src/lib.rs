@@ -75,6 +75,9 @@ pub use type_registry::{
 };
 pub use version_info::get_embedded_version_info_json;
 
+#[cfg(feature = "host")]
+pub use process::{DispatchResult, PluginError, PluginManager, PluginProcess};
+
 #[cfg(test)]
 pub(crate) mod test_lock {
     //! Shared lock for tests that mutate process environment variables.
@@ -84,6 +87,3 @@ pub(crate) mod test_lock {
     //! so tests in other modules do not observe half-written state.
     pub static ENV_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
 }
-
-#[cfg(feature = "host")]
-pub use process::{DispatchResult, PluginError, PluginManager, PluginProcess};
