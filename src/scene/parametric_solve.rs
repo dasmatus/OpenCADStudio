@@ -17,7 +17,7 @@ use cadkernel_constraints::constraints::curve_generic::{BoundedArcValue, CurveVa
 use cadkernel_constraints::constraints::point_line::{
     CenterOfGravity, Difference, Equal, EqualLineLength, MidpointOnLine, P2PDistance,
     Parallel as ParallelConstraint, Perpendicular as PerpendicularConstraint, PointOnLine,
-    ProjectedDistance, ProjectedDistanceAlongLine, SymmetricLineDirections,
+    PointOnPerpBisector, ProjectedDistance, ProjectedDistanceAlongLine, SymmetricLineDirections,
 };
 use cadkernel_constraints::constraints::Constraint;
 use cadkernel_constraints::geo::{
@@ -1471,9 +1471,17 @@ fn build_constraint(
             };
             if let (Some(pa), Some(pb)) = (point_ref(sys, cache, *a), point_ref(sys, cache, *b)) {
                 let pair = GLine { p1: pa, p2: pb };
+                // The axis must be the perpendicular bisector of a-b. The
+                // bisector is stated as "both axis ends are equidistant from
+                // a and b" rather than with `Perpendicular`: that constraint
+                // is an angle, and from a start on the same side of the axis
+                // as `a` neither solver finds a step that lowers it, so the
+                // pair never crossed over. The midpoint row stays so that
+                // a coincident pair off the axis is still rejected.
                 return vec![
                     Rc::new(MidpointOnLine::new(pair, mirror)),
-                    Rc::new(PerpendicularConstraint::new(sys.store(), pair, mirror)),
+                    Rc::new(PointOnPerpBisector::new(mirror.p1, pair)),
+                    Rc::new(PointOnPerpBisector::new(mirror.p2, pair)),
                 ];
             }
             let (Some(first), Some(second)) = (
