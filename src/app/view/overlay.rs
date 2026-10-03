@@ -199,11 +199,9 @@ impl iced::widget::canvas::Program<Message> for MTextPreview {
                     }
                 }
             }
-            Event::Mouse(Me::ButtonReleased(Button::Left)) => {
-                if state.dragging {
-                    state.dragging = false;
-                    return Some(Action::capture());
-                }
+            Event::Mouse(Me::ButtonReleased(Button::Left)) if state.dragging => {
+                state.dragging = false;
+                return Some(Action::capture());
             }
             _ => {}
         }

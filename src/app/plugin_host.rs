@@ -281,10 +281,7 @@ impl<'a> HostSession<'a> {
         let resolved_lt = match config.linetype {
             // A name the drawing does not carry would leave the LAYER record
             // pointing at no LTYPE, so it is refused rather than written.
-            Some(ref lt_name) => match resolve_linetype(doc, lt_name) {
-                Some(name) => name,
-                None => return None,
-            },
+            Some(ref lt_name) => resolve_linetype(doc, lt_name)?,
             None => "Continuous".to_string(),
         };
 
@@ -525,7 +522,7 @@ impl crate::command::CadCommand for PluginInteractiveAdapter {
     }
     fn on_point(&mut self, pt: glam::DVec3) -> crate::command::CmdResult {
         crate::plugin::guard("InteractiveCommand::on_point", || {
-            self.inner.on_point([pt.x as f64, pt.y as f64, pt.z as f64])
+            self.inner.on_point([pt.x, pt.y, pt.z])
         })
         .map(plugin_step_to_result)
         .unwrap_or(crate::command::CmdResult::Cancel)
@@ -543,8 +540,7 @@ impl crate::command::CadCommand for PluginInteractiveAdapter {
     }
     fn on_entity_pick(&mut self, handle: Handle, pt: glam::DVec3) -> crate::command::CmdResult {
         crate::plugin::guard("InteractiveCommand::on_object_pick", || {
-            self.inner
-                .on_object_pick(handle, [pt.x as f64, pt.y as f64, pt.z as f64])
+            self.inner.on_object_pick(handle, [pt.x, pt.y, pt.z])
         })
         .map(plugin_step_to_result)
         .unwrap_or(crate::command::CmdResult::Cancel)

@@ -532,10 +532,12 @@ mod tests {
         let mut app = app();
         let scene = &mut app.tabs[app.active_tab].scene;
         let paper_camera = scene.camera.borrow().clone();
-        let mut vp = acadrust::entities::Viewport::default();
-        vp.width = 200.;
-        vp.height = 100.;
-        vp.view_height = 50.;
+        let vp = acadrust::entities::Viewport {
+            width: 200.,
+            height: 100.,
+            view_height: 50.,
+            ..Default::default()
+        };
         let handle = scene.add_entity(acadrust::EntityType::Viewport(vp));
         scene.active_viewport = Some(handle);
         let mut camera = scene.navigation_camera();

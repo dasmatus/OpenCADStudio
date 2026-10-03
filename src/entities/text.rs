@@ -580,7 +580,6 @@ fn apply_geom_prop(t: &mut Text, field: &str, value: &str) {
         }
         "align_x" | "align_y" | "align_z" => {
             // Calculated display rows are intentionally not writable.
-            return;
         }
         "height" if v > 0.0 && !matches!(t.horizontal_alignment, HA::Aligned) => t.height = v,
         "rotation" if !matches!(t.horizontal_alignment, HA::Aligned | HA::Fit) => {
@@ -629,8 +628,8 @@ fn apply_transform(t: &mut Text, tr: &EntityTransform) {
         if let Some(ref mut a) = entity.alignment_point {
             crate::scene::view::transform::reflect_xy_point(&mut a.x, &mut a.y, p1, p2);
         }
-        let dx = (p2.x - p1.x) as f64;
-        let dy = (p2.y - p1.y) as f64;
+        let dx = p2.x - p1.x;
+        let dy = p2.y - p1.y;
         let line_angle = dy.atan2(dx);
         entity.rotation = 2.0 * line_angle - entity.rotation;
         entity.oblique_angle = -entity.oblique_angle;
@@ -707,31 +706,6 @@ impl Grippable for Text {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_arabic_text_placement() {
-        let mut t = Text::default();
-        t.value = "بسم الله".to_string();
-        t.height = 2.5;
-        t.insertion_point = acadrust::types::Vector3::new(10.0, 20.0, 0.0);
-        t.horizontal_alignment = HA::Left;
-
-        let doc = acadrust::CadDocument::default();
-        let placement = text_run_placement_at_scale(&t, &doc, 1.0);
-
-        // For Arabic text with default HA::Left, origin should be shifted left
-        // so the right edge of the text sits at the insertion point (X = 10.0).
-        assert!(
-            placement.origin[0] < 10.0,
-            "Arabic text origin must be to the left of insertion point: origin_x={}",
-            placement.origin[0]
-        );
-    }
-}
-
 impl PropertyEditable for Text {
     fn geometry_properties(&self, text_style_names: &[String]) -> Vec<PropSection> {
         properties(self, text_style_names)
@@ -757,5 +731,32 @@ impl crate::entities::traits::TextContent for acadrust::entities::Text {
         if self.value.to_lowercase().contains(&search_lc) {
             self.value = self.value.replace(search, rep);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_arabic_text_placement() {
+        let t = Text {
+            value: "بسم الله".to_string(),
+            height: 2.5,
+            insertion_point: acadrust::types::Vector3::new(10.0, 20.0, 0.0),
+            horizontal_alignment: HA::Left,
+            ..Default::default()
+        };
+
+        let doc = acadrust::CadDocument::default();
+        let placement = text_run_placement_at_scale(&t, &doc, 1.0);
+
+        // For Arabic text with default HA::Left, origin should be shifted left
+        // so the right edge of the text sits at the insertion point (X = 10.0).
+        assert!(
+            placement.origin[0] < 10.0,
+            "Arabic text origin must be to the left of insertion point: origin_x={}",
+            placement.origin[0]
+        );
     }
 }

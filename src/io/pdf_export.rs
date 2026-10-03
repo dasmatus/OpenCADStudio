@@ -213,7 +213,7 @@ fn emit_image(
     if image.width == 0 || image.height == 0 || expected_byte_count != Some(image.pixels.len()) {
         return Err("Cannot plot bitmap: dimensions do not match its RGBA pixels.".into());
     }
-    if image.verts.len() < 3 || image.verts.len() % 3 != 0 {
+    if image.verts.len() < 3 || !image.verts.len().is_multiple_of(3) {
         return Err("Cannot plot bitmap: incomplete triangle geometry.".into());
     }
     if options.transparency && image.opacity <= 0.0 {
@@ -383,7 +383,7 @@ pub fn pick_pdf_path_owned(
     let path = crate::sys::blocking_file_dialog()
         .set_parent(parent)
         .set_title(crate::t!("Export as PDF").as_ref())
-        .set_file_name(&format!("{stem}.pdf"))
+        .set_file_name(format!("{stem}.pdf"))
         .add_filter(crate::t!("PDF Files").as_ref(), &["pdf"])
         .add_filter(crate::t!("All Files").as_ref(), &["*"])
         .save_file()?;
@@ -1094,7 +1094,7 @@ fn emit_wire_fills(
                 boundary.push(boundary[0]);
                 let hatch = HatchModel {
                     pattern_origin: None,
-                    render_instance: wire.render_instance.clone(),
+                    render_instance: wire.render_instance,
                     world_origin: [0.0, 0.0],
                     boundary: std::sync::Arc::new(boundary),
                     boundary_wcs: None,

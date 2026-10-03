@@ -67,7 +67,7 @@ impl OpenCADStudio {
                     self.tabs[i].active_cmd = Some(Box::new(c));
                 } else {
                     let nums: Vec<f64> = rest
-                        .split(|ch| ch == ' ' || ch == ',')
+                        .split([' ', ','])
                         .filter(|s| !s.is_empty())
                         .filter_map(|s| s.parse::<f64>().ok())
                         .collect();
@@ -568,7 +568,7 @@ impl OpenCADStudio {
                 return Some(Task::done(Message::XAttachPick));
             }
             cmd if cmd == "WBLOCK" || cmd == "WB" || cmd.starts_with("WBLOCK ") => {
-                let arg = cmd.splitn(2, ' ').nth(1).unwrap_or("").trim();
+                let arg = cmd.split_once(' ').map(|x| x.1).unwrap_or("").trim();
                 if arg.is_empty() {
                     // No argument: use selected entities (*) if any, else ask.
                     let sel: Vec<_> = self.tabs[i].scene.selected.iter().copied().collect();
@@ -619,8 +619,8 @@ impl OpenCADStudio {
                 // (modern CAD opens the palette on `XREF`); bare `XREF` keeps
                 // this repo's legacy list output for compatibility.
                 let rest = cmd
-                    .splitn(2, char::is_whitespace)
-                    .nth(1)
+                    .split_once(char::is_whitespace)
+                    .map(|x| x.1)
                     .unwrap_or("")
                     .trim();
                 let mut parts = rest.split_whitespace();
@@ -953,7 +953,7 @@ impl OpenCADStudio {
                             // Find the exact token index for old to avoid substring
                             // contamination (e.g. "in" matching inside "Find").
                             if let Some(idx) =
-                                toks.iter().position(|t| t.eq_ignore_ascii_case(&toks[1]))
+                                toks.iter().position(|t| t.eq_ignore_ascii_case(toks[1]))
                             {
                                 let pos = after_op.find(toks[idx]).unwrap_or(0) + toks[idx].len();
                                 (toks[idx].to_string(), after_op[pos..].trim().to_string())

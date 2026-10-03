@@ -388,6 +388,12 @@ pub struct RectCommand {
     rotation_deg: f64,
 }
 
+impl Default for RectCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RectCommand {
     pub fn new() -> Self {
         Self {
@@ -799,6 +805,12 @@ pub struct RectRotCommand {
     plane: WorkingPlane,
 }
 
+impl Default for RectRotCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RectRotCommand {
     pub fn new() -> Self {
         Self {
@@ -925,6 +937,12 @@ pub struct RectCenCommand {
     plane: WorkingPlane,
 }
 
+impl Default for RectCenCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RectCenCommand {
     pub fn new() -> Self {
         Self {
@@ -1005,6 +1023,12 @@ pub struct PolyCommand {
     step: u8,
     center: DVec3,
     plane: WorkingPlane,
+}
+
+impl Default for PolyCommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PolyCommand {
@@ -1157,6 +1181,12 @@ pub struct PolyCCommand {
     plane: WorkingPlane,
 }
 
+impl Default for PolyCCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl PolyCCommand {
     pub fn new() -> Self {
         Self {
@@ -1282,6 +1312,12 @@ pub struct PolyECommand {
     step: u8,
     a: DVec3,
     plane: WorkingPlane,
+}
+
+impl Default for PolyECommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PolyECommand {

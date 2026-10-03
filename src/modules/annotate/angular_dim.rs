@@ -119,6 +119,12 @@ pub struct AngularDimensionCommand {
     quadrant_lock: Option<(f64, f64)>,
 }
 
+impl Default for AngularDimensionCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl AngularDimensionCommand {
     pub fn new() -> Self {
         Self {
@@ -203,12 +209,14 @@ impl AngularDimensionCommand {
         if two_line_frame(first_start, first_end, second_start, second_end, arc_point).is_none() {
             return CmdResult::NeedPoint;
         }
-        let mut dim = DimensionAngular2Ln::default();
-        dim.first_point = v3(first_start);
-        dim.second_point = v3(first_end);
-        dim.angle_vertex = v3(second_start);
-        dim.definition_point = v3(second_end);
-        dim.dimension_arc = v3(arc_point);
+        let mut dim = DimensionAngular2Ln {
+            first_point: v3(first_start),
+            second_point: v3(first_end),
+            angle_vertex: v3(second_start),
+            definition_point: v3(second_end),
+            dimension_arc: v3(arc_point),
+            ..Default::default()
+        };
         dim.base.definition_point = dim.definition_point;
         dim.base.text_middle_point = dim.dimension_arc;
         dim.base.insertion_point = dim.dimension_arc;

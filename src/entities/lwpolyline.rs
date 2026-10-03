@@ -1079,11 +1079,9 @@ fn apply_geom_prop(pline: &mut LwPolyline, field: &str, value: &str) {
                 vtx.end_width = v;
             }
         }
-        "bulge" => {
-            if v.is_finite() {
-                if let Some(vtx) = pline.vertices.get_mut(vi) {
-                    vtx.bulge = v.clamp(-1.0e6, 1.0e6);
-                }
+        "bulge" if v.is_finite() => {
+            if let Some(vtx) = pline.vertices.get_mut(vi) {
+                vtx.bulge = v.clamp(-1.0e6, 1.0e6);
             }
         }
         _ => {}
@@ -1097,12 +1095,12 @@ fn apply_grip(pline: &mut LwPolyline, grip_id: usize, apply: GripApply) {
         let v = &mut pline.vertices[grip_id];
         match apply {
             GripApply::Absolute(p) => {
-                v.location.x = p.x as f64;
-                v.location.y = p.y as f64;
+                v.location.x = p.x;
+                v.location.y = p.y;
             }
             GripApply::Translate(d) => {
-                v.location.x += d.x as f64;
-                v.location.y += d.y as f64;
+                v.location.x += d.x;
+                v.location.y += d.y;
             }
         }
     } else {
@@ -1125,13 +1123,13 @@ fn apply_grip(pline: &mut LwPolyline, grip_id: usize, apply: GripApply) {
         let is_arc = pline.vertices[i0].bulge.abs() >= 1e-9;
         if !is_arc {
             let d = match apply {
-                GripApply::Translate(d) => [d.x as f64, d.y as f64],
+                GripApply::Translate(d) => [d.x, d.y],
                 GripApply::Absolute(p) => {
                     let old_mid = (
                         (pline.vertices[i0].location.x + pline.vertices[i1].location.x) * 0.5,
                         (pline.vertices[i0].location.y + pline.vertices[i1].location.y) * 0.5,
                     );
-                    [p.x as f64 - old_mid.0, p.y as f64 - old_mid.1]
+                    [p.x - old_mid.0, p.y - old_mid.1]
                 }
             };
             pline.vertices[i0].location.x += d[0];
@@ -1141,7 +1139,7 @@ fn apply_grip(pline: &mut LwPolyline, grip_id: usize, apply: GripApply) {
             return;
         }
         let new_mid: [f64; 2] = match apply {
-            GripApply::Absolute(p) => [p.x as f64, p.y as f64],
+            GripApply::Absolute(p) => [p.x, p.y],
             GripApply::Translate(d) => {
                 let v0 = &pline.vertices[i0];
                 let v1 = &pline.vertices[i1];
@@ -1150,7 +1148,7 @@ fn apply_grip(pline: &mut LwPolyline, grip_id: usize, apply: GripApply) {
                     [v1.location.x, v1.location.y],
                     v0.bulge,
                 );
-                [old[0] + d.x as f64, old[1] + d.y as f64]
+                [old[0] + d.x, old[1] + d.y]
             }
         };
         let p0 = [pline.vertices[i0].location.x, pline.vertices[i0].location.y];
@@ -1275,7 +1273,7 @@ impl crate::entities::traits::Grippable for LwPolyline {
         let is_arc = self
             .vertices
             .get(seg)
-            .map_or(false, |v| v.bulge.abs() >= 1e-9);
+            .is_some_and(|v| v.bulge.abs() >= 1e-9);
         let convert = if is_arc {
             GripMenuItem {
                 label: "Convert to Line",
@@ -1302,8 +1300,12 @@ impl crate::entities::traits::Grippable for LwPolyline {
         if is_rectangle(self) && seg < 4 {
             // Moving an edge changes the dimension perpendicular to it.
             items.push(GripMenuItem {
-                label: if seg % 2 == 0 { "Height" } else { "Width" },
-                action: if seg % 2 == 0 {
+                label: if seg.is_multiple_of(2) {
+                    "Height"
+                } else {
+                    "Width"
+                },
+                action: if seg.is_multiple_of(2) {
                     GripMenuAction::RectangleHeight
                 } else {
                     GripMenuAction::RectangleWidth
@@ -1485,7 +1487,7 @@ impl crate::entities::traits::Grippable for LwPolyline {
                 // moves it with the cursor until the placement click.
                 if grip_id == n - 1 && !self.is_closed {
                     self.vertices[grip_id].bulge = 0.0;
-                    let mut new_v = self.vertices[grip_id].clone();
+                    let mut new_v = self.vertices[grip_id];
                     new_v.bulge = 0.0;
                     new_v.vertex_id = 0;
                     self.vertices.push(new_v);
@@ -1661,8 +1663,10 @@ mod tests {
     use acadrust::{Vector2, Vector3};
 
     fn make_test_lwpolyline(count: usize, constant_width: f64) -> LwPolyline {
-        let mut pl = LwPolyline::default();
-        pl.constant_width = constant_width;
+        let mut pl = LwPolyline {
+            constant_width,
+            ..Default::default()
+        };
         for i in 0..count {
             pl.vertices
                 .push(LwVertex::new(Vector2::new(i as f64 * 10.0, 0.0)));
@@ -1671,13 +1675,14 @@ mod tests {
     }
 
     fn make_test_rectangle() -> LwPolyline {
-        let mut pl = LwPolyline::default();
-        pl.is_closed = true;
-        pl.vertices = [(0.0, 0.0), (10.0, 0.0), (10.0, 5.0), (0.0, 5.0)]
-            .into_iter()
-            .map(|(x, y)| LwVertex::new(Vector2::new(x, y)))
-            .collect();
-        pl
+        LwPolyline {
+            is_closed: true,
+            vertices: [(0.0, 0.0), (10.0, 0.0), (10.0, 5.0), (0.0, 5.0)]
+                .into_iter()
+                .map(|(x, y)| LwVertex::new(Vector2::new(x, y)))
+                .collect(),
+            ..Default::default()
+        }
     }
 
     #[test]
@@ -1750,12 +1755,14 @@ mod tests {
     }
 
     fn polyline(points: &[(f64, f64)], closed: bool) -> LwPolyline {
-        let mut pl = LwPolyline::default();
-        pl.is_closed = closed;
-        pl.vertices = points
-            .iter()
-            .map(|&(x, y)| LwVertex::new(Vector2::new(x, y)))
-            .collect();
+        let pl = LwPolyline {
+            is_closed: closed,
+            vertices: points
+                .iter()
+                .map(|&(x, y)| LwVertex::new(Vector2::new(x, y)))
+                .collect(),
+            ..Default::default()
+        };
         pl
     }
 

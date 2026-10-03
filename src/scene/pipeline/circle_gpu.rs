@@ -329,10 +329,9 @@ pub fn extract_circle_instances(
 
     let mut instances = Vec::with_capacity(wire.tangent_geoms.len());
     for (i, geom) in wire.tangent_geoms.iter().enumerate() {
-        if let Some(inst) = extract_circle_instance_from_geom_indexed(geom, wire, draw_depth, i) {
+        {
+            let inst = extract_circle_instance_from_geom_indexed(geom, wire, draw_depth, i)?;
             instances.push(inst);
-        } else {
-            return None;
         }
     }
     Some(instances)

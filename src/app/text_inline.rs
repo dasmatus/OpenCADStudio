@@ -263,10 +263,8 @@ impl super::OpenCADStudio {
                 .header
                 .current_text_style_name
                 .clone();
-            if !cur_style.is_empty() {
-                if t.style.trim().is_empty() {
-                    t.style = cur_style;
-                }
+            if !cur_style.is_empty() && t.style.trim().is_empty() {
+                t.style = cur_style;
             }
             if command_creation {
                 let annotation_multiplier = if crate::scene::annotative::text_style_is_annotative(

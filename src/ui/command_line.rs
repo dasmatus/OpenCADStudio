@@ -282,8 +282,10 @@ impl iced::advanced::text::Highlighter for HistoryHighlighter {
 
 impl CommandLine {
     pub fn new() -> Self {
-        let mut cl = Self::default();
-        cl.history_height = HISTORY_HEIGHT_DEFAULT;
+        let mut cl = Self {
+            history_height: HISTORY_HEIGHT_DEFAULT,
+            ..Default::default()
+        };
         cl.push_info(&crate::tr!("command-line", "ready"));
         cl.push_info(&crate::tr!("command-line", "hint"));
         cl
@@ -570,7 +572,7 @@ impl CommandLine {
             .history
             .iter()
             .flat_map(|entry| {
-                std::iter::repeat(entry.kind.clone()).take(entry.text.split('\n').count())
+                std::iter::repeat_n(entry.kind.clone(), entry.text.split('\n').count())
             })
             .collect();
         HistoryHighlightSettings { line_kinds }
@@ -961,7 +963,7 @@ impl CommandLine {
                     .align_x(iced::alignment::Horizontal::Left)
                     .align_y(iced::alignment::Vertical::Top),
             ];
-            opaque(panel).into()
+            opaque(panel)
         } else {
             container(column![]).height(0).into()
         };
@@ -1223,7 +1225,7 @@ mod tests {
         line.push_error(error);
         line.push_output(output);
 
-        let expected = vec![
+        let expected = [
             format!("❯ {} {command}", t!("Command:")),
             format!("{INFO_PREFIX}{info}"),
             format!("{ERROR_PREFIX}{}: {error}", t!("Invalid").to_uppercase()),

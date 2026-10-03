@@ -20,6 +20,12 @@ pub fn tool() -> ToolDef {
 /// which writes the active space's insertion base point onto the document.
 pub struct BaseCommand;
 
+impl Default for BaseCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BaseCommand {
     pub fn new() -> Self {
         Self

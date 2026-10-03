@@ -4238,11 +4238,9 @@ impl OpenCADStudio {
             self.plot_dialog.scale_lw = false;
         }
         // A model-space plot cannot use the paper-only Layout area.
-        if cur == "Model" {
-            if self.plot_dialog.area == "Layout" {
-                self.plot_dialog.area = "Window".into();
-                self.normalize_common_plot_dialog();
-            }
+        if cur == "Model" && self.plot_dialog.area == "Layout" {
+            self.plot_dialog.area = "Window".into();
+            self.normalize_common_plot_dialog();
         }
         self.active_modal = Some(crate::app::ModalKind::Plot);
         self.request_printer_media()
@@ -5993,10 +5991,7 @@ mod plot_paper_tests {
             assert_eq!(d.area, "Layout");
             assert_eq!(d.scale, "1:1", "{layout}: a 1:1 plot in either paper unit");
             assert_eq!(d.to_file, pdf, "{layout}");
-            assert_eq!(
-                super::plot_dialog_sheet_mm(d).0 > super::plot_dialog_sheet_mm(d).1,
-                true
-            );
+            assert!(super::plot_dialog_sheet_mm(d).0 > super::plot_dialog_sheet_mm(d).1);
             assert!(
                 d.lineweights && d.apply_plot_styles && d.paperspace_last,
                 "{layout}"

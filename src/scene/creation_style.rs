@@ -197,16 +197,16 @@ fn apply_dimension_defaults(doc: &CadDocument, entity: &mut EntityType) {
                 leader.arrow_size = active.arrow_size;
             }
         }
-        EntityType::Tolerance(tolerance) => {
-            if entity_uses_default_style(&tolerance.dimension_style_name) {
-                tolerance
-                    .dimension_style_name
-                    .clone_from(&active.style_name);
-                tolerance.dimension_style_handle =
-                    (!active.style_handle.is_null()).then_some(active.style_handle);
-                tolerance.text_height = active.text_height;
-                tolerance.dimension_gap = active.gap;
-            }
+        EntityType::Tolerance(tolerance)
+            if entity_uses_default_style(&tolerance.dimension_style_name) =>
+        {
+            tolerance
+                .dimension_style_name
+                .clone_from(&active.style_name);
+            tolerance.dimension_style_handle =
+                (!active.style_handle.is_null()).then_some(active.style_handle);
+            tolerance.text_height = active.text_height;
+            tolerance.dimension_gap = active.gap;
         }
         _ => {}
     }

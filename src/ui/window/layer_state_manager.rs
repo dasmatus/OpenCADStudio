@@ -87,7 +87,8 @@ fn mask_summary(mask: LayerStateMask) -> String {
     ];
     properties
         .into_iter()
-        .filter_map(|(flag, label)| mask.contains(flag).then(|| t!(label)))
+        .filter(|&(flag, _)| mask.contains(flag))
+        .map(|(_, label)| t!(label))
         .collect::<Vec<_>>()
         .join(", ")
 }

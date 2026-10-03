@@ -547,7 +547,7 @@ fn layer_cell_button_style(
         palette.background.strong
     } else if is_selected {
         palette.primary.weak
-    } else if index % 2 == 0 {
+    } else if index.is_multiple_of(2) {
         palette.background.base
     } else {
         palette.background.weak
@@ -984,7 +984,7 @@ fn layer_row<'a>(
                 let palette = theme.palette();
                 let pair = if is_selected {
                     palette.primary.weak
-                } else if index % 2 == 0 {
+                } else if index.is_multiple_of(2) {
                     palette.background.base
                 } else {
                     palette.background.weak

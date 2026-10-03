@@ -7050,7 +7050,7 @@ fn reduce_fraction(mut n: u64, mut d: u64) -> String {
     if n == 0 {
         return String::new();
     }
-    while n % 2 == 0 && d % 2 == 0 {
+    while n.is_multiple_of(2) && d.is_multiple_of(2) {
         n /= 2;
         d /= 2;
     }
@@ -8757,12 +8757,13 @@ mod layout_parity_tests {
     }
 
     fn vertical(top: f64) -> DimensionLinear {
-        let mut d = DimensionLinear::default();
-        d.first_point = Vector3::new(0.0, 0.0, 0.0);
-        d.second_point = Vector3::new(0.0, top, 0.0);
-        d.definition_point = Vector3::new(-0.5, top, 0.0);
-        d.rotation = std::f64::consts::FRAC_PI_2;
-        d
+        DimensionLinear {
+            first_point: Vector3::new(0.0, 0.0, 0.0),
+            second_point: Vector3::new(0.0, top, 0.0),
+            definition_point: Vector3::new(-0.5, top, 0.0),
+            rotation: std::f64::consts::FRAC_PI_2,
+            ..Default::default()
+        }
     }
 
     // Group 11 is authoritative whenever present, whether or not the user moved
@@ -8866,9 +8867,11 @@ mod layout_parity_tests {
     fn dimtmove_one_anchors_the_hook_start_at_the_stored_point() {
         let mut document = document();
         document.dim_styles.get_mut("Standard").unwrap().dimtmove = 1;
-        let mut d = DimensionRadius::default();
-        d.angle_vertex = Vector3::new(0.0, 0.0, 0.0);
-        d.definition_point = Vector3::new(1.0, 0.0, 0.0);
+        let mut d = DimensionRadius {
+            angle_vertex: Vector3::new(0.0, 0.0, 0.0),
+            definition_point: Vector3::new(1.0, 0.0, 0.0),
+            ..Default::default()
+        };
         d.base.text_middle_point = Vector3::new(3.0, 1.5, 0.0);
         let dim = Dimension::Radius(d);
         let (points, _) = drawn(&document, &dim);
@@ -8941,9 +8944,11 @@ mod layout_parity_tests {
     #[test]
     fn radius_text_outside_draws_a_hooked_leader_only() {
         let document = document();
-        let mut d = DimensionRadius::default();
-        d.angle_vertex = Vector3::new(0.0, 0.0, 0.0);
-        d.definition_point = Vector3::new(1.0, 0.0, 0.0);
+        let mut d = DimensionRadius {
+            angle_vertex: Vector3::new(0.0, 0.0, 0.0),
+            definition_point: Vector3::new(1.0, 0.0, 0.0),
+            ..Default::default()
+        };
         d.base.text_middle_point = Vector3::new(3.0, 0.8, 0.0);
         let (points, fills) = drawn(&document, &Dimension::Radius(d));
         assert!(
@@ -8967,9 +8972,11 @@ mod layout_parity_tests {
     #[test]
     fn diameter_text_outside_draws_one_leader_and_no_chord() {
         let document = document();
-        let mut d = DimensionDiameter::default();
-        d.angle_vertex = Vector3::new(-1.0, 0.0, 0.0);
-        d.definition_point = Vector3::new(1.0, 0.0, 0.0);
+        let mut d = DimensionDiameter {
+            angle_vertex: Vector3::new(-1.0, 0.0, 0.0),
+            definition_point: Vector3::new(1.0, 0.0, 0.0),
+            ..Default::default()
+        };
         d.base.text_middle_point = Vector3::new(3.0, 0.8, 0.0);
         let (points, fills) = drawn(&document, &Dimension::Diameter(d));
         assert!(

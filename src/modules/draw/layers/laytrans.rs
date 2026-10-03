@@ -83,7 +83,7 @@ pub fn load_targets(path: &Path) -> Result<Vec<TargetLayer>, String> {
             layer: layer.clone(),
         })
         .collect();
-    targets.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    targets.sort_by_key(|a| a.name.to_lowercase());
     if targets.is_empty() {
         return Err(crate::t!("no layers found in that file").into_owned());
     }

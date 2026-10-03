@@ -22,6 +22,11 @@ fn viewport_tooltip<'a>(
     .into()
 }
 
+/// Top-left viewport control bar: a single dark chip holding (optionally) the
+/// horizontal/vertical split buttons, the render-mode picker, and the grid /
+/// grid-snap toggles. `include_split` is off for paper-space viewports, which
+/// have no model-tile splitting. Grid / snap reflect the active viewport's
+/// state and emit `ToggleGrid` / `ToggleGridSnap`.
 pub(super) fn viewport_controls<'a>(
     render_mode: acadrust::entities::ViewportRenderMode,
     show_grid: bool,
@@ -328,8 +333,8 @@ pub(super) fn dyn_component_value(
     // delta is offset-invariant, so only the axis rotation matters (identity
     // xf reproduces the world-frame deltas).
     let d = xf.vec_to_ucs(w - b);
-    let dx = d.x as f64;
-    let dy = d.y as f64;
+    let dx = d.x;
+    let dy = d.y;
     // When a base point exists (DYN-on after the first pick) the cartesian
     // fields show relative deltas — matching the typed-value convention
     // in `dyn_resolve_point` so the live preview and the committed

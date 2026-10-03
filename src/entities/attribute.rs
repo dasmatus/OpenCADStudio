@@ -396,20 +396,20 @@ impl Grippable for AttributeDefinition {
         if grip_id == 0 {
             match apply {
                 GripApply::Translate(d) => {
-                    self.insertion_point.x += d.x as f64;
-                    self.insertion_point.y += d.y as f64;
-                    self.insertion_point.z += d.z as f64;
-                    self.alignment_point.x += d.x as f64;
-                    self.alignment_point.y += d.y as f64;
-                    self.alignment_point.z += d.z as f64;
+                    self.insertion_point.x += d.x;
+                    self.insertion_point.y += d.y;
+                    self.insertion_point.z += d.z;
+                    self.alignment_point.x += d.x;
+                    self.alignment_point.y += d.y;
+                    self.alignment_point.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    self.insertion_point.x = p.x as f64;
-                    self.insertion_point.y = p.y as f64;
-                    self.insertion_point.z = p.z as f64;
-                    self.alignment_point.x = p.x as f64;
-                    self.alignment_point.y = p.y as f64;
-                    self.alignment_point.z = p.z as f64;
+                    self.insertion_point.x = p.x;
+                    self.insertion_point.y = p.y;
+                    self.insertion_point.z = p.z;
+                    self.alignment_point.x = p.x;
+                    self.alignment_point.y = p.y;
+                    self.alignment_point.z = p.z;
                 }
             }
         }
@@ -714,20 +714,20 @@ impl Grippable for AttributeEntity {
         if grip_id == 0 {
             match apply {
                 GripApply::Translate(d) => {
-                    self.insertion_point.x += d.x as f64;
-                    self.insertion_point.y += d.y as f64;
-                    self.insertion_point.z += d.z as f64;
-                    self.alignment_point.x += d.x as f64;
-                    self.alignment_point.y += d.y as f64;
-                    self.alignment_point.z += d.z as f64;
+                    self.insertion_point.x += d.x;
+                    self.insertion_point.y += d.y;
+                    self.insertion_point.z += d.z;
+                    self.alignment_point.x += d.x;
+                    self.alignment_point.y += d.y;
+                    self.alignment_point.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    self.insertion_point.x = p.x as f64;
-                    self.insertion_point.y = p.y as f64;
-                    self.insertion_point.z = p.z as f64;
-                    self.alignment_point.x = p.x as f64;
-                    self.alignment_point.y = p.y as f64;
-                    self.alignment_point.z = p.z as f64;
+                    self.insertion_point.x = p.x;
+                    self.insertion_point.y = p.y;
+                    self.insertion_point.z = p.z;
+                    self.alignment_point.x = p.x;
+                    self.alignment_point.y = p.y;
+                    self.alignment_point.z = p.z;
                 }
             }
         }

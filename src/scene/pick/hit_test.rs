@@ -189,15 +189,15 @@ fn text_quad_hit_area(
 /// within that wire's [`pick_tolerance_px`] of `cursor`.
 ///
 /// Returns `None` when no wire is close enough.
-pub fn click_hit<'a, W: WireSource + ?Sized>(
+pub fn click_hit<W: WireSource + ?Sized>(
     cursor: Point,
-    wires: &'a W,
+    wires: &W,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
     lw_display: bool,
     base_radius_px: f32,
-) -> Option<&'a str> {
+) -> Option<&str> {
     // A click outside the pane rectangle (e.g. on the paper around a floating
     // viewport) must not reach geometry scissored out of the viewport.
     if cursor.x < 0.0 || cursor.x > bounds.width || cursor.y < 0.0 || cursor.y > bounds.height {
@@ -469,15 +469,15 @@ pub fn click_hit<'a, W: WireSource + ?Sized>(
 /// Like `click_hit` but returns every wire within the click threshold,
 /// nearest first. Used by selection cycling to step through overlapping
 /// objects under the cursor.
-pub fn click_hits_all<'a, W: WireSource + ?Sized>(
+pub fn click_hits_all<W: WireSource + ?Sized>(
     cursor: Point,
-    wires: &'a W,
+    wires: &W,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
     lw_display: bool,
     base_radius_px: f32,
-) -> Vec<&'a str> {
+) -> Vec<&str> {
     if cursor.x < 0.0 || cursor.x > bounds.width || cursor.y < 0.0 || cursor.y > bounds.height {
         return Vec::new();
     }
@@ -1290,7 +1290,7 @@ fn indexed_box_crossing_hits<'a, W: WireSource + ?Sized>(
     }
     for wire in wires.iter().filter(|wire| wire.point_marker.is_some()) {
         if !seen.contains(wire.name.as_str())
-            && marker_segment_hit(wire, view_rot, eye, bounds, |a, b| segment_hits(a, b))
+            && marker_segment_hit(wire, view_rot, eye, bounds, &segment_hits)
             && seen.insert(wire.name.as_str())
         {
             out.push(wire.name.as_str());
@@ -1426,7 +1426,7 @@ pub fn poly_fence_hit<'a, W: WireSource + ?Sized>(
         }
         for wire in wires.iter().filter(|wire| wire.point_marker.is_some()) {
             if !seen.contains(wire.name.as_str())
-                && marker_segment_hit(wire, view_rot, eye, bounds, |a, b| cuts(a, b))
+                && marker_segment_hit(wire, view_rot, eye, bounds, &cuts)
                 && seen.insert(wire.name.as_str())
             {
                 out.push(wire.name.as_str());
@@ -1592,15 +1592,15 @@ fn indexed_polygon_crossing_hits<'a, W: WireSource + ?Sized>(
 ///   ANY projected point inside the box, OR any wire segment crosses the box
 ///   boundary (so large entities like viewport frames are caught even when
 ///   no corner falls inside the selection rectangle).
-pub fn box_hit<'a, W: WireSource + ?Sized>(
+pub fn box_hit<W: WireSource + ?Sized>(
     corner_a: Point,
     corner_b: Point,
     crossing: bool,
-    wires: &'a W,
+    wires: &W,
     view_rot: Mat4,
     eye: glam::DVec3,
     bounds: Rectangle,
-) -> Vec<&'a str> {
+) -> Vec<&str> {
     // Clamp the selection box to the pane rectangle so it can't reach geometry
     // the GPU scissored out of a floating viewport (the hit-test wire set runs
     // past the visible rect). No-op in model space, where bounds is the canvas.

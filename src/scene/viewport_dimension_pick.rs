@@ -346,40 +346,6 @@ pub fn planar_pick_distance(entity: &EntityType, point: DVec3) -> Option<f64> {
     )
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn frame() -> ViewportFrame {
-        ViewportFrame {
-            viewport: Handle::NULL,
-            paper_center: DVec2::new(100.0, 50.0),
-            model_target: DVec2::new(1000.0, 2000.0),
-            scale: 0.1,
-            twist: 0.4,
-            locked: false,
-        }
-    }
-
-    #[test]
-    fn affine_transform_matches_the_frame_mapping() {
-        let f = frame();
-        let t = viewport_model_to_paper_transform(&f);
-        for model in [
-            DVec3::new(1000.0, 2000.0, 0.0),
-            DVec3::new(1100.0, 2000.0, 0.0),
-            DVec3::new(940.5, 2113.25, 0.0),
-        ] {
-            let expected = f.model_to_paper(model);
-            let actual = t.apply(acadrust::types::Vector3::new(model.x, model.y, model.z));
-            assert!(
-                (actual.x - expected.x).abs() < 1e-9 && (actual.y - expected.y).abs() < 1e-9,
-                "{actual:?} != {expected:?}"
-            );
-        }
-    }
-}
-
 /// Distance to the particular feature accepted by a snap, rather than to the
 /// nearest curve. A circle's center is deliberately not on its circumference.
 pub(crate) fn feature_pick_distance(
@@ -420,4 +386,38 @@ pub(crate) fn feature_pick_distance(
         .into_iter()
         .map(|p| (DVec3::new(p.x, p.y, p.z) - point).truncate().length())
         .min_by(f64::total_cmp)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn frame() -> ViewportFrame {
+        ViewportFrame {
+            viewport: Handle::NULL,
+            paper_center: DVec2::new(100.0, 50.0),
+            model_target: DVec2::new(1000.0, 2000.0),
+            scale: 0.1,
+            twist: 0.4,
+            locked: false,
+        }
+    }
+
+    #[test]
+    fn affine_transform_matches_the_frame_mapping() {
+        let f = frame();
+        let t = viewport_model_to_paper_transform(&f);
+        for model in [
+            DVec3::new(1000.0, 2000.0, 0.0),
+            DVec3::new(1100.0, 2000.0, 0.0),
+            DVec3::new(940.5, 2113.25, 0.0),
+        ] {
+            let expected = f.model_to_paper(model);
+            let actual = t.apply(acadrust::types::Vector3::new(model.x, model.y, model.z));
+            assert!(
+                (actual.x - expected.x).abs() < 1e-9 && (actual.y - expected.y).abs() < 1e-9,
+                "{actual:?} != {expected:?}"
+            );
+        }
+    }
 }

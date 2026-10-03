@@ -995,8 +995,10 @@ mod rte_tests {
             width: 1600.0,
             height: 900.0,
         };
-        let mut at_origin = Camera::default();
-        at_origin.target = glam::DVec3::ZERO;
+        let at_origin = Camera {
+            target: glam::DVec3::ZERO,
+            ..Default::default()
+        };
 
         let mut at_utm = at_origin.clone();
         at_utm.target = glam::DVec3::new(639_792.184_2, 4_517_057.531_7, 12.5);
@@ -1019,9 +1021,11 @@ mod rte_tests {
     #[test]
     fn the_basis_matches_what_two_positions_gave_where_they_were_exact() {
         for (yaw, pitch) in [(0.0, 1.2), (0.7, 0.3), (-2.1, -0.9)] {
-            let mut camera = Camera::default();
-            camera.target = glam::DVec3::ZERO;
-            camera.rotation = Quat::from_rotation_z(yaw) * Quat::from_rotation_x(pitch);
+            let camera = Camera {
+                target: glam::DVec3::ZERO,
+                rotation: Quat::from_rotation_z(yaw) * Quat::from_rotation_x(pitch),
+                ..Default::default()
+            };
             let up_dir = camera.rotation * Vec3::Y;
 
             let mut old = look_at_mat4(camera.eye().as_vec3(), camera.target.as_vec3(), up_dir);

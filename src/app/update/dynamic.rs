@@ -281,7 +281,6 @@ impl OpenCADStudio {
     /// Apply an explicit per-step [`DynSpec`](crate::command::DynSpec): rebuild
     /// the boxes from its roles (preserving typed buffers when the role set is
     /// unchanged), and set the guide + anchor.
-
     pub(in crate::app) fn apply_dyn_spec(&mut self, i: usize, spec: crate::command::DynSpec) {
         use crate::app::document::DynFieldEntry;
         let new_roles: Vec<crate::command::DynRole> = spec.fields.iter().map(|f| f.role).collect();
@@ -310,7 +309,6 @@ impl OpenCADStudio {
     /// After the active Model tile changes, mirror its stored visual style
     /// into the tab so the picker shows it and the tile renders with it
     /// (the active tile draws with the tab's live render mode).
-
     /// Resolve the world point implied by the current dynamic-input field
     /// values. Locked fields use their typed buffer; the rest fall back to
     /// the live cursor-derived value. Returns `None` when the field set
@@ -499,7 +497,6 @@ impl OpenCADStudio {
     /// configuration becomes cartesian `[X(buf), Y]`, and a cartesian
     /// `[X, Y]` configuration extends to `[X, Y, Z]`. Default fallthrough
     /// is "advance to next field", matching `Tab`. See #35.
-
     pub(in crate::app) fn dyn_comma_advance(&mut self) {
         use crate::app::document::{DynComponent, DynFieldEntry};
         let i = self.active_tab;
@@ -606,7 +603,6 @@ impl OpenCADStudio {
     /// way the cursor is dragging. Only applies to steps with an `Angle` field;
     /// an explicit `+`/`-` is left untouched. Returns the (possibly re-signed)
     /// text to feed `on_text_input`.
-
     pub(in crate::app) fn dyn_sign_angle_text(&self, i: usize, text: String) -> String {
         let has_angle = self.tabs[i]
             .dyn_fields
@@ -768,7 +764,6 @@ impl OpenCADStudio {
     }
 
     /// Mutable access to the currently selected table style.
-
     /// Re-run the active command's preview hook against the current
     /// cursor world position. Keyboard-driven point commits (typed
     /// coordinates in the command line or dynamic input) don't fire a

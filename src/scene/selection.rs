@@ -1206,7 +1206,7 @@ mod tests {
 
         // Picked in an order that is neither creation nor handle order.
         let picked = |handles: &[Handle]| -> Vec<Handle> {
-            let mut order: Vec<_> = handles.iter().copied().collect();
+            let mut order: Vec<_> = handles.to_vec();
             order.reverse();
             order.retain(|h| h.value() % 3 != 0);
             order
@@ -1255,8 +1255,10 @@ mod tests {
         let annotation = scene.add_entity(line(0.0));
         let unrelated = scene.add_entity(line(5.0));
         let mut leader_on = |target: Handle| {
-            let mut leader = Leader::default();
-            leader.annotation_handle = target;
+            let leader = Leader {
+                annotation_handle: target,
+                ..Default::default()
+            };
             scene.add_entity(EntityType::Leader(leader))
         };
         // Two leaders share one annotation; a third points nowhere.

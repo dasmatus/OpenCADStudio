@@ -1456,26 +1456,23 @@ pub fn layout_mtext(opts: &MTextRenderOpts) -> MTextLayout {
         let is_rtl_para = {
             let mut strong_rtl = None;
             for atom in &atoms {
-                match &atom.kind {
-                    AtomKind::Word(w) => {
-                        for ch in w.chars() {
-                            match unicode_bidi::bidi_class(ch) {
-                                unicode_bidi::BidiClass::R | unicode_bidi::BidiClass::AL => {
-                                    strong_rtl = Some(true);
-                                    break;
-                                }
-                                unicode_bidi::BidiClass::L => {
-                                    strong_rtl = Some(false);
-                                    break;
-                                }
-                                _ => {}
+                if let AtomKind::Word(w) = &atom.kind {
+                    for ch in w.chars() {
+                        match unicode_bidi::bidi_class(ch) {
+                            unicode_bidi::BidiClass::R | unicode_bidi::BidiClass::AL => {
+                                strong_rtl = Some(true);
+                                break;
                             }
-                        }
-                        if strong_rtl.is_some() {
-                            break;
+                            unicode_bidi::BidiClass::L => {
+                                strong_rtl = Some(false);
+                                break;
+                            }
+                            _ => {}
                         }
                     }
-                    _ => {}
+                    if strong_rtl.is_some() {
+                        break;
+                    }
                 }
             }
             strong_rtl.unwrap_or(false)
@@ -2615,8 +2612,10 @@ mod tests {
     #[test]
     fn unresolved_inline_font_falls_back_to_style_font() {
         let base = "txt";
-        let mut state = RunState::default();
-        state.font = Some("__definitely_not_an_installed_font__".to_string());
+        let state = RunState {
+            font: Some("__definitely_not_an_installed_font__".to_string()),
+            ..Default::default()
+        };
 
         assert_eq!(resolve_font(&state, base), base);
 

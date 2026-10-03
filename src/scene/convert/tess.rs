@@ -1477,7 +1477,6 @@ fn tessellate_entity_inner(
 /// (from `text_support::mtext_line_count`). Without it, MText's OBB
 /// height collapses to a single line when the file omits `rectangle_height`,
 /// which makes downstream per-line LOD math degenerate.
-
 /// Build a "low-LOD stub" wire for an entity that would otherwise be culled
 /// to nothing — the entity's AABB diagonal as a 2-point segment, plus the
 /// AABB itself so window / crossing selection picks the entity up. The

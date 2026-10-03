@@ -57,6 +57,12 @@ pub struct MeasureGeomCommand {
     plane: WorkingPlane,
 }
 
+impl Default for MeasureGeomCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MeasureGeomCommand {
     pub fn new() -> Self {
         Self {

@@ -336,10 +336,8 @@ impl<'a> InRangeWires<'a> {
         } else {
             if self.heap.is_empty() {
                 self.heap.reserve(16);
-                for slot in &self.stack {
-                    if let Some(w) = slot {
-                        self.heap.push(*w);
-                    }
+                for w in self.stack.iter().flatten() {
+                    self.heap.push(*w);
                 }
             }
             self.heap.push(wire);
@@ -905,7 +903,7 @@ impl Snapper {
                     continue;
                 }
                 let sd = screen_dist(x);
-                if sd < r && best_x.as_ref().map_or(true, |(bd, _)| sd < *bd) {
+                if sd < r && best_x.as_ref().is_none_or(|(bd, _)| sd < *bd) {
                     // Report an acquired tracking ray (not an auxiliary
                     // last_point ray) as base/dir for typed-distance entry.
                     let (ot, other) =
@@ -967,7 +965,7 @@ impl Snapper {
                 ray.origin.z,
             );
             let sd = screen_dist(aligned);
-            if sd < r && best.as_ref().map_or(true, |(bd, _)| sd < *bd) {
+            if sd < r && best.as_ref().is_none_or(|(bd, _)| sd < *bd) {
                 let dir_out = if t >= 0.0 { ray.dir } else { -ray.dir };
                 best = Some((
                     sd,
@@ -1035,7 +1033,7 @@ impl Snapper {
         };
         // Restart the dwell when the hovered line changes (different direction,
         // or a parallel line far from the candidate's point on screen).
-        let same_candidate = self.parallel_dwell.map_or(false, |(cd, cp, _, _)| {
+        let same_candidate = self.parallel_dwell.is_some_and(|(cd, cp, _, _)| {
             parallel(cd, dir)
                 && screen_perp_dist(pt, cp, cd, view_rot, eye, bounds) < self.osnap_radius_px
         });
@@ -1044,7 +1042,7 @@ impl Snapper {
                 if !fired && now.duration_since(since).as_millis() >= PAR_DWELL_MS {
                     // Dwelt long enough: acquire this line, or remove it if it is
                     // already the reference (hovering it a second time toggles).
-                    let is_ref = self.parallel_ref.map_or(false, |(rd, rp)| {
+                    let is_ref = self.parallel_ref.is_some_and(|(rd, rp)| {
                         parallel(rd, dir)
                             && screen_perp_dist(pt, rp, rd, view_rot, eye, bounds)
                                 < self.osnap_radius_px
@@ -2683,7 +2681,7 @@ fn perp_foot(query: glam::DVec3, p0: glam::DVec3, p1: glam::DVec3) -> Option<gla
     }
     let t = ((query.x - p0.x) * d.x + (query.y - p0.y) * d.y) / len2;
     // Reject if the foot is far outside the segment (more than 2× segment length).
-    if t < -1.0 || t > 2.0 {
+    if !(-1.0..=2.0).contains(&t) {
         return None;
     }
     Some(glam::DVec3::new(
@@ -2716,7 +2714,7 @@ fn ray_segment_intersect_3d(
     let t = (ex * d2y - ey * d2x) / cross;
     let s = (ex * d1y - ey * d1x) / cross;
 
-    if t < 0.0 || s < 0.0 || s > 1.0 {
+    if t < 0.0 || !(0.0..=1.0).contains(&s) {
         return None;
     }
 
@@ -3085,7 +3083,7 @@ fn seg_intersect_3d(
     let ey = b0.y - a0.y;
     let t = (ex * d2y - ey * d2x) / cross;
     let s = (ex * d1y - ey * d1x) / cross;
-    if t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0 {
+    if !(0.0..=1.0).contains(&t) || !(0.0..=1.0).contains(&s) {
         return None;
     }
     // The plans cross; the segments truly meet only if they are at the same
@@ -3131,7 +3129,7 @@ fn seg_intersect_2d(a0: Point, a1: Point, b0: Point, b1: Point) -> Option<(f32, 
     let ey = b0.y - a0.y;
     let t = (ex * d2y - ey * d2x) / cross;
     let s = (ex * d1y - ey * d1x) / cross;
-    if t < 0.0 || t > 1.0 || s < 0.0 || s > 1.0 {
+    if !(0.0..=1.0).contains(&t) || !(0.0..=1.0).contains(&s) {
         return None;
     }
     Some((t, s))
@@ -3673,9 +3671,11 @@ mod ext_tests {
 
     #[test]
     fn base_to_corner_direction_is_tracked() {
-        let mut s = Snapper::default();
-        s.otrack_enabled = true;
-        s.osnap_radius_px = 10.0;
+        let mut s = Snapper {
+            otrack_enabled: true,
+            osnap_radius_px: 10.0,
+            ..Default::default()
+        };
         // An acquired corner of an existing line, and the base point (first
         // point) of the line currently being drawn.
         let corner = DVec3::new(8_000.0, 6_000.0, 0.0);
@@ -3750,9 +3750,11 @@ mod ext_tests {
     /// sign of what the point actually is.
     #[test]
     fn intersection_lock_reports_both_crossing_vectors() {
-        let mut s = Snapper::default();
-        s.otrack_enabled = true;
-        s.osnap_radius_px = 10.0;
+        let mut s = Snapper {
+            otrack_enabled: true,
+            osnap_radius_px: 10.0,
+            ..Default::default()
+        };
         // Two acquired corners. With no polar step each offers a horizontal and
         // a vertical ray, so their rays cross at (10, 0) and at (0, 5).
         let first = DVec3::new(0.0, 0.0, 0.0);
@@ -3822,9 +3824,11 @@ mod ext_tests {
     /// alignment has nothing to cross, and must not draw a second guide.
     #[test]
     fn single_ray_alignment_reports_no_crossing_vector() {
-        let mut s = Snapper::default();
-        s.otrack_enabled = true;
-        s.osnap_radius_px = 10.0;
+        let mut s = Snapper {
+            otrack_enabled: true,
+            osnap_radius_px: 10.0,
+            ..Default::default()
+        };
         let corner = DVec3::new(10.0, 5.0, 0.0);
         s.tracking_points.push(corner);
         s.tracking_dirs.push(Vec::new());
@@ -4347,9 +4351,11 @@ mod ext_tests {
             .iter()
             .all(|segment| segment.wire == 1));
         let point = DVec3::new(0.0, 4.0, 0.0);
-        let mut snapper = Snapper::default();
-        snapper.snap_enabled = true;
-        snapper.enabled = [SnapType::Intersection].into_iter().collect();
+        let snapper = Snapper {
+            snap_enabled: true,
+            enabled: [SnapType::Intersection].into_iter().collect(),
+            ..Default::default()
+        };
         let result = snapper
             .snap(
                 point,
@@ -4411,11 +4417,13 @@ mod ext_tests {
 
     #[test]
     fn test_unindexed_snap_endpoint_and_midpoint_accuracy() {
-        let mut snapper = Snapper::default();
-        snapper.snap_enabled = true;
-        snapper.enabled = [SnapType::Endpoint, SnapType::Midpoint]
-            .into_iter()
-            .collect();
+        let snapper = Snapper {
+            snap_enabled: true,
+            enabled: [SnapType::Endpoint, SnapType::Midpoint]
+                .into_iter()
+                .collect(),
+            ..Default::default()
+        };
 
         let line = WireModel {
             points: vec![[0.0, 0.0, 0.0], [100.0, 100.0, 0.0]],
@@ -4480,8 +4488,10 @@ mod ext_tests {
 
     #[test]
     fn test_unindexed_snap_empty_space_early_out() {
-        let mut snapper = Snapper::default();
-        snapper.snap_enabled = true;
+        let mut snapper = Snapper {
+            snap_enabled: true,
+            ..Default::default()
+        };
         snapper.enable_all();
 
         let line = WireModel {
@@ -4520,9 +4530,11 @@ mod ext_tests {
 
     #[test]
     fn test_unindexed_snap_intersection_pair() {
-        let mut snapper = Snapper::default();
-        snapper.snap_enabled = true;
-        snapper.enabled = [SnapType::Intersection].into_iter().collect();
+        let snapper = Snapper {
+            snap_enabled: true,
+            enabled: [SnapType::Intersection].into_iter().collect(),
+            ..Default::default()
+        };
 
         let line1 = WireModel {
             points: vec![[0.0, 0.0, 0.0], [100.0, 100.0, 0.0]],
@@ -4569,9 +4581,11 @@ mod ext_tests {
 
     #[test]
     fn test_unindexed_snap_dense_cluster_fallback() {
-        let mut snapper = Snapper::default();
-        snapper.snap_enabled = true;
-        snapper.enabled = [SnapType::Endpoint].into_iter().collect();
+        let snapper = Snapper {
+            snap_enabled: true,
+            enabled: [SnapType::Endpoint].into_iter().collect(),
+            ..Default::default()
+        };
 
         // Generate 25 lines passing through (0, 0) to force > 16 wires in aperture
         let mut wires = Vec::new();
@@ -4628,12 +4642,14 @@ mod ext_tests {
 
     #[test]
     fn grid_snap_locks_beyond_aperture_with_independent_xy() {
-        let mut s = Snapper::default();
-        s.grid_snap_on = true;
-        s.snap_enabled = false; // grid only
-        s.snap_spacing_x = 1.0;
-        s.snap_spacing_y = 0.5;
-        s.osnap_radius_px = 15.0;
+        let s = Snapper {
+            grid_snap_on: true,
+            snap_enabled: false, // grid only
+            snap_spacing_x: 1.0,
+            snap_spacing_y: 0.5,
+            osnap_radius_px: 15.0,
+            ..Default::default()
+        };
 
         let view_rot = Mat4::IDENTITY;
         let eye = DVec3::new(0.0, 0.0, 500.0);

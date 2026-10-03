@@ -1034,8 +1034,8 @@ impl OpenCADStudio {
                         // Option lists.
                         let mleader_styles: Vec<String> = doc
                             .objects
-                            .iter()
-                            .filter_map(|(_, o)| match o {
+                            .values()
+                            .filter_map(|o| match o {
                                 acadrust::objects::ObjectType::MultiLeaderStyle(s) => {
                                     Some(s.name.clone())
                                 }
@@ -1425,7 +1425,7 @@ impl OpenCADStudio {
                                     .filter(|br| regular(br))
                                     .map(|br| br.name.clone())
                                     .collect();
-                                options.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+                                options.sort_by_key(|a| a.to_lowercase());
                                 set_row_value(
                                     &mut sections,
                                     "block",
@@ -3853,30 +3853,30 @@ fn format_unit_factor(factor: f64) -> String {
 /// Convert INSUNITS (DXF group 70) to millimetres.
 pub(super) fn insunits_to_mm(code: i16) -> Option<f64> {
     Some(match code {
-        1 => 25.4,                        // Inches
-        2 => 304.8,                       // Feet
-        3 => 1_609_344.0,                 // Miles
-        4 => 1.0,                         // Millimeters
-        5 => 10.0,                        // Centimeters
-        6 => 1_000.0,                     // Meters
-        7 => 1_000_000.0,                 // Kilometers
-        8 => 0.000_025_4,                 // Microinches
-        9 => 0.025_4,                     // Mils
-        10 => 914.4,                      // Yards
-        11 => 1.0e-7,                     // Angstroms
-        12 => 1.0e-6,                     // Nanometers
-        13 => 0.001,                      // Microns
-        14 => 100.0,                      // Decimeters
-        15 => 10_000.0,                   // Decameters
-        16 => 100_000.0,                  // Hectometers
-        17 => 1.0e12,                     // Gigameters
-        18 => 1.495_978_707e14,           // Astronomical Units
-        19 => 9.460_730_472_580_8e18,     // Light Years
-        20 => 3.085_677_581_491_367_3e19, // Parsecs
-        21 => 1_200_000.0 / 3_937.0,      // US Survey Feet
-        22 => 100_000.0 / 3_937.0,        // US Survey Inches
-        23 => 3_600_000.0 / 3_937.0,      // US Survey Yards
-        24 => 6_336_000_000.0 / 3_937.0,  // US Survey Miles
+        1 => 25.4,                       // Inches
+        2 => 304.8,                      // Feet
+        3 => 1_609_344.0,                // Miles
+        4 => 1.0,                        // Millimeters
+        5 => 10.0,                       // Centimeters
+        6 => 1_000.0,                    // Meters
+        7 => 1_000_000.0,                // Kilometers
+        8 => 0.000_025_4,                // Microinches
+        9 => 0.025_4,                    // Mils
+        10 => 914.4,                     // Yards
+        11 => 1.0e-7,                    // Angstroms
+        12 => 1.0e-6,                    // Nanometers
+        13 => 0.001,                     // Microns
+        14 => 100.0,                     // Decimeters
+        15 => 10_000.0,                  // Decameters
+        16 => 100_000.0,                 // Hectometers
+        17 => 1.0e12,                    // Gigameters
+        18 => 1.495_978_707e14,          // Astronomical Units
+        19 => 9.460_730_472_580_8e18,    // Light Years
+        20 => 3.085_677_581_491_367e19,  // Parsecs
+        21 => 1_200_000.0 / 3_937.0,     // US Survey Feet
+        22 => 100_000.0 / 3_937.0,       // US Survey Inches
+        23 => 3_600_000.0 / 3_937.0,     // US Survey Yards
+        24 => 6_336_000_000.0 / 3_937.0, // US Survey Miles
         _ => return None,
     })
 }
@@ -3965,7 +3965,7 @@ mod insert_unit_scale_tests {
     fn astronomical_units_use_precise_si_values() {
         assert_eq!(insunits_to_mm(18), Some(1.495_978_707e14));
         assert_eq!(insunits_to_mm(19), Some(9.460_730_472_580_8e18));
-        assert_eq!(insunits_to_mm(20), Some(3.085_677_581_491_367_3e19));
+        assert_eq!(insunits_to_mm(20), Some(3.085_677_581_491_367e19));
         assert_ne!(format_unit_factor(1.0e-7), "0.0000");
     }
 
@@ -4472,7 +4472,7 @@ mod grip_limit_tests {
         }
         app.refresh_selected_grips();
         assert!(
-            app.tabs[i].selected_grips.len() > 0,
+            !app.tabs[i].selected_grips.is_empty(),
             "zero must read as unlimited, not as a limit of none",
         );
     }

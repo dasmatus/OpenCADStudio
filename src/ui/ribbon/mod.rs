@@ -427,13 +427,13 @@ impl Ribbon {
     ) -> Element<'_, Message> {
         // ── Quick-access file commands + undo/redo, one merged flow ────────
         let lead = iced::widget::Row::with_children(vec![
-            quick_access_btn(crate::ui::icons::DOC_NEW, "New", "NEW").into(),
-            quick_access_btn(crate::ui::icons::FOLDER_OPEN, "Open", "OPEN").into(),
-            quick_access_btn(crate::ui::icons::SAVE, "Save", "SAVE").into(),
-            quick_access_btn(crate::ui::icons::FILE_EXPORT, "Save As", "SAVEAS").into(),
-            quick_access_btn(crate::ui::icons::PRINT, "Print", "PRINT").into(),
-            render_history_control("Undo", UNDO_HISTORY_ID, undo_count, &self.open_dropdown).into(),
-            render_history_control("Redo", REDO_HISTORY_ID, redo_count, &self.open_dropdown).into(),
+            quick_access_btn(crate::ui::icons::DOC_NEW, "New", "NEW"),
+            quick_access_btn(crate::ui::icons::FOLDER_OPEN, "Open", "OPEN"),
+            quick_access_btn(crate::ui::icons::SAVE, "Save", "SAVE"),
+            quick_access_btn(crate::ui::icons::FILE_EXPORT, "Save As", "SAVEAS"),
+            quick_access_btn(crate::ui::icons::PRINT, "Print", "PRINT"),
+            render_history_control("Undo", UNDO_HISTORY_ID, undo_count, &self.open_dropdown),
+            render_history_control("Redo", REDO_HISTORY_ID, redo_count, &self.open_dropdown),
         ])
         .spacing(TOP_HIST_GAP)
         .align_y(iced::Center)
@@ -888,7 +888,7 @@ impl Ribbon {
                 )
                 .on_press(Message::DropdownSelectItem {
                     dropdown_id: dd_id,
-                    cmd: *cmd,
+                    cmd,
                 })
                 .style(popup_row_style)
                 .width(Fill)
@@ -1359,11 +1359,7 @@ fn item_id(it: &RibbonItem) -> Option<&'static str> {
 /// panel's first tool-like item.
 fn representative<'g>(group: &'g RibbonGroup, last_used: Option<&str>) -> Option<&'g RibbonItem> {
     if let Some(want) = last_used {
-        if let Some(found) = group
-            .tools
-            .iter()
-            .find(|&it| item_id(it).map_or(false, |id| id == want))
-        {
+        if let Some(found) = group.tools.iter().find(|&it| item_id(it) == Some(want)) {
             return Some(found);
         }
     }
@@ -1552,8 +1548,10 @@ mod tests {
 
     #[test]
     fn escape_returns_from_an_extension_submenu_then_closes_the_panel() {
-        let mut ribbon = Ribbon::default();
-        ribbon.open_dropdown = Some("DRAWORDER_FRONT".to_string());
+        let mut ribbon = Ribbon {
+            open_dropdown: Some("DRAWORDER_FRONT".to_string()),
+            ..Default::default()
+        };
 
         assert!(ribbon.escape_extension());
         assert_eq!(ribbon.open_dropdown.as_deref(), Some("modify_extension"));
