@@ -68,8 +68,10 @@ class ReleaseTests(unittest.TestCase):
 
     def test_release_commit_push_and_retry(self):
         original_run = release.run
-        releases = {"v0.9.8": {"name": "v0.9.8", "body": "Previous notes", "isDraft": False}}
-        latest = "v0.9.8"
+        # v0.9.8 is only a tag, as on a fork without releases, so the first
+        # weekly release must find it with git rather than `gh release view`.
+        releases = {}
+        latest = None
         fail_create = False
 
         def run(*args):
@@ -91,6 +93,8 @@ class ReleaseTests(unittest.TestCase):
                 return ""
             self.assertEqual(args[1:3], ("release", "view"))
             if args[3] == "--json":
+                if latest is None:
+                    raise RuntimeError("release not found")
                 return json.dumps({"tagName": latest})
             return json.dumps(releases[args[3]])
 

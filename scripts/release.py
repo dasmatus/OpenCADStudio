@@ -19,6 +19,15 @@ def gh(*args):
     return json.loads(run("gh", *args))
 
 
+def latest_release():
+    # `gh release view` exits non-zero ("release not found") on a repository
+    # that has release tags but no published release yet, such as a fork. The
+    # newest release tag behind HEAD is then the previous release.
+    if not gh("release", "list", "--exclude-drafts", "--limit", "1", "--json", "tagName"):
+        return run("git", "describe", "--tags", "--abbrev=0", "--match", "v[0-9]*")
+    return gh("release", "view", "--json", "tagName")["tagName"]
+
+
 def versions(tag):
     version = tag.removeprefix("v")
     weekly = re.fullmatch(r"(20\d{2})\.(\d{2})", version)
@@ -102,7 +111,7 @@ def prepare(publish):
     current = datetime.now(timezone.utc)
     tag = current.strftime("v%G.%V")
     version = versions(tag)
-    latest = gh("release", "view", "--json", "tagName")["tagName"]
+    latest = latest_release()
     if publish and os.environ.get("GITHUB_REF") != "refs/heads/main":
         raise ValueError("Weekly releases must run on main")
     existing = run("git", "tag", "--list", tag)
