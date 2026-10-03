@@ -77,7 +77,7 @@ class ReleaseTests(unittest.TestCase):
             if args[0] != "gh":
                 return original_run(*args)
             if args[1:3] == ("release", "list"):
-                return json.dumps([{"tagName": tag, "isDraft": False} for tag in releases])
+                return json.dumps([{"tagName": tag, "isDraft": False, "isLatest": tag == latest} for tag in releases])
             if args[1:3] == ("release", "create"):
                 if fail_create:
                     fail_create = False
@@ -155,6 +155,61 @@ class ReleaseTests(unittest.TestCase):
                     self.assertIn(f"commit={sha}", prepare(True))
                     self.assertEqual(original_run("git", "rev-parse", "HEAD"), sha)
                     self.assertEqual(releases["v2026.36"]["name"], "2026.36")
+            finally:
+                os.chdir(previous_directory)
+
+    def test_first_release_without_previous_release(self):
+        original_run = release.run
+        releases = {}
+
+        def run(*args):
+            if args[0] != "gh":
+                return original_run(*args)
+            if args[1:3] == ("release", "list"):
+                return json.dumps([{"tagName": tag, "isDraft": False, "isLatest": True} for tag in releases])
+            if args[1:3] == ("release", "create"):
+                releases[args[3]] = {
+                    "name": args[args.index("--title") + 1],
+                    "body": Path(args[args.index("--notes-file") + 1]).read_text(encoding="utf-8"),
+                    "isDraft": False,
+                }
+                return ""
+            self.assertEqual(args[1:3], ("release", "view"))
+            if args[3] == "--json":
+                # Mirrors gh: viewing the latest release fails when there is none.
+                raise subprocess.CalledProcessError(1, args)
+            return json.dumps(releases[args[3]])
+
+        with tempfile.TemporaryDirectory() as temp:
+            temp = Path(temp)
+            root = temp / "checkout"
+            root.mkdir()
+            previous_directory = Path.cwd()
+            os.chdir(root)
+            try:
+                original_run("git", "init", "-b", "main")
+                original_run("git", "config", "user.name", "Release test")
+                original_run("git", "config", "user.email", "test@example.invalid")
+                original_run("git", "init", "--bare", "-b", "main", str(temp / "origin.git"))
+                original_run("git", "remote", "add", "origin", str(temp / "origin.git"))
+                Path("Cargo.toml").write_text('[package]\nname = "OpenCADStudio"\nversion = "0.9.8"\n')
+                Path("Cargo.lock").write_text('version = 4\n[[package]]\nname = "OpenCADStudio"\nversion = "0.9.8"\n')
+                original_run("git", "add", ".")
+                original_run("git", "commit", "-m", "Add drawing kernel")
+                original_run("git", "push", "origin", "main")
+
+                with patch.object(release, "run", run), patch.object(release, "datetime") as clock, patch.dict(os.environ, {
+                    "GITHUB_REPOSITORY": "owner/repo", "GITHUB_REF": "refs/heads/main", "GITHUB_OUTPUT": str(temp / "output"),
+                }):
+                    clock.now.return_value = datetime(2026, 9, 27, 12, tzinfo=timezone.utc)
+                    result = io.StringIO()
+                    with redirect_stdout(result):
+                        release.prepare(True)
+                    self.assertIn("ready=true", result.getvalue())
+                    notes = releases["v2026.39"]["body"]
+                    self.assertIn("Add drawing kernel", notes)
+                    self.assertIn("https://github.com/owner/repo/commits/v2026.39", notes)
+                    self.assertEqual(release.cargo_version(), "2026.39.0")
             finally:
                 os.chdir(previous_directory)
 
