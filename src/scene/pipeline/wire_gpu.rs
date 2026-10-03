@@ -531,7 +531,7 @@ fn pack_color(color: [f32; 4]) -> [u8; 4] {
 /// non-dash-first patterns keep the legacy centred phase.
 fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
     let n = wire.points.len();
-    let explicit = wire.pattern_stations.len() >= n + 1;
+    let explicit = wire.pattern_stations.len() > n;
     let (mut dists, has_break, total) = if explicit {
         (
             wire.pattern_stations[..n].to_vec(),
@@ -543,7 +543,7 @@ fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
         let mut has_break = false;
         // Accumulate arc-length in f64 from double-single deltas (high + low).
         let mut acc = 0.0_f64;
-        for i in 1..n {
+        for (i, dist) in dists.iter_mut().enumerate().skip(1) {
             let p = wire.points[i - 1];
             let q = wire.points[i];
             if !p[0].is_finite() || !q[0].is_finite() {
@@ -551,7 +551,7 @@ fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
                 if !wire.plinegen && !p[0].is_finite() && q[0].is_finite() {
                     acc = 0.0;
                 }
-                dists[i] = acc as f32;
+                *dist = acc as f32;
             } else {
                 let pl = wire.points_low.get(i - 1).copied().unwrap_or([0.0; 3]);
                 let ql = wire.points_low.get(i).copied().unwrap_or([0.0; 3]);
@@ -559,7 +559,7 @@ fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
                 let dy = (q[1] as f64 - p[1] as f64) + (ql[1] as f64 - pl[1] as f64);
                 let dz = (q[2] as f64 - p[2] as f64) + (ql[2] as f64 - pl[2] as f64);
                 acc += (dx * dx + dy * dy + dz * dz).sqrt();
-                dists[i] = acc as f32;
+                *dist = acc as f32;
             }
         }
         let total = dists.last().copied().unwrap_or(0.0);

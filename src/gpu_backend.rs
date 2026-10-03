@@ -9,6 +9,7 @@
 //!     release, so the process dies silently).
 //!   - GLES path: shader compilation failure (e.g. `no default precision`
 //!     inside iced's own gradient pipeline) on old Mesa.
+//!
 //! Selecting a working backend via `WGPU_BACKEND` before iced boots avoids
 //! both classes.
 //!

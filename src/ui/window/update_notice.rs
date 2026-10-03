@@ -73,6 +73,7 @@ fn version_card<'a>(
 ///   * `- bullet`   → indented bullet text
 ///   * `**bold**` runs and `` `code` `` runs (rendered tonally, not styled
 ///     differently — iced's text widget has no inline run styling).
+///
 /// Anything else is plain body text. Strips the markdown markers so the
 /// dialog reads cleanly even if the user has a Patreon-formatted note.
 fn render_notes_line<'a>(raw: &str) -> Element<'a, Message> {

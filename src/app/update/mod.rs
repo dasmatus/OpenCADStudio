@@ -594,7 +594,7 @@ impl OpenCADStudio {
                     // Recents are read from disk every save → the path may be
                     // stale. Skip silently if the file no longer exists; the
                     // entry stays in the list so the user can clean it up.
-                    return match std::fs::metadata(&path) {
+                    match std::fs::metadata(&path) {
                         Ok(m) => self.update(Message::OpenPathPicked(Some((path, m.len())))),
                         Err(_) => {
                             self.command_line.push_error(
@@ -603,7 +603,7 @@ impl OpenCADStudio {
                             );
                             Task::none()
                         }
-                    };
+                    }
                 }
 
                 #[cfg(target_arch = "wasm32")]
@@ -1666,7 +1666,7 @@ impl OpenCADStudio {
                     if self.tabs[idx].is_start {
                         self.ribbon.close_dropdown();
                     }
-                    if self.tabs[idx].is_start
+                    if (self.tabs[idx].is_start
                         && matches!(
                             self.active_modal,
                             Some(
@@ -1674,10 +1674,9 @@ impl OpenCADStudio {
                                     | super::ModalKind::LayerStateManager
                                     | super::ModalKind::LayerStateEditor
                             )
-                        )
+                        ))
+                        || self.active_modal == Some(super::ModalKind::LayerStateEditor)
                     {
-                        self.close_active_modal();
-                    } else if self.active_modal == Some(super::ModalKind::LayerStateEditor) {
                         self.close_active_modal();
                     } else if self.active_modal == Some(super::ModalKind::LayerStateManager) {
                         let mut names: Vec<String> = self.tabs[idx]
@@ -1792,8 +1791,7 @@ impl OpenCADStudio {
                     });
                     self.command_line
                         .push_output(crate::tf!("Copied path: {}", full_path.display()).as_ref());
-                    return iced::clipboard::write(full_path.to_string_lossy().into_owned())
-                        .discard();
+                    iced::clipboard::write(full_path.to_string_lossy().into_owned()).discard()
                 }
                 #[cfg(target_arch = "wasm32")]
                 {
@@ -2559,7 +2557,7 @@ impl OpenCADStudio {
                 self.command_line.push_info(
                     crate::t!("Specify replacement path: XREF Path Find <old> <new>").as_ref(),
                 );
-                return self.focus_cmd_input();
+                self.focus_cmd_input()
             }
             Message::XrefRowChangePathEnter => {
                 self.xref_manager.row_change_path_open = true;
@@ -2575,7 +2573,7 @@ impl OpenCADStudio {
                 self.command_line.input = "XREF Path Find ".to_string();
                 self.command_line.autocomplete_cursor = None;
                 self.command_line.cancel_history_navigation();
-                return self.focus_cmd_input();
+                self.focus_cmd_input()
             }
 
             Message::LayerStateManagerOpen => {
@@ -4398,13 +4396,14 @@ impl OpenCADStudio {
                     .header
                     .current_annotation_scale
                     .clone();
-                if !sel.is_empty() && !sel.eq_ignore_ascii_case(&cur) {
-                    if self.tabs[i].scene.remove_scale(&sel) {
-                        self.scale_manager_selected.clear();
-                        self.scale_manager_paper_buf.clear();
-                        self.scale_manager_drawing_buf.clear();
-                        self.scale_stage_mark();
-                    }
+                if !sel.is_empty()
+                    && !sel.eq_ignore_ascii_case(&cur)
+                    && self.tabs[i].scene.remove_scale(&sel)
+                {
+                    self.scale_manager_selected.clear();
+                    self.scale_manager_paper_buf.clear();
+                    self.scale_manager_drawing_buf.clear();
+                    self.scale_stage_mark();
                 }
                 Task::none()
             }
@@ -6261,7 +6260,7 @@ impl OpenCADStudio {
                     self.apply_property_op(i, "CHPROP", &handles, |app, handle| {
                         match app.tabs[i].scene.document.get_entity_mut(handle) {
                             Some(acadrust::EntityType::MText(m)) => {
-                                m.background_color = color.clone();
+                                m.background_color = color;
                                 // Picking a colour turns the background on in Fill
                                 // mode (specific colour), preserving the frame bit.
                                 m.background_fill_flags = (m.background_fill_flags & !0x02) | 0x01;
@@ -6319,7 +6318,7 @@ impl OpenCADStudio {
                         | "dim_text_color"
                         | "dim_text_fill_color"
                 ) {
-                    let fill_mode = (field == "dim_text_fill_color").then(|| match color {
+                    let fill_mode = (field == "dim_text_fill_color").then_some(match color {
                         acadrust::types::Color::None => 0,
                         acadrust::types::Color::ByBlock => 1,
                         _ => 2,
@@ -6481,7 +6480,7 @@ impl OpenCADStudio {
                                     },
                                 );
                             }
-                            h.gradient_color.colors[idx].color = color.clone();
+                            h.gradient_color.colors[idx].color = color;
                         }
                     });
                     // Rebuild hatch seeds so the gradient fill picks up the new
@@ -8188,7 +8187,7 @@ impl OpenCADStudio {
                             tasks.push(self.fetch_plugin_readme_task(repo));
                         }
                     }
-                    return Task::batch(tasks);
+                    Task::batch(tasks)
                 }
             }
             Message::PluginManagerClose => {
@@ -8308,7 +8307,7 @@ impl OpenCADStudio {
                             tasks.push(self.fetch_plugin_readme_task(repo));
                         }
                     }
-                    return Task::batch(tasks);
+                    Task::batch(tasks)
                 }
                 #[cfg(target_arch = "wasm32")]
                 {
@@ -8328,7 +8327,7 @@ impl OpenCADStudio {
                     self.plugin_registry_loading = true;
                     self.plugin_registry_error = None;
                     self.plugin_registry_error_details_open = false;
-                    return self.fetch_registry_task();
+                    self.fetch_registry_task()
                 }
                 #[cfg(target_arch = "wasm32")]
                 Task::none()

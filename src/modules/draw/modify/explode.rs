@@ -124,8 +124,8 @@ fn explode_polyline(p: &Polyline) -> Vec<EntityType> {
         common.handle = Handle::NULL;
         result.push(EntityType::Line(LineEnt {
             common,
-            start: v0.location.clone(),
-            end: v1.location.clone(),
+            start: v0.location,
+            end: v1.location,
             ..LineEnt::new()
         }));
     }
@@ -147,8 +147,8 @@ fn explode_polyline3d(p: &acadrust::entities::Polyline3D) -> Vec<EntityType> {
         common.handle = Handle::NULL;
         result.push(EntityType::Line(LineEnt {
             common,
-            start: v0.position.clone(),
-            end: v1.position.clone(),
+            start: v0.position,
+            end: v1.position,
             ..LineEnt::new()
         }));
     }
@@ -167,7 +167,7 @@ fn explode_polyline2d(p: &Polyline2D) -> Vec<EntityType> {
         .try_normalize()
         .unwrap_or(DVec3::Z);
     let normal = Vector3::new(normal.x, normal.y, normal.z);
-    let plane = crate::entities::curve::ocs_plane(normal.clone(), elevation);
+    let plane = crate::entities::curve::ocs_plane(normal, elevation);
 
     let mut result = Vec::new();
     for i in 0..n_segs {
@@ -186,18 +186,11 @@ fn explode_polyline2d(p: &Polyline2D) -> Vec<EntityType> {
                 start: Vector3::new(start[0], start[1], start[2]),
                 end: Vector3::new(end[0], end[1], end[2]),
                 thickness: p.thickness,
-                normal: normal.clone(),
-                ..LineEnt::new()
+                normal,
             }));
-        } else if let Some(arc) = bulge_to_arc(
-            p0,
-            p1,
-            v0.bulge,
-            elevation,
-            &p.common,
-            p.thickness,
-            normal.clone(),
-        ) {
+        } else if let Some(arc) =
+            bulge_to_arc(p0, p1, v0.bulge, elevation, &p.common, p.thickness, normal)
+        {
             result.push(arc);
         }
     }
@@ -205,26 +198,23 @@ fn explode_polyline2d(p: &Polyline2D) -> Vec<EntityType> {
 }
 
 pub fn normalize_insert_entity(mut entity: EntityType) -> EntityType {
-    match &mut entity {
-        EntityType::Ellipse(ell) => {
-            let major_len = ell.major_axis_length();
-            let full_span = {
-                let mut span = ell.end_parameter - ell.start_parameter;
-                if span < 0.0 {
-                    span += std::f64::consts::TAU;
-                }
-                (span - std::f64::consts::TAU).abs() < 1e-6
-            };
-            if (ell.minor_axis_ratio - 1.0).abs() < 1e-6 && full_span {
-                let mut circle = CircleEnt::new();
-                circle.common = ell.common.clone();
-                circle.center = ell.center;
-                circle.radius = major_len;
-                circle.normal = ell.normal;
-                entity = EntityType::Circle(circle);
+    if let EntityType::Ellipse(ell) = &mut entity {
+        let major_len = ell.major_axis_length();
+        let full_span = {
+            let mut span = ell.end_parameter - ell.start_parameter;
+            if span < 0.0 {
+                span += std::f64::consts::TAU;
             }
+            (span - std::f64::consts::TAU).abs() < 1e-6
+        };
+        if (ell.minor_axis_ratio - 1.0).abs() < 1e-6 && full_span {
+            let mut circle = CircleEnt::new();
+            circle.common = ell.common.clone();
+            circle.center = ell.center;
+            circle.radius = major_len;
+            circle.normal = ell.normal;
+            entity = EntityType::Circle(circle);
         }
-        _ => {}
     }
 
     entity.common_mut().handle = Handle::NULL;
@@ -265,8 +255,7 @@ fn explode_lwpolyline(p: &LwPolyline) -> Vec<EntityType> {
                 start: Vector3::new(p0[0], p0[1], elevation),
                 end: Vector3::new(p1[0], p1[1], elevation),
                 thickness: p.thickness,
-                normal: p.normal.clone(),
-                ..LineEnt::new()
+                normal: p.normal,
             };
             result.push(EntityType::Line(line));
         } else {
@@ -278,7 +267,7 @@ fn explode_lwpolyline(p: &LwPolyline) -> Vec<EntityType> {
                 elevation,
                 &p.common,
                 p.thickness,
-                p.normal.clone(),
+                p.normal,
             ) {
                 result.push(arc);
             }
@@ -321,7 +310,6 @@ fn bulge_to_arc(
         end_angle,
         thickness,
         normal,
-        ..ArcEnt::new()
     };
     Some(EntityType::Arc(arc))
 }
@@ -345,8 +333,8 @@ fn explode_mline(ml: &MLine) -> Vec<EntityType> {
         c.handle = Handle::NULL;
         EntityType::Line(LineEnt {
             common: c,
-            start: s.clone(),
-            end: e.clone(),
+            start: *s,
+            end: *e,
             ..LineEnt::new()
         })
     };
@@ -414,7 +402,7 @@ fn dim_geom_entities(
             }
         }
     }
-    for triangle in geometry.arrow_fill.chunks_exact(3) {
+    for triangle in geometry.arrow_fill.as_chunks::<3>().0 {
         let mut solid = acadrust::entities::Solid::triangle(
             point(triangle[0]),
             point(triangle[1]),
@@ -544,7 +532,7 @@ fn dim_terminator(
                 }
                 previous = Some(current);
             }
-            for triangle in fill.chunks_exact(3) {
+            for triangle in fill.as_chunks::<3>().0 {
                 tri(
                     custom_pt(&triangle[0]),
                     custom_pt(&triangle[1]),
@@ -846,6 +834,7 @@ fn with_dim_linetype(
 /// applies neither DIMEXO/DIMEXE nor DIMSE suppression, so the bake mustn't
 /// either, or the dim would shift on reload. Adding those to both is tracked as
 /// a separate live-render enhancement.) #181 / DIM-022.
+#[allow(clippy::too_many_arguments)]
 fn angular_block_segs(
     vertex: Vector3,
     p1: Vector3,
@@ -1037,8 +1026,8 @@ fn explode_dimension(dim: &Dimension, doc: &CadDocument) -> Vec<EntityType> {
         c.handle = Handle::NULL;
         EntityType::Line(LineEnt {
             common: c,
-            start: a.clone(),
-            end: b.clone(),
+            start: *a,
+            end: *b,
             ..LineEnt::new()
         })
     };
@@ -1532,6 +1521,7 @@ pub fn invalidate_dim_block(doc: &mut CadDocument, handle: Handle) {
 
 // ── Command stub (kept for future interactive selection mode) ───────────────
 
+#[derive(Default)]
 pub struct ExplodeCommand;
 
 impl ExplodeCommand {

@@ -166,8 +166,8 @@ impl BlockPicker {
             return available.iter().take(limit).cloned().collect();
         }
         let n = needle.to_ascii_lowercase();
-        let mut scored: Vec<(usize, u8, i32, usize)> = Vec::new();
-        scored.reserve(available.len().min(limit * 4 + 16));
+        let mut scored: Vec<(usize, u8, i32, usize)> =
+            Vec::with_capacity(available.len().min(limit * 4 + 16));
         for (i, lc) in lower_cache.iter().enumerate() {
             if let Some(pos) = lc.find(n.as_str()) {
                 // Use upper_cache to avoid allocating per block per keystroke (1.1).

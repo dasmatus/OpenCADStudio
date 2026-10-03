@@ -394,6 +394,7 @@ impl MeshBatchStubs {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn make_chunk(
     device: &wgpu::Device,
     queue: &wgpu::Queue,
@@ -480,7 +481,7 @@ fn make_chunk(
         instances
     };
     let mut wire_vertices = Vec::with_capacity(wire_indices.len());
-    for line in wire_indices.chunks_exact(2) {
+    for line in wire_indices.as_chunks::<2>().0 {
         let (Some(start), Some(end)) = (verts.get(line[0] as usize), verts.get(line[1] as usize))
         else {
             continue;
@@ -1179,7 +1180,7 @@ fn index_hash(indices: &[u32]) -> u64 {
 fn optimize_triangle_indices(indices: &[u32], vertex_count: usize) -> std::sync::Arc<[u32]> {
     #[cfg(not(target_arch = "wasm32"))]
     {
-        return meshopt::optimize::optimize_vertex_cache(indices, vertex_count).into();
+        meshopt::optimize::optimize_vertex_cache(indices, vertex_count).into()
     }
     #[cfg(target_arch = "wasm32")]
     {
@@ -1442,7 +1443,7 @@ fn build_instanced_chunks(
     let mut wire_indices = Vec::new();
     if first.include_edges && !has_feature_edges && !split_geometry {
         wire_indices.reserve(first.indices.len() * 2);
-        for triangle in first.indices.chunks_exact(3) {
+        for triangle in first.indices.as_chunks::<3>().0 {
             wire_indices.extend_from_slice(&[
                 triangle[0],
                 triangle[1],
@@ -1517,7 +1518,7 @@ fn build_instanced_chunks(
         if first.include_faces || needs_wire_vertices {
             for triangles in first.indices.chunks(max_triangles * 3) {
                 let mut vertices = Vec::with_capacity(triangles.len());
-                for triangle in triangles.chunks_exact(3) {
+                for triangle in triangles.as_chunks::<3>().0 {
                     let mapping_normal = material_has_box_projection(material)
                         .then(|| triangle_mapping_normal(mesh, triangle));
                     vertices.extend(
@@ -1529,7 +1530,9 @@ fn build_instanced_chunks(
                 let indices: Vec<_> = (0..vertices.len() as u32).collect();
                 let wire_indices: Vec<_> = if needs_wire_vertices {
                     indices
-                        .chunks_exact(3)
+                        .as_chunks::<3>()
+                        .0
+                        .iter()
                         .flat_map(|t| [t[0], t[1], t[1], t[2], t[2], t[0]])
                         .collect()
                 } else {
@@ -1727,12 +1730,13 @@ fn material_is_transparent(
 fn opacity_image_is_binary_cutout(
     image: &crate::scene::model::material_model::MaterialImage,
 ) -> bool {
-    let mut pixels = image.rgba.chunks_exact(4);
+    let (pixels, remainder) = image.rgba.as_chunks::<4>();
     !image.rgba.is_empty()
-        && pixels.all(|pixel| matches!(pixel[0], 0 | 255))
-        && pixels.remainder().is_empty()
+        && pixels.iter().all(|pixel| matches!(pixel[0], 0 | 255))
+        && remainder.is_empty()
 }
 
+#[allow(clippy::too_many_arguments)]
 fn material_map_uv(
     map: &crate::scene::model::material_model::MeshTextureMap,
     mapper: Option<&crate::scene::model::material_model::MeshMaterialMapper>,
@@ -1808,6 +1812,7 @@ fn material_map_uv(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn material_uvs(
     material: Option<&crate::scene::model::material_model::MeshMaterial>,
     local_position: [f32; 3],
@@ -1851,6 +1856,7 @@ fn material_uvs(
     ]
 }
 
+#[allow(clippy::type_complexity)]
 fn material_vertex_params(
     material: Option<&crate::scene::model::material_model::MeshMaterial>,
 ) -> ([f32; 4], [f32; 4], [f32; 4], [f32; 4], [u32; 4]) {
@@ -1941,6 +1947,7 @@ pub fn build_mesh_batch_filtered(
         rustc_hash::FxHashSet::default();
     let mut total_tris = 0u64;
     let mut ordered: Vec<MeshBatchPart<'_>> = Vec::new();
+    #[allow(clippy::type_complexity)]
     let mut source_indices: rustc_hash::FxHashMap<(bool, u64), (std::sync::Arc<[u32]>, u64)> =
         rustc_hash::FxHashMap::default();
     let mut face_partitions: rustc_hash::FxHashMap<FacePartitionKey, Vec<CachedFacePart<'_>>> =
@@ -1972,11 +1979,11 @@ pub fn build_mesh_batch_filtered(
         let include_faces = set
             .visual_style
             .as_ref()
-            .map_or(true, |style| style.face_visible());
+            .is_none_or(|style| style.face_visible());
         let include_edges = set
             .visual_style
             .as_ref()
-            .map_or(true, |style| style.edges_visible());
+            .is_none_or(|style| style.edges_visible());
         if !has_face_materials && !has_face_colors {
             let base_color = set
                 .material
@@ -2034,6 +2041,7 @@ pub fn build_mesh_batch_filtered(
         let cached_parts = if let Some(parts) = face_partitions.get(&partition_key) {
             parts.clone()
         } else {
+            #[allow(clippy::type_complexity)]
             let mut groups: std::collections::BTreeMap<
                 MaterialBatchKey,
                 (
@@ -2042,7 +2050,7 @@ pub fn build_mesh_batch_filtered(
                     Vec<u32>,
                 ),
             > = std::collections::BTreeMap::new();
-            for (triangle, indices) in mesh.indices.chunks_exact(3).enumerate() {
+            for (triangle, indices) in mesh.indices.as_chunks::<3>().0.iter().enumerate() {
                 let material = if has_face_materials {
                     mesh.triangle_material_handles[triangle]
                         .and_then(|handle| set.face_materials.get(&handle))
@@ -2551,7 +2559,7 @@ pub fn build_mesh_batch_filtered(
             }
         }
         if part.include_edges && !has_feat {
-            for tri in part.indices.chunks_exact(3) {
+            for tri in part.indices.as_chunks::<3>().0 {
                 let (a, b, c) = (base + tri[0], base + tri[1], base + tri[2]);
                 wire_indices.extend_from_slice(&[a, b, b, c, c, a]);
             }

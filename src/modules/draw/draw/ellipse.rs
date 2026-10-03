@@ -131,6 +131,12 @@ pub struct EllipseCommand {
     plane: WorkingPlane,
 }
 
+impl Default for EllipseCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EllipseCommand {
     pub fn new() -> Self {
         Self {
@@ -274,6 +280,12 @@ pub struct EllipseAxisCommand {
     plane: WorkingPlane,
 }
 
+impl Default for EllipseAxisCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EllipseAxisCommand {
     pub fn new() -> Self {
         Self {
@@ -413,6 +425,12 @@ pub struct EllipseArcCommand {
     prev_pt: Option<DVec3>,
     cw: bool,
     plane: WorkingPlane,
+}
+
+impl Default for EllipseArcCommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl EllipseArcCommand {

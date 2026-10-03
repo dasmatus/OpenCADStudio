@@ -101,8 +101,10 @@ impl JoggedRadiusDimensionCommand {
         let jog = project_jog(override_center, chord, plane.to_local(jog_world));
         let text_position = plane.to_local(text_world);
 
-        let mut dimension = DimensionLargeRadial::default();
-        dimension.definition_point = v3(center);
+        let mut dimension = DimensionLargeRadial {
+            definition_point: v3(center),
+            ..Default::default()
+        };
         dimension.base.definition_point = v3(center);
         dimension.chord_point = v3(chord);
         dimension.override_center = v3(override_center);

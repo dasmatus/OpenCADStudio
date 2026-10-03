@@ -1123,6 +1123,7 @@ fn fixed_pin_params(
 
 /// Builds the kernel equations for one constraint. Unsupported references or
 /// invalid dimensional targets produce no equations.
+#[allow(clippy::too_many_arguments)]
 fn build_constraint(
     document: &acadrust::CadDocument,
     sys: &mut System,
@@ -2294,6 +2295,7 @@ fn constrained_line_axes(constraints: &[&ParametricConstraint]) -> HashMap<Param
 /// Solve the scope through the kernel and return changed geometry plus diagnostics.
 /// Failed solves still return DOF/conflicts, but never write back geometry.
 /// Returns `None` when no supported geometry or smooth constraint can be built.
+#[allow(clippy::too_many_arguments)]
 fn solve_scope(
     document: &acadrust::CadDocument,
     drawing_params: &ParameterTable,

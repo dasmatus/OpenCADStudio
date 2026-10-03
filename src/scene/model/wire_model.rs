@@ -392,7 +392,7 @@ pub(crate) struct PatternStationMap {
 }
 
 pub(crate) fn pattern_station_values(data: &[f32], point_count: usize) -> Option<(&[f32], f32)> {
-    (data.len() >= point_count + 1).then(|| (&data[..point_count], data[point_count]))
+    (data.len() > point_count).then(|| (&data[..point_count], data[point_count]))
 }
 
 pub(crate) fn encode_pattern_stations(
@@ -421,7 +421,7 @@ pub(crate) fn decode_pattern_station_map(
     point_count: usize,
 ) -> Option<PatternStationMap> {
     let metadata_start = point_count.checked_mul(2)?.checked_add(1)?;
-    if data.len() < metadata_start || (data.len() - metadata_start) % 8 != 0 {
+    if data.len() < metadata_start || !(data.len() - metadata_start).is_multiple_of(8) {
         return None;
     }
     let point_segments = data[point_count + 1..metadata_start]
@@ -429,7 +429,9 @@ pub(crate) fn decode_pattern_station_map(
         .map(|value| *value as i32)
         .collect();
     let pieces = data[metadata_start..]
-        .chunks_exact(8)
+        .as_chunks::<8>()
+        .0
+        .iter()
         .map(|values| PatternStationPiece {
             source_segment: values[0] as u32,
             source_distances: [values[1], values[2]],

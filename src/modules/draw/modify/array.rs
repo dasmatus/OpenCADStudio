@@ -273,7 +273,7 @@ impl CadCommand for ArrayRectCommand {
 
     fn on_enter(&mut self) -> CmdResult {
         // Enter with empty input = use default for current step
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -436,7 +436,7 @@ impl CadCommand for ArrayPolarCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -461,6 +461,7 @@ use std::f64::consts::TAU as FTAU;
 
 // ── State machine ──────────────────────────────────────────────────────────
 
+#[allow(clippy::large_enum_variant)]
 enum PathStep {
     SelectPath,
     Count { path_entity: EntityType },
@@ -762,7 +763,7 @@ impl CadCommand for ArrayPathCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -1017,7 +1018,7 @@ impl CadCommand for Array3DCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {

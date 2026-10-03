@@ -67,6 +67,7 @@ fn atype_segments(scaled: &[LtSeg], align_end: f32, total: f32) -> Option<Vec<Lt
     Some(segs)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn apply_along(
     name: &str,
     path_pts: &[[f32; 3]],
@@ -483,6 +484,7 @@ fn offset_pt(pt: [f32; 3], fwd: [f32; 3], perp: [f32; 3], dx: f32, dy: f32) -> [
 /// the real .SHX glyph when the segment carries a resolved shape file (by
 /// number for document linetypes, by name for `.lin` references), falling
 /// back to the converted `ltypeshp` LFF substitute set.
+#[allow(clippy::too_many_arguments)]
 fn emit_shape(
     name: &str,
     shx_file: &str,

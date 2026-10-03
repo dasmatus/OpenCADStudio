@@ -189,6 +189,7 @@ impl Face3DGpu {
     ///   is left empty.
     /// - `show_2d_solid_fills`: false only for Wireframe 3D; removes the
     ///   legacy planar SOLID interior while keeping other 2-D overlays.
+    #[allow(clippy::too_many_arguments)]
     pub fn from_wires(
         device: &wgpu::Device,
         queue: &wgpu::Queue,

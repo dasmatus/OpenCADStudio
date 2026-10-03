@@ -220,6 +220,7 @@ impl Scene {
         out
     }
 
+    #[allow(clippy::type_complexity)]
     pub(super) fn paper_sheet_render_models(
         &self,
     ) -> (
@@ -230,6 +231,7 @@ impl Scene {
         self.paper_sheet_render_models_for_view(true)
     }
 
+    #[allow(clippy::type_complexity)]
     pub(super) fn paper_sheet_render_models_for_view(
         &self,
         tint_selected: bool,
@@ -763,7 +765,7 @@ impl Scene {
             }
             let half_h = saved_h * 0.5;
             let half_w = half_h * aspect_d;
-            let (tx, ty) = (cam.target.x as f64, cam.target.y as f64);
+            let (tx, ty) = (cam.target.x, cam.target.y);
             // Prefer the true model bounds; fall back to the median cluster box.
             let (bx0, by0, bx1, by1) = full_bounds.unwrap_or((
                 cx - cluster_half,

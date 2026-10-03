@@ -571,20 +571,22 @@ mod tests {
 
     #[test]
     fn procedural_checker_is_one_repeatable_two_by_two_tile() {
-        let mut map = MaterialMap::default();
-        map.texture = Some(MaterialTexture {
-            color1: MaterialColor {
-                flag: 1,
-                factor: 1.0,
-                rgb: Some(0xFF0000),
-            },
-            color2: MaterialColor {
-                flag: 1,
-                factor: 1.0,
-                rgb: Some(0x00FF00),
-            },
-            ..MaterialTexture::default()
-        });
+        let map = MaterialMap {
+            texture: Some(MaterialTexture {
+                color1: MaterialColor {
+                    flag: 1,
+                    factor: 1.0,
+                    rgb: Some(0xFF0000),
+                },
+                color2: MaterialColor {
+                    flag: 1,
+                    factor: 1.0,
+                    rgb: Some(0x00FF00),
+                },
+                ..MaterialTexture::default()
+            }),
+            ..Default::default()
+        };
 
         let image = procedural_map_image(&map).expect("procedural image");
         let pixel = |x: usize, y: usize| &image.rgba[(y * 64 + x) * 4..][..4];

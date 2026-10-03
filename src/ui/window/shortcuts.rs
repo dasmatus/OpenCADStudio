@@ -46,6 +46,7 @@ fn danger_input_style(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn view_window<'a>(
     rows: &'a [(String, String)],
     capture_row: Option<usize>,

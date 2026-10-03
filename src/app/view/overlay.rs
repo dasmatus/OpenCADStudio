@@ -100,6 +100,7 @@ pub(in crate::app) const MTEXT_EDITOR_WRITING_WIDTH: f32 =
 
 struct MTextPreview {
     /// Disconnected polylines as (x, y) world points + colour (NaN-split done).
+    #[allow(clippy::type_complexity)]
     segments: Vec<(Vec<(f32, f32)>, Color, f32)>,
     /// Per-visible-character boxes (world frame) for click-to-select.
     boxes: Vec<crate::entities::text_support::GlyphBox>,
@@ -199,11 +200,9 @@ impl iced::widget::canvas::Program<Message> for MTextPreview {
                     }
                 }
             }
-            Event::Mouse(Me::ButtonReleased(Button::Left)) => {
-                if state.dragging {
-                    state.dragging = false;
-                    return Some(Action::capture());
-                }
+            Event::Mouse(Me::ButtonReleased(Button::Left)) if state.dragging => {
+                state.dragging = false;
+                return Some(Action::capture());
             }
             _ => {}
         }
@@ -328,9 +327,11 @@ impl iced::widget::canvas::Program<Message> for MTextPreview {
 /// Split every preview WireModel into finite (x, y) polyline runs, each
 /// carrying its wire's colour (so inline `\C` / the colour dropdown shows) and a
 /// stroke width (bold runs carry a wider pen via `line_weight_px`).
+#[allow(clippy::type_complexity)]
 fn mtext_preview_segments(
     ed: &super::super::mtext_editor::MTextEditorState,
 ) -> Vec<(Vec<(f32, f32)>, Color, f32)> {
+    #[allow(clippy::type_complexity)]
     let mut out: Vec<(Vec<(f32, f32)>, Color, f32)> = Vec::new();
     for w in &ed.preview_wires {
         let col = Color {

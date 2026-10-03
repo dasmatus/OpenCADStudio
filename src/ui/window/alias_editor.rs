@@ -55,6 +55,7 @@ fn danger_input_style(
 }
 
 /// Build the alias editor content. `rows` is the live working buffer.
+#[allow(clippy::too_many_arguments)]
 pub fn view_window<'a>(
     rows: &'a [(String, String)],
     pending_add: bool,

@@ -4046,7 +4046,6 @@ pub fn pyramid_op(
         sides: sides as i32,
         radius,
         top_radius,
-        ..SolidHistoryPyramid::default()
     })
 }
 

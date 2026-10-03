@@ -114,6 +114,7 @@ fn resolve_xrefs_with_filter(
             .map(|_| std::sync::atomic::AtomicU16::new(0))
             .collect(),
     );
+    #[allow(clippy::type_complexity)]
     let parsed: Vec<(
         String,
         String,
@@ -1814,15 +1815,15 @@ fn restore_dependent_layers(
         let (Some(cur), Some(old)) = (doc.layers.get_mut(&n), kept.get(&n.to_uppercase())) else {
             continue;
         };
-        cur.flags = old.flags.clone();
-        cur.color = old.color.clone();
+        cur.flags = old.flags;
+        cur.color = old.color;
         cur.color_name = old.color_name.clone();
         cur.book_name = old.book_name.clone();
         cur.line_type = old.line_type.clone();
-        cur.line_weight = old.line_weight.clone();
+        cur.line_weight = old.line_weight;
         cur.plot_style = old.plot_style.clone();
         cur.is_plottable = old.is_plottable;
-        cur.transparency = old.transparency.clone();
+        cur.transparency = old.transparency;
     }
 }
 

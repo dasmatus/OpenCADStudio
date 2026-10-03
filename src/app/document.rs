@@ -778,6 +778,7 @@ pub(super) struct ObjectVisibilitySnapshot {
 /// cloning the flat entity store.
 #[derive(Clone)]
 pub(super) struct DeltaSnapshot {
+    #[allow(clippy::type_complexity)]
     pub(super) entities: Vec<(Handle, Option<Arc<EntityType>>, Option<Arc<EntityType>>)>,
     pub(super) current_layout_before: String,
     pub(super) current_layout_after: String,
@@ -804,6 +805,7 @@ pub(super) struct DeltaSnapshot {
 }
 
 #[derive(Clone)]
+#[allow(clippy::large_enum_variant)]
 pub(super) enum StructureSnapshot {
     /// Compatibility fallback for genuinely broad structural commands.
     Full(CadDocument),

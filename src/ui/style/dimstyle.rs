@@ -208,13 +208,13 @@ impl canvas::Program<Message> for DimensionPreview {
         if self.ext1 {
             frame.stroke(
                 &line(Point::new(x1, object_y), Point::new(x1, 22.0)),
-                stroke.clone(),
+                stroke,
             );
         }
         if self.ext2 {
             frame.stroke(
                 &line(Point::new(x2, object_y), Point::new(x2, 22.0)),
-                stroke.clone(),
+                stroke,
             );
         }
 
@@ -225,7 +225,7 @@ impl canvas::Program<Message> for DimensionPreview {
                     Point::new(x1, y),
                     Point::new((bounds.width * 0.5 - text_half).max(x1), y),
                 ),
-                stroke.clone(),
+                stroke,
             );
         }
         if self.dim2 {
@@ -234,7 +234,7 @@ impl canvas::Program<Message> for DimensionPreview {
                     Point::new((bounds.width * 0.5 + text_half).min(x2), y),
                     Point::new(x2, y),
                 ),
-                stroke.clone(),
+                stroke,
             );
         }
 
@@ -284,6 +284,7 @@ impl canvas::Program<Message> for DimensionPreview {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn view_window<'a>(
     styles: Vec<String>,
     selected: &'a str,
@@ -608,7 +609,7 @@ pub fn view_window<'a>(
     };
 
     let text_style_field: Element<'a, Message> = if vals.read_only {
-        crate::ui::read_only::field(&vals.dimtxsty, 11.0, Length::Fixed(150.0))
+        crate::ui::read_only::field(vals.dimtxsty, 11.0, Length::Fixed(150.0))
     } else {
         iced::widget::pick_list(
             Some(vals.dimtxsty.to_string()),

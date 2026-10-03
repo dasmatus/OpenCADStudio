@@ -198,6 +198,7 @@ fn add_scaled(origin: Vector3, x: Vector3, sx: f64, y: Vector3, sy: f64) -> [f64
     ]
 }
 
+#[allow(clippy::too_many_arguments)]
 fn append_planar_text(
     points: &mut Vec<[f64; 3]>,
     text: &str,
@@ -539,6 +540,7 @@ fn camera_lines(document: &acadrust::CadDocument, view_handle: Handle) -> Vec<[f
 }
 
 fn to_render(entity: &ExtendedEntity, document: &acadrust::CadDocument) -> Option<RenderEntity> {
+    #[allow(clippy::type_complexity)]
     let (points, snaps, keys): (Vec<[f64; 3]>, Vec<(glam::DVec3, SnapHint)>, Vec<[f64; 3]>) =
         match &entity.data {
             ExtendedEntityData::Camera { view_handle } => {
@@ -778,7 +780,9 @@ fn parse_vertices(value: &str) -> Option<Vec<Vector3>> {
         return None;
     }
     let vertices = values
-        .chunks_exact(3)
+        .as_chunks::<3>()
+        .0
+        .iter()
         .map(|point| Vector3::new(point[0], point[1], point[2]))
         .collect::<Vec<_>>();
     let valid = vertices
@@ -1390,7 +1394,9 @@ fn properties(entity: &ExtendedEntity) -> Vec<PropSection> {
                     t!("Transform").as_ref(),
                     "ext_coord_transform",
                     data.transform
-                        .chunks_exact(4)
+                        .as_chunks::<4>()
+                        .0
+                        .iter()
                         .map(|row| {
                             format!("{:.6}, {:.6}, {:.6}, {:.6}", row[0], row[1], row[2], row[3])
                         })

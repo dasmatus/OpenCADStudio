@@ -69,6 +69,12 @@ pub struct RefEditSession {
 /// Step 1: wait for the user to pick a single INSERT entity.
 pub struct RefEditPickCommand;
 
+impl Default for RefEditPickCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl RefEditPickCommand {
     pub fn new() -> Self {
         Self
@@ -108,6 +114,12 @@ impl CadCommand for RefEditPickCommand {
 
 /// Step 4: prompt for SAVE or DISCARD.
 pub struct RefCloseCommand;
+
+impl Default for RefCloseCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl RefCloseCommand {
     pub fn new() -> Self {

@@ -39,6 +39,7 @@ fn field_style(theme: &Theme, status: text_input::Status) -> text_input::Style {
 
 /// `scales` is (name, "paper:drawing" ratio label). The editor buffers hold the
 /// name / paper / drawing of the row being added or edited.
+#[allow(clippy::too_many_arguments)]
 pub fn view_window<'a, 'b>(
     scales: &'b [(String, String)],
     selected: &'b str,

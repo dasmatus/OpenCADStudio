@@ -34,6 +34,12 @@ pub struct DimSpaceCommand {
     picked_entity: Option<EntityType>,
 }
 
+impl Default for DimSpaceCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DimSpaceCommand {
     pub fn new() -> Self {
         Self {

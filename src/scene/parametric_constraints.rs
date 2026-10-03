@@ -1153,9 +1153,11 @@ fn glyph_placement_for_reference(
     };
     let segment_normal = |start: Vector3, end: Vector3| {
         let direction = Vector3::new(-(end.y - start.y), end.x - start.x, 0.0);
-        (direction.length_squared() > 1e-24)
-            .then_some(direction)
-            .unwrap_or(Vector3::UNIT_Y)
+        if direction.length_squared() > 1e-24 {
+            direction
+        } else {
+            Vector3::UNIT_Y
+        }
     };
     let line_normal = |line: &acadrust::entities::Line| segment_normal(line.start, line.end);
     if r.directional_axis().is_some() {
@@ -1204,9 +1206,11 @@ fn glyph_placement_for_reference(
             let direction = anchor - line_midpoint(line);
             Some((
                 anchor,
-                (direction.length_squared() > 1e-24)
-                    .then_some(direction)
-                    .unwrap_or_else(|| line_normal(line)),
+                if direction.length_squared() > 1e-24 {
+                    direction
+                } else {
+                    line_normal(line)
+                },
             ))
         }
         (acadrust::EntityType::Arc(arc), Some(marker)) => {
@@ -1214,9 +1218,11 @@ fn glyph_placement_for_reference(
             let direction = anchor - arc.center_wcs();
             Some((
                 anchor,
-                (direction.length_squared() > 1e-24)
-                    .then_some(direction)
-                    .unwrap_or(Vector3::UNIT_Y),
+                if direction.length_squared() > 1e-24 {
+                    direction
+                } else {
+                    Vector3::UNIT_Y
+                },
             ))
         }
         (_, Some(marker)) => {
@@ -1820,6 +1826,7 @@ impl super::Scene {
     /// same `(anchor, outward, label)` triples into
     /// `crate::ui::overlay::constraint_glyph_box`/`constraint_glyph_offsets`,
     /// so hit-testing can never drift from what's actually drawn.
+    #[allow(clippy::type_complexity)]
     pub fn constraint_glyph_placements_screen(
         &self,
         scope: ParametricScope,
@@ -1997,6 +2004,7 @@ impl super::Scene {
         if handle_map.is_empty() {
             return;
         }
+        #[allow(clippy::type_complexity)]
         let mut to_add: Vec<(
             usize,
             ConstraintKind,

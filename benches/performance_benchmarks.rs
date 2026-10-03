@@ -13,7 +13,7 @@
 //! 10. UI Ribbon View Widget Tree Construction
 //! 11. UI Viewport Grid Geometry Projection & Overlay Cache Key Evaluation
 //! 12. UI Themed SVG Icon Lookup Caching vs Uncached Parse
-//! 12b. Plot Style Layer-Usage Table Rebuild (256-bucket ACI table)
+//!     12b. Plot Style Layer-Usage Table Rebuild (256-bucket ACI table)
 //! 13. Wide & Tapered Arc + Donut Tessellation (7.5k offset polyline curves)
 //! 14. Model Space Extents & Bounding Box Calculation (ZOOM EXTENTS)
 //! 15. Batch Entity Transformation & Incremental Dirty-Tracking
@@ -1408,7 +1408,7 @@ fn bench_ui_plotstyle_layer_usage(runner: &mut BenchmarkRunner) {
 
     let mut doc = CadDocument::new();
     for i in 0..200 {
-        let mut layer = acadrust::tables::Layer::new(&format!("LAYER_{i:03}"));
+        let mut layer = acadrust::tables::Layer::new(format!("LAYER_{i:03}"));
         layer.handle = doc.allocate_handle();
         layer.color = acadrust::types::Color::Index((i % 8 + 1) as u8);
         let _ = doc.layers.add(layer);

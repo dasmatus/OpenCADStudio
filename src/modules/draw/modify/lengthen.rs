@@ -52,6 +52,7 @@ static LENGTHEN_DEFAULTS: std::sync::Mutex<LengthenDefaults> =
         total_angle: 180.0,
     });
 
+#[allow(clippy::large_enum_variant)]
 enum LenState {
     ChooseMode,
     Value(ValueMode),
@@ -62,6 +63,12 @@ enum LenState {
         entity: EntityType,
         pick: DVec3,
     },
+}
+
+impl Default for LengthenCommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl LengthenCommand {
@@ -440,7 +447,7 @@ fn lengthen_entity_precise(entity: &EntityType, pick: DVec3, mode: &LenMode) -> 
             result.vertices = vertices
                 .into_iter()
                 .map(|vertex| {
-                    let mut value = polyline.vertices[vertex.source].clone();
+                    let mut value = polyline.vertices[vertex.source];
                     value.location.x = vertex.position[0];
                     value.location.y = vertex.position[1];
                     value.bulge = vertex.bulge;

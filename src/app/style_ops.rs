@@ -102,7 +102,7 @@ fn sync_mleaderstyle_dictionary(doc: &mut acadrust::CadDocument) {
         })
         .collect();
 
-    entries.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
+    entries.sort_by_key(|a| a.0.to_lowercase());
 
     for (_, handle) in &entries {
         if let Some(ObjectType::MultiLeaderStyle(style)) = doc.objects.get_mut(handle) {
@@ -212,7 +212,7 @@ impl OpenCADStudio {
                 .filter_map(pick)
                 .map(str::to_string)
                 .collect();
-            v.sort_by(|a, b| a.to_lowercase().cmp(&b.to_lowercase()));
+            v.sort_by_key(|a| a.to_lowercase());
             v
         };
         match kind {

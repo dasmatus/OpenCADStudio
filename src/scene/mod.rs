@@ -252,7 +252,7 @@ impl Scene {
     /// their own points and are left alone; non-solids are untouched.
     /// Idempotent: a wire already carrying 3D snaps is skipped, so shared
     /// memo entries can pass through every assembly path safely.
-    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut Vec<WireModel>) {
+    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut [WireModel]) {
         use crate::scene::model::wire_model::SnapHint;
         let points = self.solid_snap_points(handle);
         if points.is_empty() {
@@ -288,6 +288,7 @@ impl Scene {
     /// pre-baked 3D hints ride is clipped; this direct mesh read is not).
     /// Worst case in those views is a snap with no geometry behind it —
     /// never a corrupt point.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn solid_face_snaps(
         &self,
         cursor_screen: iced::Point,
@@ -309,7 +310,7 @@ impl Scene {
         if !(aperture_px.is_finite() && aperture_px > 0.0) {
             return None;
         }
-        let perp_base = want_perp.then(|| base).flatten();
+        let perp_base = want_perp.then_some(base).flatten();
         let project = |world: glam::DVec3| {
             let ndc = view_rot.project_point3((world - eye).as_vec3());
             [
@@ -333,7 +334,8 @@ impl Scene {
                             screen: [f32; 2],
                             d2: f32,
                             handle: Handle| {
-            if !(d2 < radius2) || !in_bounds(screen) {
+            // NaN distances fail `partial_cmp` and are rejected too.
+            if d2.partial_cmp(&radius2) != Some(std::cmp::Ordering::Less) || !in_bounds(screen) {
                 return;
             }
             let (tier, sub) = (snap_tier(snap_type), snap_priority(snap_type));
@@ -412,7 +414,7 @@ impl Scene {
             {
                 continue;
             }
-            for tri in lod.indices.chunks_exact(3) {
+            for tri in lod.indices.as_chunks::<3>().0 {
                 let mut v = [glam::DVec3::ZERO; 3];
                 let mut ok = true;
                 for (slot, index) in v.iter_mut().zip(tri.iter()) {
@@ -713,6 +715,7 @@ impl UndoRecording {
     /// command; every parametric-constraint scope's before-image is a real
     /// `ParametricConstraintSet` (its `Vec` entry, once created, is never
     /// removed, so there is no "didn't exist before" case there).
+    #[allow(clippy::type_complexity)]
     pub fn into_recorded_images(
         mut self,
     ) -> (
@@ -1509,9 +1512,7 @@ fn offset_centroid(e: &EntityType, model_block: Handle, prep: &OffsetPrep) -> Op
         set.contains(&h)
     } else if c.owner_handle == model_block {
         true
-    } else if !c.owner_handle.is_null() {
-        false
-    } else if prep.owned_by_other_block.contains(&h) {
+    } else if !c.owner_handle.is_null() || prep.owned_by_other_block.contains(&h) {
         false
     } else {
         // owner null + h not enumerated by any block: legacy permissive
@@ -1914,6 +1915,7 @@ pub enum ViewportRefreshScope {
 /// Entity membership in document order, keyed by geometry epoch.
 type BlockMembers = (u64, HashMap<Handle, Vec<Handle>>);
 
+#[allow(clippy::type_complexity)]
 pub struct Scene {
     pub camera: Rc<RefCell<Camera>>,
     /// View saved immediately before the latest navigation operation. ZOOM
@@ -2152,7 +2154,6 @@ pub struct Scene {
     /// Direct handle → expanded mesh-set indices for the current renderer mesh
     /// source. Block instances may contribute several sets under one Insert
     /// handle. The weak source guard prevents stale pointer reuse.
-    #[allow(clippy::type_complexity)]
     mesh_pick_lookup_cache: RefCell<
         Option<(
             usize,
@@ -2358,7 +2359,6 @@ pub struct Scene {
     /// can tell "same content" from "changed" — no per-frame re-upload and no
     /// camera-keyed re-tessellation anywhere. Rebuilt per key when
     /// `geometry_epoch` changes; stale entries evicted on insert.
-    #[allow(clippy::type_complexity)]
     resident_wire_sets: RefCell<HashMap<u64, ResidentWireSet>>,
     /// Memoized `(face3d, other)` split of a resident wire set, keyed by its
     /// [`WIRE_CONTENT_GEN`] id. `split_face3d_wires` is an O(N) per-wire
@@ -2370,7 +2370,6 @@ pub struct Scene {
     /// `try_resident_patch` can only move a resident set out for an
     /// incremental patch while its `Arc` is uniquely held, so pinning it in
     /// this cache would silently force a full rebuild on every edit (#358).
-    #[allow(clippy::type_complexity)]
     split_cache: RefCell<HashMap<u64, (Arc<Vec<WireModel>>, Option<Arc<Vec<WireModel>>>)>>,
     /// Cached `selected ∪ hover` handle set for the GPU xray overlay, keyed by
     /// `selection_generation`. Rebuilt only when the selection changes so
@@ -2504,6 +2503,9 @@ fn keep_section_positive(
 }
 
 impl Scene {
+    // `selection` is an `Arc` on purpose (see `selection_is_arc_not_refcell`);
+    // it is shared with the overlay on the UI thread only.
+    #[allow(clippy::arc_with_non_send_sync)]
     pub fn new() -> Self {
         Self {
             camera: Rc::new(RefCell::new(Camera::default())),
@@ -2895,7 +2897,7 @@ impl Scene {
         }
         // Complex-linetype glyphs ride the host entity's wire.
         let lt = crate::scene::view::render::linetype_name_for(&self.document, entity);
-        crate::io::linetypes::resolve_complex_lt(&self.document, &lt).is_some()
+        crate::io::linetypes::resolve_complex_lt(&self.document, lt).is_some()
     }
 
     /// Stage the cache categories an entity belongs to before erase removes the
@@ -3103,6 +3105,7 @@ impl Scene {
     /// its original handle, or remove it. Returns the exact per-handle change
     /// list; derived-cache reseeding and the geometry bump are deferred so a
     /// multi-step undo/redo can process each final handle only once.
+    #[allow(clippy::type_complexity)]
     pub(crate) fn apply_entity_delta(
         &mut self,
         entities: &[(Handle, Option<Arc<EntityType>>, Option<Arc<EntityType>>)],
@@ -3538,7 +3541,7 @@ impl Scene {
         }
         self.nav_changed_at
             .get()
-            .map_or(false, |t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
     }
 
     pub(crate) fn record_nav_perf(&self, op: NavPerfOp, started: iced::time::Instant) {
@@ -3591,9 +3594,9 @@ impl Scene {
     /// (hatched) frame actually renders after the cursor stops, even when no
     /// input event would otherwise trigger a redraw. Read-only (no side effect).
     pub fn is_settling(&self) -> bool {
-        self.nav_changed_at.get().map_or(false, |t| {
-            t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130
-        })
+        self.nav_changed_at
+            .get()
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130)
     }
 
     /// Prepare display geometry without changing the entity or resident caches.
@@ -6156,6 +6159,7 @@ impl Scene {
         arc
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn resident_wire_key(
         &self,
         block: Handle,
@@ -6283,6 +6287,7 @@ impl Scene {
     /// (a wire not named with its entity handle, or an entity's wires not
     /// contiguous). Because every failure falls back to the identical full
     /// build, correctness never depends on the fast path being taken.
+    #[allow(clippy::too_many_arguments)]
     fn try_resident_patch(
         &self,
         key: u64,
@@ -7259,6 +7264,7 @@ impl Scene {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn collect_images<T>(
         &self,
         target_block: Handle,
@@ -7946,12 +7952,16 @@ impl Scene {
             *self.viewport_style_override_cache.borrow_mut() =
                 Some((self.geometry_epoch, overridden));
         }
-        self.viewport_style_override_cache
+        let overridden = self
+            .viewport_style_override_cache
             .borrow()
             .as_ref()
-            .is_some_and(|(_, overridden)| overridden.contains(&viewport))
-            .then_some(viewport.value())
-            .unwrap_or(0)
+            .is_some_and(|(_, overridden)| overridden.contains(&viewport));
+        if overridden {
+            viewport.value()
+        } else {
+            0
+        }
     }
 
     /// Hatch / 2-D-solid fills for a content viewport, with its frozen layers
@@ -8468,7 +8478,6 @@ impl Scene {
     }
 
     /// Instanced hatch models keyed by their block-backed host handle.
-
     pub fn insert_hatches_for_click(&self) -> Arc<HashMap<Handle, Vec<HatchModel>>> {
         let interaction_block = self.interaction_block_handle();
         let space_key = self.interaction_space_key();
@@ -8760,6 +8769,7 @@ impl Scene {
 
     const INTERACTION_OVERLAY_MAX_HANDLES: usize = 2_048;
 
+    #[allow(clippy::type_complexity)]
     fn interaction_overlay_base(
         &self,
     ) -> Option<(
@@ -8822,6 +8832,7 @@ impl Scene {
         (wires, index)
     }
 
+    #[allow(clippy::type_complexity)]
     fn interaction_overlay_wires(
         &self,
         base_keys: impl IntoIterator<Item = (u64, u32)>,
@@ -9179,6 +9190,7 @@ impl Scene {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn interaction_candidates_near_impl(
         &self,
         wires: Arc<Vec<WireModel>>,
@@ -9380,6 +9392,7 @@ impl Scene {
     }
 
     /// Top-level solid handles caught by a rectangular selection box.
+    #[allow(clippy::too_many_arguments)]
     pub fn mesh_box_hit(
         &self,
         a: iced::Point,
@@ -9805,6 +9818,7 @@ impl Scene {
     /// rectangular selection box. A block whose visible body is a solid has
     /// no wires to catch, so box/lasso selection must test its instanced
     /// meshes too.
+    #[allow(clippy::too_many_arguments)]
     pub fn block_mesh_box_hit(
         &self,
         a: iced::Point,
@@ -9996,6 +10010,7 @@ impl Scene {
         self.belongs_to_visible_block(c.handle, c.owner_handle, block_handle)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn wires_for_block_culled<'doc>(
         &'doc self,
         block_handle: Handle,
@@ -11595,6 +11610,9 @@ vis_index={:.1} visible_probe={:.1}",
         let margin = 1.1_f64;
         let scale_w = vp.width / (content_w as f64 * margin);
         let scale_h = vp.height / (content_h as f64 * margin);
+        // min/max rather than clamp: a NaN scale falls back to the upper
+        // bound instead of propagating into the viewport.
+        #[allow(clippy::manual_clamp)]
         let fit_scale = scale_w.min(scale_h).min(1000.0).max(1e-6);
 
         vp.custom_scale = fit_scale;
@@ -11628,14 +11646,16 @@ mod section_tests {
             bottom_height: 2.0,
             indicator_alpha: 70,
             indicator_color: Color::from_index(9),
-            back_line_vertices: (depth > 0.0)
-                .then(|| {
+            back_line_vertices: if depth > 0.0 {
+                {
                     vertices
                         .iter()
                         .map(|point| *point + Vector3::new(-depth, 0.0, 0.0))
                         .collect()
-                })
-                .unwrap_or_default(),
+                }
+            } else {
+                Default::default()
+            },
             vertices,
             settings_handle: Handle::NULL,
         }
@@ -12641,6 +12661,7 @@ mod delta_undo_tests {
 
     /// Build the delta the way `commit_undo_delta` does: pair each recorded
     /// before-image with the entity's current (after) state.
+    #[allow(clippy::type_complexity)]
     fn build_delta(
         scene: &Scene,
         rec: UndoRecording,
@@ -12980,11 +13001,6 @@ mod selection_arc_tests {
             tn
         );
     }
-
-    #[test]
-    fn selection_overlay_takes_arc() {
-        assert!(true);
-    }
 }
 
 #[cfg(test)]
@@ -13140,17 +13156,23 @@ mod layout_cache_tests {
     #[test]
     fn resident_wires_are_zoom_independent_and_gpu_analytical() {
         let mut s = Scene::new();
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 100.0;
+        let circle = acadrust::entities::Circle {
+            radius: 100.0,
+            ..Default::default()
+        };
         let handle = s.add_entity(EntityType::Circle(circle));
 
         // Far camera: distance is large
-        let mut cam_far = Camera::default();
-        cam_far.distance = 1000.0;
+        let cam_far = Camera {
+            distance: 1000.0,
+            ..Default::default()
+        };
 
         // Close camera: distance is small
-        let mut cam_close = Camera::default();
-        cam_close.distance = 1.0;
+        let cam_close = Camera {
+            distance: 1.0,
+            ..Default::default()
+        };
 
         let wires_far = s.model_tile_wires_arc(0, &cam_far, 1.0, 1000.0);
         let circle_wire_far = wires_far
@@ -13178,14 +13200,18 @@ mod layout_cache_tests {
     fn block_circles_and_arcs_extract_as_analytical_gpu_instances() {
         let mut s = Scene::new();
         // Create initial entities
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 50.0;
+        let circle = acadrust::entities::Circle {
+            radius: 50.0,
+            ..Default::default()
+        };
         let c_h = s.add_entity(EntityType::Circle(circle));
 
-        let mut arc = acadrust::entities::Arc::default();
-        arc.radius = 25.0;
-        arc.start_angle = 0.0;
-        arc.end_angle = std::f64::consts::PI;
+        let arc = acadrust::entities::Arc {
+            radius: 25.0,
+            start_angle: 0.0,
+            end_angle: std::f64::consts::PI,
+            ..Default::default()
+        };
         let a_h = s.add_entity(EntityType::Arc(arc));
 
         let line = acadrust::entities::Line::from_points(

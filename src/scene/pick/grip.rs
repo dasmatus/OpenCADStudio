@@ -165,6 +165,7 @@ fn marker_direction(from: Vec2, to: Vec2) -> [f32; 2] {
 
 /// Project a slice of `GripDef`s to screen space.
 /// Returns `(grip_id, screen_pos, is_midpoint, shape)` for each grip.
+#[allow(clippy::type_complexity)]
 pub fn grips_to_screen(
     grips: &[GripDef],
     camera: &crate::scene::view::camera::Camera,
@@ -195,6 +196,7 @@ pub fn grips_to_screen(
 
 /// Paper-space variant: project grips using the 2-D linear `to_px` transform.
 /// Parameters match the `to_px` closure in `paper_canvas.rs`.
+#[allow(clippy::type_complexity)]
 pub fn grips_to_screen_paper(
     grips: &[GripDef],
     tx: f32,
@@ -311,6 +313,7 @@ pub(crate) fn project_rte(
 /// Relative-to-eye variant of [`grips_to_screen`] taking a `(view_rot, eye)`
 /// pair instead of a `Camera`, so the composed in-viewport view can project
 /// model-space grips exactly like the GPU renders the viewport content.
+#[allow(clippy::type_complexity)]
 pub fn grips_to_screen_rte(
     grips: &[GripDef],
     view_rot: Mat4,

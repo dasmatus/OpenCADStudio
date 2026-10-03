@@ -88,8 +88,8 @@ impl MeshMetrics {
                 .translated(delta),
             );
         } else {
-            for axis in 0..3 {
-                self.centroid[axis] += delta[axis];
+            for (centroid, delta) in self.centroid.iter_mut().zip(delta) {
+                *centroid += delta;
             }
         }
     }
@@ -201,7 +201,9 @@ fn compute_mesh_metrics(lods: &[MeshModel]) -> MeshMetrics {
         normals: Vec::new(),
         triangles: mesh
             .indices
-            .chunks_exact(3)
+            .as_chunks::<3>()
+            .0
+            .iter()
             .map(|triangle| {
                 [
                     triangle[0] as usize,

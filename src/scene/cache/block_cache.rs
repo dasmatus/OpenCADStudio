@@ -173,6 +173,7 @@ pub struct BlockCache {
     /// translation but includes the linear transform and every inherited style
     /// input. A matching insert therefore reuses all nested expansion/style
     /// work and only applies its translation to the immutable prototype.
+    #[allow(clippy::type_complexity)]
     expansion_prototypes: std::sync::Mutex<
         HashMap<ExpansionPrototypeKey, Arc<std::sync::Mutex<Option<Arc<CachedExpansion>>>>>,
     >,
@@ -285,6 +286,7 @@ impl BlockCache {
 
     /// Build a small cache rooted at one block. Used only when a synthetic or
     /// newly-added Insert is not present in the resident cache yet.
+    #[allow(clippy::too_many_arguments)]
     pub fn build_for_block(
         doc: &CadDocument,
         block_name: &str,
@@ -490,7 +492,7 @@ fn layer_hidden(doc: &CadDocument, layer: &str) -> bool {
 
 fn nested_instance_transform(nref: &NestedRef, offset: [f64; 3]) -> Transform {
     if offset == [0.0; 3] {
-        nref.xform.clone()
+        nref.xform
     } else {
         Transform::from_translation(Vector3::new(offset[0], offset[1], offset[2])).then(&nref.xform)
     }
@@ -502,6 +504,7 @@ fn nested_attachment_transform(nref: &NestedRef, offset: [f64; 3]) -> Transform 
     Transform::from_translation(instance - base)
 }
 
+#[allow(clippy::too_many_arguments)]
 fn build_defn(
     doc: &CadDocument,
     block_name: &str,
@@ -973,6 +976,7 @@ pub fn aabb_disjoint_xy(a: [f32; 4], b: [f32; 4]) -> bool {
 ///
 /// Returns `None` if no defn is cached for `ins.block_name`. Returns
 /// `Some(empty)` if the defn exists but is empty.
+#[allow(clippy::too_many_arguments)]
 pub fn expand_insert(
     doc: &CadDocument,
     cache: &BlockCache,
@@ -1090,10 +1094,10 @@ pub fn expand_insert(
         )
     });
     let insert_local = [
-        insert_world[0] as f32,
-        insert_world[1] as f32,
-        insert_world[2] as f32,
-        insert_world[3] as f32,
+        insert_world[0],
+        insert_world[1],
+        insert_world[2],
+        insert_world[3],
     ];
 
     // Whole-Insert frustum cull.
@@ -1265,8 +1269,8 @@ fn translated_prototype_wire(source: &WireModel, name: &str, delta: [f64; 3]) ->
     let mut wire = source.clone();
     wire.name = name.to_string();
     if let Some(instance) = wire.render_instance.as_mut() {
-        for axis in 0..3 {
-            instance.translation[axis] += delta[axis];
+        for (translation, delta) in instance.translation.iter_mut().zip(delta) {
+            *translation += delta;
         }
     }
     translate_double_single(&mut wire.points, &mut wire.points_low, delta);
@@ -1573,6 +1577,7 @@ struct Batches {
 }
 
 impl BatchEntry {
+    #[allow(clippy::too_many_arguments)]
     fn new(
         color: [f32; 4],
         contrast_bg: Option<[f32; 4]>,
@@ -1739,6 +1744,7 @@ impl Batches {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn style_key(
     color: [f32; 4],
     contrast_bg: Option<[f32; 4]>,
@@ -1801,6 +1807,7 @@ fn style_key(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn expand_defn(
     defn: &BlockDefn,
     accum_xform: &Transform,
@@ -1828,12 +1835,7 @@ fn expand_defn(
                 // `defn_lo` (in f64) before composing with `accum_xform`
                 // so culling uses correct world-space corners.
                 let world = transform_aabb_xy(lw.aabb_local, accum_xform);
-                let local = [
-                    world[0] as f32,
-                    world[1] as f32,
-                    world[2] as f32,
-                    world[3] as f32,
-                ];
+                let local = [world[0], world[1], world[2], world[3]];
                 if let Some(view) = ctx.view_aabb {
                     if aabb_disjoint_xy(local, view) {
                         continue;
@@ -1909,12 +1911,7 @@ fn expand_defn(
                             transform_aabb_xy(nested_defn.metrics.aabb_local, &composed),
                         )
                     });
-                let local = [
-                    world[0] as f32,
-                    world[1] as f32,
-                    world[2] as f32,
-                    world[3] as f32,
-                ];
+                let local = [world[0], world[1], world[2], world[3]];
                 if let Some(view) = ctx.view_aabb {
                     if aabb_disjoint_xy(local, view) {
                         continue;
@@ -2567,7 +2564,7 @@ fn emit_wire(
     // block text vanished under its wipeout; selecting won only because the
     // xray pass ignores depth).
     let local_depth = (lw.world_width > 0.0 || !lw.text_verts.is_empty())
-        .then(|| d_range.0 + lw.local_rank * d_range.1);
+        .then_some(d_range.0 + lw.local_rank * d_range.1);
     let plot_visible = ctx.plot_visible && lw.plot_visible && (!lw.plot_l0 || ctx.l0_plottable);
 
     let key = style_key(
@@ -2718,11 +2715,11 @@ fn emit_wire(
     }
 
     for p in &lw.key_vertices {
-        let v = accum_xform.apply(Vector3::new(p[0] as f64, p[1] as f64, p[2] as f64));
+        let v = accum_xform.apply(Vector3::new(p[0], p[1], p[2]));
         entry.key_vertices.push([v.x, v.y, v.z]);
     }
     for (p, hint) in &lw.snap_pts {
-        let v = accum_xform.apply(Vector3::new(p.x as f64, p.y as f64, p.z as f64));
+        let v = accum_xform.apply(Vector3::new(p.x, p.y, p.z));
         entry
             .snap_pts
             .push((glam::DVec3::new(v.x, v.y, v.z), *hint));
@@ -2848,8 +2845,8 @@ fn transform_tangent(tg: &TangentGeom, t: &Transform) -> Option<TangentGeom> {
                 center[2] as f64,
             ));
             let m = &t.matrix.m;
-            let sx = ((m[0][0] * m[0][0] + m[0][1] * m[0][1] + m[0][2] * m[0][2]) as f64).sqrt();
-            let sy = ((m[1][0] * m[1][0] + m[1][1] * m[1][1] + m[1][2] * m[1][2]) as f64).sqrt();
+            let sx = (m[0][0] * m[0][0] + m[0][1] * m[0][1] + m[0][2] * m[0][2]).sqrt();
+            let sy = (m[1][0] * m[1][0] + m[1][1] * m[1][1] + m[1][2] * m[1][2]).sqrt();
             let s = ((sx + sy) * 0.5) as f32;
             Some(TangentGeom::Circle {
                 center: [(c.x) as f32, (c.y) as f32, (c.z) as f32],

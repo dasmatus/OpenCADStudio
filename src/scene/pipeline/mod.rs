@@ -1098,14 +1098,13 @@ impl Pipeline {
         #[cfg(not(target_arch = "wasm32"))]
         if std::env::var_os("RUST_LOG").is_some() {
             eprintln!(
-                "renderer pipelines: wire={} hatch={} mesh={} (storage buffers/stage: {})",
+                "renderer pipelines: wire={} hatch={} mesh=vertex (storage buffers/stage: {})",
                 if wire_mode.uses_storage() {
                     "storage"
                 } else {
                     "packed"
                 },
                 hatch_gpu.backend_name(),
-                "vertex",
                 device.limits().max_storage_buffers_per_shader_stage
             );
         }
@@ -2522,6 +2521,7 @@ impl Pipeline {
     }
 
     /// Build resident batches and a handle index shared across viewport slots.
+    #[allow(clippy::type_complexity)]
     pub fn build_wire_buffers(
         &mut self,
         device: &wgpu::Device,
@@ -2704,6 +2704,7 @@ impl Pipeline {
         (circles, ellipses, regular, blocks)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn upload_selected_wires(
         &mut self,
         device: &wgpu::Device,
@@ -2883,6 +2884,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
     /// hovered text, recoloured (selection blue, hover orange) and drawn over
     /// the base text pass. Uses the same handle→wire index as the selected-wire
     /// overlay, so it is O(highlighted). Empty when nothing is highlighted.
+    #[allow(clippy::too_many_arguments)]
     pub fn upload_text_highlight(
         &mut self,
         device: &wgpu::Device,
@@ -3400,6 +3402,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
     /// Upload all 3DFACE entities as two batched GPU objects:
     /// - `gpu_face3d_fill`: filled triangles (1 buffer, 1 draw call)
     /// - `gpu_face3d_edges`: merged edge wires (1 buffer, 1 draw call)
+    #[allow(clippy::too_many_arguments)]
     pub fn upload_face3d(
         &mut self,
         device: &wgpu::Device,
@@ -3680,7 +3683,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
             .iter()
             .filter(|handle| !selected.contains(handle) && !edge_handles.contains(handle))
         {
-            if let Some(ranges) = self.mesh_ranges_by_handle.get(&handle) {
+            if let Some(ranges) = self.mesh_ranges_by_handle.get(handle) {
                 out.extend(ranges.iter().copied().map(|range| MeshHighlightDraw {
                     range,
                     kind: MeshHighlightKind::Hover,
@@ -3981,6 +3984,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
     /// blit uniform buffer (written by `upload_blit_uv` during `prepare`)
     /// so a viewport that hangs off the canvas still composites the correct
     /// sub-rectangle to the visible portion of the surface.
+    #[allow(clippy::too_many_arguments)]
     pub fn render(
         &self,
         encoder: &mut wgpu::CommandEncoder,
@@ -5211,7 +5215,7 @@ analytic={:.1} regular={:.1} blocks={:.1}",
 /// `alloc_size` — this is the mitigation for the Windows-Firefox freeze (#191).
 fn round_up_tex(n: u32) -> u32 {
     const GRID: u32 = 128;
-    ((n.max(1) + GRID - 1) / GRID) * GRID
+    n.max(1).div_ceil(GRID) * GRID
 }
 
 /// `true` when the world-XY AABB projects entirely outside the
@@ -5563,6 +5567,7 @@ pub struct MultiPipeline {
     /// Definition geometry shared across viewport slots.
     pub(crate) block_geometry: wire_gpu::BlockGeometryCache,
     /// Shared resident batches, keyed by wire content identity.
+    #[allow(clippy::type_complexity)]
     pub(crate) wire_buffer_cache: rustc_hash::FxHashMap<
         u64,
         (
@@ -5997,7 +6002,7 @@ mod highlight_classification_tests {
 
     #[test]
     fn each_wire_lands_in_the_bucket_the_old_predicate_chose() {
-        let wires = vec![plain("1"), circle("2"), ellipse("3"), plain("4")];
+        let wires = [plain("1"), circle("2"), ellipse("3"), plain("4")];
         let refs: Vec<&WireModel> = wires.iter().collect();
         let depth_map = rustc_hash::FxHashMap::default();
 
@@ -6027,7 +6032,7 @@ mod highlight_classification_tests {
     // reach the instances.
     #[test]
     fn the_colour_override_reaches_the_instances() {
-        let wires = vec![circle("2"), ellipse("3")];
+        let wires = [circle("2"), ellipse("3")];
         let refs: Vec<&WireModel> = wires.iter().collect();
         let depth_map = rustc_hash::FxHashMap::default();
 

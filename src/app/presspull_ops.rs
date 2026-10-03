@@ -148,7 +148,7 @@ impl super::OpenCADStudio {
                 PresspullTargetKind::Profile { entity, .. } => {
                     let (plane, loops, closed) = presspull_model::profile_geometry(entity)
                         .ok_or("PRESSPULL: the profile could not be recovered exactly.")?;
-                    if owner.is_some() {
+                    if let Some(owner) = owner {
                         let current = current
                             .ok_or("PRESSPULL: the original solid could not be restored.")?;
                         if !closed {
@@ -168,7 +168,7 @@ impl super::OpenCADStudio {
                             history,
                             scene
                                 .document
-                                .get_entity(owner.unwrap())
+                                .get_entity(owner)
                                 .cloned()
                                 .ok_or("PRESSPULL: the original solid no longer exists.")?,
                         )

@@ -1242,6 +1242,7 @@ pub(super) struct OpenCADStudio {
     active_interaction_index: Option<(u64, u64, usize)>,
     /// Latest resident source requested by each waiting tab. Jobs run
     /// serially behind `active_interaction_index`.
+    #[allow(clippy::type_complexity)]
     queued_interaction_indices: std::collections::VecDeque<(
         u64,
         u64,
@@ -2000,6 +2001,7 @@ pub enum ArrowKey {
 }
 
 #[derive(Debug, Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum Message {
     SpaceMouseWake,
     SpaceMouseFrame(iced::time::Instant),

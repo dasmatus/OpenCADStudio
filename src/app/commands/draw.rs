@@ -57,7 +57,7 @@ impl OpenCADStudio {
                 return Some(Task::done(Message::ImagePick));
             }
 
-            cmd if cmd == "IMAGEEMBED" => {
+            "IMAGEEMBED" => {
                 return Some(Task::done(Message::ImageEmbedPick));
             }
 
@@ -812,7 +812,7 @@ impl OpenCADStudio {
                 let inherited = selected.iter().find_map(|handle| {
                     let model = self.tabs[i].scene.hatches.get(handle)?.clone();
                     let common = self.tabs[i].scene.document.get_entity(*handle)?.common();
-                    Some((model, common.color.clone(), common.transparency))
+                    Some((model, common.color, common.transparency))
                 });
                 let new_cmd =
                     HatchCommand::new(outlines, boundary_sources, selected, inherited, plane)

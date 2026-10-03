@@ -349,9 +349,7 @@ impl CadCommand for InsertBlockCommand {
     }
 
     fn attreq_take_insert(&mut self) -> Option<acadrust::EntityType> {
-        self.pending_insert
-            .take()
-            .map(|ins| EntityType::Insert(ins))
+        self.pending_insert.take().map(EntityType::Insert)
     }
 }
 

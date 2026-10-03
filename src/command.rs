@@ -1452,6 +1452,7 @@ impl DimensionPreview {
 
 /// Returned by every `CadCommand` method to tell main.rs what to do.
 #[allow(dead_code)]
+#[allow(clippy::large_enum_variant)]
 pub enum CmdResult {
     /// Command is still waiting for the next point; show updated prompt.
     NeedPoint,

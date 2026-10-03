@@ -355,7 +355,7 @@ fn tile_vertices(model: &ImageModel, x: TileRange, y: TileRange) -> Vec<ImageVer
         (1, y.content_end as f32 / model.height as f32, false),
     ];
     let mut output = Vec::new();
-    for triangle in source.chunks_exact(3) {
+    for triangle in source.as_chunks::<3>().0 {
         let mut polygon = triangle.to_vec();
         for (axis, boundary, keep_greater) in bounds {
             polygon = clip_vertices(&polygon, axis, boundary, keep_greater);

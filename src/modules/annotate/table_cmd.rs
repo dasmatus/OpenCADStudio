@@ -148,6 +148,12 @@ fn selected_row_style(table_style: &acadrust::objects::TableStyle, name: &str) -
     cell_style_from_row(style)
 }
 
+impl Default for TableCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TableCommand {
     pub fn new() -> Self {
         Self {
@@ -196,6 +202,7 @@ impl TableCommand {
     /// Build the insertion command from the values accepted by the Insert
     /// Table dialog. The dialog owns validation, so the command starts at the
     /// point/window placement step instead of asking for the same values again.
+    #[allow(clippy::too_many_arguments)]
     pub fn configured(
         style: Option<(acadrust::Handle, &acadrust::objects::TableStyle)>,
         annotation_multiplier: f64,

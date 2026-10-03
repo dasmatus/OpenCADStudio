@@ -4,6 +4,9 @@ mod changelog;
 pub mod clipboard;
 pub mod defaults;
 mod donate;
+// `modules::draw::draw` holds the drawing commands proper; the outer module
+// groups them with Modify, Annotation and Layer tools.
+#[allow(clippy::module_inception)]
 pub mod draw;
 pub mod fence;
 pub mod groups;

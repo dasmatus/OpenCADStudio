@@ -513,6 +513,7 @@ impl ViewCubeText {
     }
 
     /// Update text labels using the quaternion-derived rotation matrix.
+    #[allow(clippy::too_many_arguments)]
     fn update(
         &mut self,
         queue: &wgpu::Queue,
@@ -984,7 +985,7 @@ fn surface_edge_lines(vertices: &[CubeVertex], indices: &[u32]) -> Vec<LineVerte
     }
 
     let mut edges: HashMap<EdgeKey, ([f32; 3], [f32; 3], u32)> = HashMap::new();
-    for triangle in indices.chunks_exact(3) {
+    for triangle in indices.as_chunks::<3>().0 {
         let region = vertices[triangle[0] as usize].region_f.to_bits();
         for (a_index, b_index) in [
             (triangle[0], triangle[1]),
@@ -1686,7 +1687,7 @@ fn create_resolve_texture(
 
 fn round_up_viewcube_texture(value: u32) -> u32 {
     const GRID: u32 = 128;
-    ((value.max(1) + GRID - 1) / GRID) * GRID
+    value.max(1).div_ceil(GRID) * GRID
 }
 
 // ── Hit test ──────────────────────────────────────────────────────────────

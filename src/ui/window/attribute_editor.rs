@@ -4,11 +4,11 @@
 //!
 //! Three tabs, mirroring the standard enhanced attribute editor:
 //! * **Attribute**   — the tag / prompt / value list; the selected row's value
-//!                     is edited below the list.
+//!   is edited below the list.
 //! * **Text Options** — the selected attribute's text formatting (style,
-//!                     justification, height, rotation, width, oblique, flags).
+//!   justification, height, rotation, width, oblique, flags).
 //! * **Properties**  — the selected attribute's common entity properties
-//!                     (layer, linetype, colour, lineweight).
+//!   (layer, linetype, colour, lineweight).
 //!
 //! This module is pure layout over a working copy ([`AttrRow`]); applying the
 //! edits, undo and repaint live in the update handler (`Message::AttrEditorApply`).
@@ -343,6 +343,7 @@ fn tab_button<'a>(
 /// order); `selected` is the highlighted row driving the Text Options /
 /// Properties tabs. `layers` / `linetypes` / `styles` are the document's pick
 /// lists.
+#[allow(clippy::too_many_arguments)]
 pub fn view_window<'a>(
     block: &'a str,
     rows: &'a [AttrRow],

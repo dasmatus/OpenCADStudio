@@ -243,6 +243,7 @@ fn polyline_segment_widths(entity: &EntityType) -> Vec<(f32, f32)> {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn split_mixed_polyline(
     tangent_geoms: &[TangentGeom],
     key_vertices: &[[f64; 3]],
@@ -478,9 +479,9 @@ fn split_mixed_polyline(
             (Vec::new(), Vec::new())
         };
         let line_world_width = straight_widths.iter().copied().fold(0.0f32, f32::max);
-        let has_line_taper = straight_widths.first().map_or(false, |&w0| {
-            straight_widths.iter().any(|&w| (w - w0).abs() > 1e-6)
-        });
+        let has_line_taper = straight_widths
+            .first()
+            .is_some_and(|&w0| straight_widths.iter().any(|&w| (w - w0).abs() > 1e-6));
         let taper_widths = if has_line_taper || straight_widths.iter().any(|&w| w > 1e-6) {
             straight_widths
         } else {
@@ -649,6 +650,7 @@ pub(crate) fn shift_wire_to_world(w: &mut WireModel, origin: [f64; 3]) {
 /// encoded as NaN-separated segments (wire_gpu skips NaN pairs).
 /// For Solid3D entities this returns an empty wire; mesh tessellation lives
 /// in `solid3d_tess` and is uploaded via the mesh pipeline instead.
+#[allow(clippy::too_many_arguments)]
 pub fn tessellate(
     document: &CadDocument,
     handle: Handle,
@@ -1254,11 +1256,7 @@ pub fn tessellate(
                 }
 
                 let snap_pts = te.snap_pts;
-                let key_vertices: Vec<[f64; 3]> = te
-                    .key_vertices
-                    .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
-                    .collect();
+                let key_vertices: Vec<[f64; 3]> = te.key_vertices.into_iter().collect();
 
                 // Derive the pick box from the rendered glyph quads.
                 let text_aabb = if !sdf_verts.is_empty() {
@@ -1715,11 +1713,7 @@ pub fn tessellate(
                         // constant on-screen size. (#139)
                         let s = world_per_pixel.map(|w| (w * 0.75).max(1e-6)).unwrap_or(0.1);
                         let snap_pts = te.snap_pts;
-                        let key_vertices: Vec<[f64; 3]> = te
-                            .key_vertices
-                            .into_iter()
-                            .map(|[kx, ky, kz]| [kx, ky, kz])
-                            .collect();
+                        let key_vertices: Vec<[f64; 3]> = te.key_vertices.into_iter().collect();
                         return vec![WireModel {
                             bg_adapt: None,
                             point_marker: None,
@@ -1776,11 +1770,7 @@ pub fn tessellate(
                 // don't jitter on camera movement.
                 let (local_pts, local_pts_low) = points_to_ds(points);
                 let snap_pts = te.snap_pts;
-                let key_vertices: Vec<[f64; 3]> = te
-                    .key_vertices
-                    .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
-                    .collect();
+                let key_vertices: Vec<[f64; 3]> = te.key_vertices.into_iter().collect();
                 let (fill_tris, fill_tris_low) = points_to_ds(te.fill_tris);
                 // Only a real 3-D mesh surface (PolyfaceMesh / PolygonMesh /
                 // the modern subdivision Mesh) fill renders shaded-only with
@@ -2011,11 +2001,7 @@ pub fn tessellate(
                 plinegen,
             } => {
                 let (local_pts, local_pts_low) = points_to_ds(points);
-                let key_vertices = te
-                    .key_vertices
-                    .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
-                    .collect();
+                let key_vertices = te.key_vertices.into_iter().collect();
                 let station_data = crate::scene::model::wire_model::encode_pattern_stations(
                     stations,
                     source_length,
@@ -2061,11 +2047,7 @@ pub fn tessellate(
             RenderObject::SegmentedLines(points) => {
                 let (local_pts, local_pts_low) = points_to_ds(points);
                 let snap_pts = te.snap_pts;
-                let key_vertices: Vec<[f64; 3]> = te
-                    .key_vertices
-                    .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
-                    .collect();
+                let key_vertices: Vec<[f64; 3]> = te.key_vertices.into_iter().collect();
                 // A wide polyline with PLINEGEN=0 arrives here: same shader-band
                 // treatment as the Contour arm, restarting the dash per segment.
                 let (pick_tris, pick_tris_low) = points_to_ds(te.pick_tris);
@@ -2161,11 +2143,7 @@ pub fn tessellate(
                 );
                 let (pick_tris, pick_tris_low) = points_to_ds(te.pick_tris);
                 let world_width = widths.iter().copied().fold(0.0f32, f32::max);
-                let key_vertices: Vec<[f64; 3]> = te
-                    .key_vertices
-                    .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
-                    .collect();
+                let key_vertices: Vec<[f64; 3]> = te.key_vertices.into_iter().collect();
 
                 if has_arc && can_split {
                     let seg_widths = polyline_segment_widths(entity);
@@ -2946,7 +2924,7 @@ pub(crate) fn append_arrow(g: &mut DimGeom, tip: Vec3, dir: Vec3, arrow: &ArrowK
                 let point = transform(point);
                 g.dim_lines.push([point.x, point.y, point.z]);
             }
-            for triangle in fill.chunks_exact(3) {
+            for triangle in fill.as_chunks::<3>().0 {
                 push_tri(
                     &mut g.arrow_fill,
                     transform(&triangle[0]),

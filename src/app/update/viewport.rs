@@ -251,6 +251,7 @@ impl OpenCADStudio {
         self.axis_lock_dir
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn active_otrack_hit(
         &self,
         tab: usize,
@@ -449,7 +450,6 @@ impl OpenCADStudio {
     /// model coords); otherwise the paper camera projects onto the sheet and
     /// the result is mapped paper→model. Used by the readout, snap and click
     /// paths so all three agree on the cursor's model location.
-
     pub(in crate::app) fn cursor_model_point(
         &self,
         i: usize,
@@ -525,7 +525,6 @@ impl OpenCADStudio {
     /// **model** wires, so wire / hatch picking lands on the entity under the
     /// cursor exactly where the GPU draws it; otherwise the model/paper camera
     /// and the normal hit-test wires. `bounds` is the pane-local rectangle.
-
     pub(in crate::app) fn pick_view(
         &self,
         i: usize,
@@ -724,7 +723,7 @@ impl OpenCADStudio {
                 let same = self
                     .grip_hover
                     .as_ref()
-                    .map_or(false, |h| h.handle == handle && h.grip_id == grip_id);
+                    .is_some_and(|h| h.handle == handle && h.grip_id == grip_id);
                 if !same {
                     self.grip_hover = Some(crate::app::GripHover {
                         handle,
@@ -746,7 +745,7 @@ impl OpenCADStudio {
                     && self
                         .grip_hover
                         .as_ref()
-                        .map_or(false, |h| h.started.elapsed().as_millis() >= HOVER_OPEN_MS)
+                        .is_some_and(|h| h.started.elapsed().as_millis() >= HOVER_OPEN_MS)
                 {
                     let entity_opt = self.tabs[i].scene.document.get_entity(handle);
                     if let Some(e) = entity_opt {
@@ -1040,7 +1039,7 @@ impl OpenCADStudio {
                     sel.poly_points.push(p);
                 }
             } else if sel.left_dragging && sel.poly_active {
-                if sel.poly_points.last().map_or(true, |lp| {
+                if sel.poly_points.last().is_none_or(|lp| {
                     let ddx = p.x - lp.x;
                     let ddy = p.y - lp.y;
                     ddx * ddx + ddy * ddy > 16.0
@@ -2343,8 +2342,8 @@ impl OpenCADStudio {
             // straight through; no paper mapping needed.
             let anchor = self.tabs[i].dyn_anchor.or(self.last_point);
             let dyn_ref = self.tabs[i].dyn_ref;
-            let lps = anchor.map(|a| proj(a));
-            let drs = dyn_ref.map(|r| proj(r));
+            let lps = anchor.map(&proj);
+            let drs = dyn_ref.map(&proj);
             self.tabs[i].last_point_screen = lps;
             self.tabs[i].dyn_ref_screen = drs;
 
@@ -2367,11 +2366,7 @@ impl OpenCADStudio {
             // the click and shift the returned wires back to the
             // offset-relative frame the renderer expects (model space
             // only; paper-space entities use sheet coordinates).
-            let wo_local = if self.tabs[i].scene.current_layout == "Model" {
-                [0.0_f64; 3]
-            } else {
-                [0.0; 3]
-            };
+            let wo_local = [0.0_f64; 3];
             let wo_f = glam::DVec3::new(wo_local[0], wo_local[1], wo_local[2]);
             let effective_wcs = effective + wo_f;
 
@@ -2379,11 +2374,7 @@ impl OpenCADStudio {
             if needs_structure {
                 use crate::snap::{SnapResult, SnapType};
                 let pick = self.tabs[i].active_cmd.as_ref().and_then(|c| {
-                    c.resolve_object_pick(
-                        &self.tabs[i].scene,
-                        effective.x as f64,
-                        effective.y as f64,
-                    )
+                    c.resolve_object_pick(&self.tabs[i].scene, effective.x, effective.y)
                 });
                 if let Some(pick) = pick {
                     let world = glam::DVec3::new(pick.x, pick.y, effective.z);
@@ -2462,7 +2453,7 @@ impl OpenCADStudio {
                     self.tabs[i].scene.document.header.lineweight_display,
                     crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                 )
-                .and_then(|s| Scene::handle_from_wire_name(s))
+                .and_then(Scene::handle_from_wire_name)
                 .or_else(|| {
                     if !include_fills {
                         return None;
@@ -3832,11 +3823,7 @@ impl OpenCADStudio {
             // entities are already in sheet coordinates). Without this,
             // TRIM/EXTEND/FILLET pick the wrong side on UTM-scale files.
             let pick_wcs = {
-                let wo = if self.tabs[i].scene.current_layout == "Model" {
-                    [0.0_f64; 3]
-                } else {
-                    [0.0; 3]
-                };
+                let wo = [0.0_f64; 3];
                 world_pt + glam::DVec3::new(wo[0], wo[1], wo[2])
             };
 
@@ -3851,7 +3838,7 @@ impl OpenCADStudio {
                 .unwrap_or(false)
             {
                 let pick = self.tabs[i].active_cmd.as_ref().and_then(|c| {
-                    c.resolve_object_pick(&self.tabs[i].scene, pick_wcs.x as f64, pick_wcs.y as f64)
+                    c.resolve_object_pick(&self.tabs[i].scene, pick_wcs.x, pick_wcs.y)
                 });
                 if let Some(pick) = pick {
                     let center = glam::DVec3::new(pick.x, pick.y, pick_wcs.z);
@@ -3907,7 +3894,7 @@ impl OpenCADStudio {
                     self.tabs[i].scene.document.header.lineweight_display,
                     crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                 )
-                .and_then(|s| Scene::handle_from_wire_name(s))
+                .and_then(Scene::handle_from_wire_name)
                 .or_else(|| {
                     if !include_fills {
                         return None;
@@ -4454,7 +4441,7 @@ impl OpenCADStudio {
                             bounds,
                         )
                         .into_iter()
-                        .filter_map(|s| Scene::handle_from_wire_name(s))
+                        .filter_map(Scene::handle_from_wire_name)
                         .collect();
                         handles.extend(scene::pick::hit_test::box_hit_hatch(
                             a,
@@ -4635,7 +4622,7 @@ properties={:.1}ms picked={}",
                                 crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                             )
                             .into_iter()
-                            .filter_map(|s| Scene::handle_from_wire_name(s))
+                            .filter_map(Scene::handle_from_wire_name)
                             .filter(|&h| self.tabs[i].scene.passes_selection_filter(h))
                             .collect();
                             if cands.len() >= 2 {
@@ -4655,7 +4642,7 @@ properties={:.1}ms picked={}",
                                 self.tabs[i].scene.document.header.lineweight_display,
                                 crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                             )
-                            .and_then(|s| Scene::handle_from_wire_name(s))
+                            .and_then(Scene::handle_from_wire_name)
                             .or_else(|| {
                                 scene::pick::hit_test::click_hit_hatch(
                                     p,
@@ -4764,8 +4751,7 @@ was_selected={}",
                             }
                         }
                     }
-                } else {
-                    let a = box_anchor.unwrap();
+                } else if let Some(a) = box_anchor {
                     let box_points = [
                         a,
                         iced::Point::new(a.x, p.y),
@@ -4863,7 +4849,7 @@ was_selected={}",
                         bounds,
                     )
                     .into_iter()
-                    .filter_map(|s| Scene::handle_from_wire_name(s))
+                    .filter_map(Scene::handle_from_wire_name)
                     .collect();
                     let m_wires = t_hit.map(|t| t.elapsed().as_secs_f64() * 1000.0);
                     handles.extend(scene::pick::hit_test::box_hit_hatch(
@@ -5034,7 +5020,7 @@ properties={:.1}ms picked={}",
                     self.tabs[i].scene.document.header.lineweight_display,
                     crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                 )
-                .and_then(|s| Scene::handle_from_wire_name(s))
+                .and_then(Scene::handle_from_wire_name)
                 .or_else(|| {
                     self.tabs[i].scene.solid_edge_click_hit(
                         p,
@@ -5170,7 +5156,7 @@ properties={:.1}ms picked={}",
                     self.tabs[i].scene.document.header.lineweight_display,
                     crate::ui::overlay::pick_box_aperture_px(self.pick_box),
                 )
-                .and_then(|s| Scene::handle_from_wire_name(s));
+                .and_then(Scene::handle_from_wire_name);
 
                 // In paper space, text editing takes precedence over entering MSPACE.
                 // This mirrors the model-space double-click behaviour.
@@ -5913,12 +5899,10 @@ properties={:.1}ms picked={}",
                 .active_cmd
                 .as_ref()
                 .is_some_and(|command| command.name() == "MVIEW");
-        if context_changed {
-            if preserve_active_command {
-                // MVIEW keeps its command-owned step data, but all host-owned
-                // cursor/snap/dynamic-input state belongs to the old space.
-                self.reset_space_interaction_state();
-            }
+        if context_changed && preserve_active_command {
+            // MVIEW keeps its command-owned step data, but all host-owned
+            // cursor/snap/dynamic-input state belongs to the old space.
+            self.reset_space_interaction_state();
         }
         let cancel_task = if context_changed && !preserve_active_command {
             self.cancel_active_command_for_space_change()
@@ -6119,11 +6103,7 @@ properties={:.1}ms picked={}",
                     }
                     return Task::none();
                 }
-                let exists = self.tabs[i]
-                    .scene
-                    .layout_names()
-                    .iter()
-                    .any(|n| *n == new_name);
+                let exists = self.tabs[i].scene.layout_names().contains(&new_name);
                 if exists {
                     self.command_line
                         .push_error(crate::tf!("\"{}\" name already in use", new_name).as_ref());

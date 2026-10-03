@@ -1247,6 +1247,7 @@ impl Scene {
     /// `hatch_bg` adapts pure black/white leaf colours to the target
     /// background; `tint_selected` re-colours fills of a selected INSERT
     /// (screen highlight) and should be `false` for export.
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn instanced_hatch_models(
         &self,
         layout_block: Handle,
@@ -1362,6 +1363,7 @@ impl Scene {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn instanced_hatch_models_filtered(
         &self,
         layout_block: Handle,
@@ -1542,6 +1544,7 @@ impl Scene {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub(super) fn wipeout_models_for_block_graph(
         &self,
         target_block: Handle,
@@ -2094,8 +2097,7 @@ impl Scene {
                     .filter_map(crate::entities::hatch::edge_curve)
                     .collect()
             };
-            if let Some(refined) =
-                cadkernel::geom2d::refine_spline_boundary(&ring, curves, &project)
+            if let Some(refined) = cadkernel::geom2d::refine_spline_boundary(&ring, curves, project)
             {
                 if boundary.len() - range.len() + refined.len() > MAX_HATCH_MODEL_VERTS {
                     continue;

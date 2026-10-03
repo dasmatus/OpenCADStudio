@@ -159,6 +159,9 @@ impl canvas::Program<Message> for TextPreviewCanvas {
         if min[0] <= max[0] {
             let span = [(max[0] - min[0]).max(1.0), (max[1] - min[1]).max(1.0)];
             let available = [bounds.width - 24.0, bounds.height - 34.0];
+            // min/max rather than clamp: a NaN ratio falls back to 1.0
+            // instead of propagating into the preview transform.
+            #[allow(clippy::manual_clamp)]
             let scale = (available[0] / span[0])
                 .min(available[1] / span[1])
                 .min(1.0)

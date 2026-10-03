@@ -24,6 +24,7 @@ fn tessellate_acis(
     )
 }
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn body_transform(
     sat: &SatDocument,
     body_record: usize,
@@ -74,6 +75,7 @@ pub(crate) fn body_transform(
         .ok_or(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn finalize_mesh(
     name: String,
     verts: Vec<[f64; 3]>,
@@ -205,6 +207,7 @@ fn remap_acis_material_bindings(set: &mut MeshLodSet, acis: &acadrust::entities:
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn finish(
     sat: SatDocument,
     name: String,

@@ -21,6 +21,7 @@ pub fn rename_input_id() -> iced::widget::Id {
 /// One row of the style list. Renders an editable `text_input` when `name` is
 /// the style being renamed (`rename_active`), otherwise a selectable row whose
 /// double click starts the rename. The current style gets a green ✓.
+#[allow(clippy::too_many_arguments)]
 pub fn item<'a>(
     name: &str,
     is_current: bool,

@@ -228,7 +228,7 @@ impl StorageHatchBatch {
         // just size checks — the `*_fits` predicates below are the checks).
         let chunk_limit = limits
             .max_buffer_size
-            .min(limits.max_storage_buffer_binding_size as u64)
+            .min(limits.max_storage_buffer_binding_size)
             .min(crate::scene::pipeline::gpu_budget::buffer_budget(device) as u64);
         let mut ranges = Vec::new();
         let mut start = 0;
@@ -321,7 +321,7 @@ impl StorageHatchBatch {
                         for &d in &fam.dashes {
                             dashes.push(d);
                         }
-                        let n_dashes = (dashes.len() as u32 - dash_offset).min(u32::MAX);
+                        let n_dashes = dashes.len() as u32 - dash_offset;
                         // PAT local frame: perpendicular spacing and
                         // along-line phase.
                         let perp_step = fam.dy;
@@ -442,9 +442,7 @@ impl StorageHatchBatch {
                 instance_index: instance_index as u32,
             }));
             for index in mesh_indices {
-                let Some(index) = base.checked_add(index) else {
-                    return None;
-                };
+                let index = base.checked_add(index)?;
                 indices.push(index);
             }
             let Ok(end) = u32::try_from(indices.len()) else {
@@ -526,8 +524,7 @@ impl StorageHatchBatch {
             (count as u64).saturating_mul(stride as u64) <= limits.max_buffer_size
         };
         let storage_fits = |count: usize, stride: usize| {
-            (count as u64).saturating_mul(stride as u64)
-                <= limits.max_storage_buffer_binding_size as u64
+            (count as u64).saturating_mul(stride as u64) <= limits.max_storage_buffer_binding_size
         };
         if !buffer_fits(verts.len(), std::mem::size_of::<HatchVertex>())
             || !buffer_fits(indices.len(), std::mem::size_of::<u32>())

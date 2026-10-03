@@ -7,6 +7,12 @@ use crate::command::{CadCommand, CmdOption, CmdResult};
 /// entry use one implementation.
 pub struct GeomConstraintCommand;
 
+impl Default for GeomConstraintCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl GeomConstraintCommand {
     pub fn new() -> Self {
         Self

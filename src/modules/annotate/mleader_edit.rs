@@ -47,6 +47,12 @@ pub struct MLeaderAddCommand {
     step: AddStep,
 }
 
+impl Default for MLeaderAddCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MLeaderAddCommand {
     pub fn new() -> Self {
         Self {
@@ -121,7 +127,7 @@ impl CadCommand for MLeaderAddCommand {
             pts,
         } = &mut self.step
         {
-            if pts.len() < 1 {
+            if pts.is_empty() {
                 return CmdResult::Cancel;
             }
             let h = *handle;
@@ -203,6 +209,7 @@ pub fn tool_remove() -> ToolDef {
     }
 }
 
+#[allow(clippy::large_enum_variant)]
 enum RemoveStep {
     PickMLeader,
     PickLeaderToRemove {
@@ -213,6 +220,12 @@ enum RemoveStep {
 
 pub struct MLeaderRemoveCommand {
     step: RemoveStep,
+}
+
+impl Default for MLeaderRemoveCommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MLeaderRemoveCommand {
@@ -345,6 +358,12 @@ pub struct MLeaderAlignCommand {
     step: AlignStep,
 }
 
+impl Default for MLeaderAlignCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MLeaderAlignCommand {
     pub fn new() -> Self {
         Self {
@@ -432,6 +451,12 @@ enum CollectStep {
 
 pub struct MLeaderCollectCommand {
     step: CollectStep,
+}
+
+impl Default for MLeaderCollectCommand {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl MLeaderCollectCommand {

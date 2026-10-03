@@ -249,10 +249,12 @@ mod tests {
 
     #[test]
     fn mask_changes_only_requested_properties() {
-        let mut common = EntityCommon::default();
-        common.color = Color::from_index(3);
-        common.linetype = "DASHED".into();
-        common.transparency = Transparency::from_percent(40.0);
+        let mut common = EntityCommon {
+            color: Color::from_index(3),
+            linetype: "DASHED".into(),
+            transparency: Transparency::from_percent(40.0),
+            ..Default::default()
+        };
 
         assert!(apply_mask(&mut common, 1 | 128, false));
         assert_eq!(common.color, Color::ByLayer);
@@ -262,10 +264,12 @@ mod tests {
 
     #[test]
     fn byblock_values_are_kept_unless_requested() {
-        let mut common = EntityCommon::default();
-        common.color = Color::ByBlock;
-        common.linetype = "ByBlock".into();
-        common.transparency = Transparency::BY_BLOCK;
+        let mut common = EntityCommon {
+            color: Color::ByBlock,
+            linetype: "ByBlock".into(),
+            transparency: Transparency::BY_BLOCK,
+            ..Default::default()
+        };
 
         assert!(!apply_mask(&mut common, 1 | 2 | 128, false));
         assert!(apply_mask(&mut common, 1 | 2 | 128, true));

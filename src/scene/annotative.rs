@@ -1850,6 +1850,7 @@ pub fn update_entity_from_annotation_style(
     handle: Handle,
     current_scale: Option<Handle>,
 ) -> bool {
+    #[allow(clippy::large_enum_variant)]
     enum StyleUpdate {
         Text { annotative: bool, height: f64 },
         Dimension { annotative: bool },
@@ -1978,7 +1979,7 @@ pub fn is_annotative(doc: &CadDocument, entity: &EntityType) -> bool {
                     acadrust::xdata::XDataValue::Integer16(value) => Some(*value),
                     _ => None,
                 })
-                .last()
+                .next_back()
         })
         .is_some_and(|value| value != 0);
     if standard_marker

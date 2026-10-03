@@ -444,7 +444,7 @@ impl SpatialGrid {
             }
             cell_entries
         };
-        let oversized = SpatialBvh2::build(&entries, oversized);
+        let oversized = SpatialBvh2::build(entries, oversized);
 
         Self {
             min,
@@ -1508,6 +1508,9 @@ pub struct InteractionCandidates {
 pub trait WireSource {
     fn iter(&self) -> WireIter<'_>;
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn get(&self, index: usize) -> Option<&WireModel>;
     fn segments(&self) -> Option<&[SegmentRef]> {
         None
@@ -1589,6 +1592,10 @@ impl InteractionCandidates {
         self.wire_indices
             .as_ref()
             .map_or(self.wires.len(), Vec::len)
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn get(&self, index: usize) -> Option<&WireModel> {

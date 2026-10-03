@@ -95,7 +95,7 @@ pub(crate) fn style_for_property<'a>(
         .columns
         .get(column)
         .and_then(|column| column.style.as_ref());
-    for style in [
+    [
         cell.style.as_ref(),
         row.style.as_ref(),
         column_style,
@@ -103,12 +103,8 @@ pub(crate) fn style_for_property<'a>(
     ]
     .into_iter()
     .flatten()
-    {
-        if style.property_flags.contains(property) {
-            return Some(style);
-        }
-    }
-    None
+    .find(|&style| style.property_flags.contains(property))
+    .map(|v| v as _)
 }
 
 fn style_for_border<'a>(
@@ -365,6 +361,7 @@ fn break_frame_for_row(
     (insertion, row_offsets.get(row).copied().unwrap_or(0.0))
 }
 
+#[allow(clippy::too_many_arguments)]
 fn break_frames_for_row(
     table: &Table,
     row: usize,
@@ -1129,7 +1126,7 @@ impl RenderConvertible for Table {
         let header_suppressed = resolved_header_suppressed(self, table_style);
 
         let font_for_handle = |handle: Option<acadrust::Handle>| -> Option<String> {
-            handle.and_then(|h| lookup_style(h)).and_then(|s| {
+            handle.and_then(&lookup_style).and_then(|s| {
                 let mut font_name = if !s.true_type_font.trim().is_empty() {
                     s.true_type_font.trim().to_string()
                 } else {
@@ -1160,7 +1157,7 @@ impl RenderConvertible for Table {
         // pipeline so inline `\W`, `\Q`, etc. compose with the style baseline.
         let resolved_style_for_handle =
             |handle: Option<acadrust::Handle>, font_name: String| -> ResolvedTextStyle {
-                let style = handle.and_then(|h| lookup_style(h));
+                let style = handle.and_then(&lookup_style);
                 ResolvedTextStyle {
                     font_name,
                     width_factor: style.map(|s| s.width_factor as f32).unwrap_or(1.0),
@@ -1448,15 +1445,18 @@ pub fn tessellate_table(
         };
 
     // Accumulators keyed by quantised colour (+ weight for borders).
+    #[allow(clippy::type_complexity)]
     let mut fills: HashMap<[u8; 4], ([f32; 4], Vec<[f32; 3]>)> = HashMap::default();
     // SDF cell text: glyph quads (per-vertex coloured) collected across all
     // cells; emitted as one text-carrying wire at the end.
     let mut text_verts: Vec<crate::scene::pipeline::text_gpu::TextVertex> = Vec::new();
+    #[allow(clippy::type_complexity)]
     let mut borders: HashMap<([u8; 4], u32), ([f32; 4], f32, Vec<[f32; 3]>)> = HashMap::default();
     let mut emitted: rustc_hash::FxHashSet<(i32, i32, i32, i32, i32, i32)> =
         rustc_hash::FxHashSet::default();
     let sel_col = WireModel::SELECTED;
 
+    #[allow(clippy::type_complexity)]
     let mut add_edge =
         |a: Vec3,
          b: Vec3,
@@ -1939,7 +1939,7 @@ pub fn tessellate_table(
                                         entry.1.push([
                                             stroke.origin[0] as f32 + x,
                                             stroke.origin[1] as f32 + y,
-                                            to.z as f32,
+                                            to.z,
                                         ]);
                                     }
                                 }
@@ -1958,7 +1958,7 @@ pub fn tessellate_table(
                                             entry.2.push([
                                                 stroke.origin[0] as f32 + x,
                                                 stroke.origin[1] as f32 + y,
-                                                to.z as f32,
+                                                to.z,
                                             ]);
                                         }
                                     }

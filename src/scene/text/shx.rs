@@ -60,7 +60,9 @@ fn file_cache() -> &'static Mutex<HashMap<String, Option<Arc<ShxFile>>>> {
     C.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+#[allow(clippy::type_complexity)]
 fn shape_cache() -> &'static Mutex<HashMap<(String, u16), Option<(ShapePolylines, f64)>>> {
+    #[allow(clippy::type_complexity)]
     static C: OnceLock<Mutex<HashMap<(String, u16), Option<(ShapePolylines, f64)>>>> =
         OnceLock::new();
     C.get_or_init(|| Mutex::new(HashMap::new()))
@@ -193,8 +195,10 @@ pub fn font_metrics(path: &str) -> Option<(f64, f64)> {
     Some((above, below))
 }
 
+#[allow(clippy::type_complexity)]
 fn glyph_cache(
 ) -> &'static Mutex<HashMap<(String, u16), Option<Arc<crate::scene::text::lff::Glyph>>>> {
+    #[allow(clippy::type_complexity)]
     static C: OnceLock<Mutex<HashMap<(String, u16), Option<Arc<crate::scene::text::lff::Glyph>>>>> =
         OnceLock::new();
     C.get_or_init(|| Mutex::new(HashMap::new()))
@@ -468,8 +472,7 @@ fn interpret(
                     let q = std::f64::consts::FRAC_PI_4;
                     let start = start_oct * q + so * q / 256.0 * if cw { -1.0 } else { 1.0 };
                     let total = n_oct * q;
-                    let sweep_mag = total - so * q / 256.0 - (255.0 - eo) * q / 256.0
-                        + if eo == 0.0 { 0.0 } else { 0.0 };
+                    let sweep_mag = total - so * q / 256.0 - (255.0 - eo) * q / 256.0;
                     let sweep = sweep_mag.max(0.0) * if cw { -1.0 } else { 1.0 };
                     emit_arc(st, cur, out, radius, start, sweep);
                 }

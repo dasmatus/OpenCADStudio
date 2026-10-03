@@ -23,6 +23,7 @@ const PLACEABLE_KEY: u32 = 0x9AC6_CDD7;
 /// Strip a placeable header if present. Returns `(records_region, bbox)` where
 /// the region starts at the standard WMF header and bbox is the placeable
 /// bounds (logical units), if any.
+#[allow(clippy::type_complexity)]
 fn strip_placeable(data: &[u8]) -> (&[u8], Option<(f32, f32, f32, f32)>) {
     if data.len() >= 22 && u32_at(data, 0) == PLACEABLE_KEY {
         let l = i16_at(data, 6) as f32;

@@ -16,6 +16,7 @@ use crate::scene::{boundary_faces, exact_hatch_paths, ring_source_handles, Bound
 const BOUNDARY_TOLERANCE: f64 = 1e-6;
 
 #[derive(Clone)]
+#[allow(clippy::large_enum_variant)]
 pub enum PresspullTargetKind {
     Profile {
         entity: EntityType,

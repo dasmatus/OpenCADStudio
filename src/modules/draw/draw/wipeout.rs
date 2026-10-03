@@ -502,7 +502,7 @@ pub(crate) fn wipeout_from_polyline(entity: &EntityType) -> Option<EntityType> {
             }
             from_ocs(&raw, polyline.normal, polyline.elevation)
         }
-        _ => return None,
+        _ => None,
     }
 }
 

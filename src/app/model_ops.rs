@@ -82,6 +82,7 @@ struct PreparedSlice {
     extra: Option<(EntityType, Body)>,
 }
 
+#[allow(clippy::large_enum_variant)]
 enum ModelSliceTool {
     Plane(cadkernel::space::Plane),
     Surface(Body),
@@ -112,6 +113,7 @@ struct IntersectGroup {
     handles: Vec<Handle>,
 }
 
+#[allow(clippy::large_enum_variant)]
 enum PreparedIntersectOutcome {
     Replace {
         retained: Handle,
@@ -290,6 +292,7 @@ fn entity_with_history_body(mut source: EntityType, body: &Body) -> Option<Entit
     Some(source)
 }
 
+#[allow(clippy::large_enum_variant)]
 enum IntersectBodyOutcome {
     Area(Body),
     Touching,
@@ -698,6 +701,7 @@ impl super::OpenCADStudio {
         true
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn replace_edge_body_with_chamfer(
         &mut self,
         handle: Handle,

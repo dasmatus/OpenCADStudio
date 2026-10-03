@@ -389,8 +389,10 @@ mod tests {
         use crate::entities::traits::Grippable;
         use crate::scene::model::object::GripMenuAction;
 
-        let mut circle = Circle::default();
-        circle.radius = 2.0;
+        let mut circle = Circle {
+            radius: 2.0,
+            ..Default::default()
+        };
 
         assert_eq!(circle.grip_menu(0).len(), 1);
         assert!(circle
@@ -460,8 +462,10 @@ mod tests {
 
     #[test]
     fn test_circle_to_render_points_increase_with_zoom() {
-        let mut circle = Circle::default();
-        circle.radius = 10.0;
+        let circle = Circle {
+            radius: 10.0,
+            ..Default::default()
+        };
 
         let far_render = to_render_with_wpp(&circle, Some(1.0));
         let close_render = to_render_with_wpp(&circle, Some(0.01));
@@ -484,9 +488,11 @@ mod tests {
 
     #[test]
     fn test_thick_circle_to_render_points_increase_with_zoom() {
-        let mut circle = Circle::default();
-        circle.radius = 10.0;
-        circle.thickness = 2.0;
+        let circle = Circle {
+            radius: 10.0,
+            thickness: 2.0,
+            ..Default::default()
+        };
 
         let far_render = to_render_with_wpp(&circle, Some(1.0));
         let close_render = to_render_with_wpp(&circle, Some(0.01));
