@@ -1508,6 +1508,9 @@ pub struct InteractionCandidates {
 pub trait WireSource {
     fn iter(&self) -> WireIter<'_>;
     fn len(&self) -> usize;
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
     fn get(&self, index: usize) -> Option<&WireModel>;
     fn segments(&self) -> Option<&[SegmentRef]> {
         None
@@ -1583,6 +1586,10 @@ impl InteractionCandidates {
             },
             None => WireIter::All(self.wires.as_slice().iter()),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     pub fn len(&self) -> usize {

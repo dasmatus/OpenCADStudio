@@ -62,6 +62,9 @@ impl StatusBar {
         }
     }
 
+    // Each argument is an independent input from a different source; a
+    // parameter struct would only rename them.
+    #[allow(clippy::too_many_arguments)]
     pub fn view<'a>(
         &'a self,
         snapper: &'a Snapper,

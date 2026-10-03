@@ -18,14 +18,14 @@ const BOUNDARY_TOLERANCE: f64 = 1e-6;
 #[derive(Clone)]
 pub enum PresspullTargetKind {
     Profile {
-        entity: EntityType,
+        entity: Box<EntityType>,
         source: Option<Handle>,
         owner: Option<Handle>,
     },
     Face {
         handle: Handle,
         face: FaceKey,
-        body: Body,
+        body: Box<Body>,
         offset: bool,
     },
 }
@@ -364,7 +364,7 @@ pub fn resolve_target(
                 .unwrap_or(profile_plane.z);
             return Ok(PresspullTarget {
                 kind: PresspullTargetKind::Profile {
-                    entity: entity.clone(),
+                    entity: Box::new(entity.clone()),
                     source: Some(handle),
                     owner,
                 },
@@ -403,7 +403,7 @@ pub fn resolve_target(
                     )?;
                     return Ok(PresspullTarget {
                         kind: PresspullTargetKind::Profile {
-                            entity,
+                            entity: Box::new(entity),
                             source: None,
                             owner: Some(owner),
                         },
@@ -417,7 +417,7 @@ pub fn resolve_target(
             kind: PresspullTargetKind::Face {
                 handle: owner,
                 face,
-                body: body.clone(),
+                body: Box::new(body.clone()),
                 offset,
             },
             anchor,
@@ -440,7 +440,7 @@ pub fn resolve_target(
         .ok_or("PRESSPULL: the selected boundary could not be reconstructed exactly.")?;
     Ok(PresspullTarget {
         kind: PresspullTargetKind::Profile {
-            entity,
+            entity: Box::new(entity),
             source: None,
             owner: None,
         },

@@ -94,6 +94,8 @@ fn tris_hit_depth(
     while t + 2 < tris.len() {
         let mut sp = [Point::ORIGIN; 3];
         let mut depth = 0.0f32;
+        // `j` is also the offset into `tris`/`tris_low`.
+        #[allow(clippy::needless_range_loop)]
         for j in 0..3 {
             let k = t + j;
             let hi = tris[k];

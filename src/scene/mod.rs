@@ -252,7 +252,7 @@ impl Scene {
     /// their own points and are left alone; non-solids are untouched.
     /// Idempotent: a wire already carrying 3D snaps is skipped, so shared
     /// memo entries can pass through every assembly path safely.
-    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut Vec<WireModel>) {
+    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut [WireModel]) {
         use crate::scene::model::wire_model::SnapHint;
         let points = self.solid_snap_points(handle);
         if points.is_empty() {
@@ -333,6 +333,8 @@ impl Scene {
                             screen: [f32; 2],
                             d2: f32,
                             handle: Handle| {
+            #[allow(clippy::neg_cmp_op_on_partial_ord)]
+            // NaN must be rejected, which `>=` would let through
             if !(d2 < radius2) || !in_bounds(screen) {
                 return;
             }
@@ -658,6 +660,18 @@ pub enum ChangeKind {
     Modified,
 }
 
+/// Before-images drained from an [`UndoRecording`]: entities, objects,
+/// parametric-constraint sets per scope, and the named-parameter table.
+pub type RecordedImages = (
+    Vec<(Handle, Option<Arc<EntityType>>)>,
+    Vec<(Handle, Option<ObjectType>)>,
+    Vec<(
+        parametric_constraints::ParametricScope,
+        parametric_constraints::ParametricConstraintSet,
+    )>,
+    Option<named_parameters::ParameterTable>,
+);
+
 /// While an entity-only undoable command runs, this captures the pre-mutation
 /// image of every entity the five mutation primitives (add / update / erase /
 /// transform / copy) touch, so the app can build a cheap **delta**-undo entry
@@ -713,17 +727,7 @@ impl UndoRecording {
     /// command; every parametric-constraint scope's before-image is a real
     /// `ParametricConstraintSet` (its `Vec` entry, once created, is never
     /// removed, so there is no "didn't exist before" case there).
-    pub fn into_recorded_images(
-        mut self,
-    ) -> (
-        Vec<(Handle, Option<Arc<EntityType>>)>,
-        Vec<(Handle, Option<ObjectType>)>,
-        Vec<(
-            parametric_constraints::ParametricScope,
-            parametric_constraints::ParametricConstraintSet,
-        )>,
-        Option<named_parameters::ParameterTable>,
-    ) {
+    pub fn into_recorded_images(mut self) -> RecordedImages {
         let entities = self
             .order
             .drain(..)
@@ -1509,9 +1513,7 @@ fn offset_centroid(e: &EntityType, model_block: Handle, prep: &OffsetPrep) -> Op
         set.contains(&h)
     } else if c.owner_handle == model_block {
         true
-    } else if !c.owner_handle.is_null() {
-        false
-    } else if prep.owned_by_other_block.contains(&h) {
+    } else if !c.owner_handle.is_null() || prep.owned_by_other_block.contains(&h) {
         false
     } else {
         // owner null + h not enumerated by any block: legacy permissive
@@ -2527,6 +2529,9 @@ impl Scene {
             // One pane mapped to tile 0 — matches the single default tile above.
             model_panes: iced::widget::pane_grid::State::new(0).0,
             model_pane_min_px: std::sync::Arc::new(std::sync::atomic::AtomicU32::new(0)),
+            // Scene is single-threaded; the `Arc` is only the shared handle the
+            // overlay widget clones, hence not `Send`/`Sync`.
+            #[allow(clippy::arc_with_non_send_sync)]
             selection: std::sync::Arc::new(std::cell::RefCell::new(SelectionState::default())),
             document: CadDocument::new(),
             last_created_dimension: None,
@@ -7946,12 +7951,16 @@ impl Scene {
             *self.viewport_style_override_cache.borrow_mut() =
                 Some((self.geometry_epoch, overridden));
         }
-        self.viewport_style_override_cache
+        if self
+            .viewport_style_override_cache
             .borrow()
             .as_ref()
             .is_some_and(|(_, overridden)| overridden.contains(&viewport))
-            .then_some(viewport.value())
-            .unwrap_or(0)
+        {
+            viewport.value()
+        } else {
+            0
+        }
     }
 
     /// Hatch / 2-D-solid fills for a content viewport, with its frozen layers
@@ -11594,7 +11603,7 @@ vis_index={:.1} visible_probe={:.1}",
         let margin = 1.1_f64;
         let scale_w = vp.width / (content_w as f64 * margin);
         let scale_h = vp.height / (content_h as f64 * margin);
-        let fit_scale = scale_w.min(scale_h).min(1000.0).max(1e-6);
+        let fit_scale = scale_w.min(scale_h).clamp(1e-6, 1000.0);
 
         vp.custom_scale = fit_scale;
         vp.view_height = vp.height / fit_scale;
@@ -12984,7 +12993,10 @@ mod selection_arc_tests {
 
     #[test]
     fn selection_overlay_takes_arc() {
-        assert!(true);
+        // The overlay's `selection` parameter is `Arc<RefCell<SelectionState>>`;
+        // this fails to compile if `Scene::selection` ever stops matching it.
+        fn overlay_selection(_: std::sync::Arc<std::cell::RefCell<crate::scene::SelectionState>>) {}
+        overlay_selection(Scene::new().selection.clone());
     }
 }
 
@@ -13141,17 +13153,23 @@ mod layout_cache_tests {
     #[test]
     fn resident_wires_are_zoom_independent_and_gpu_analytical() {
         let mut s = Scene::new();
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 100.0;
+        let circle = acadrust::entities::Circle {
+            radius: 100.0,
+            ..Default::default()
+        };
         let handle = s.add_entity(EntityType::Circle(circle));
 
         // Far camera: distance is large
-        let mut cam_far = Camera::default();
-        cam_far.distance = 1000.0;
+        let cam_far = Camera {
+            distance: 1000.0,
+            ..Default::default()
+        };
 
         // Close camera: distance is small
-        let mut cam_close = Camera::default();
-        cam_close.distance = 1.0;
+        let cam_close = Camera {
+            distance: 1.0,
+            ..Default::default()
+        };
 
         let wires_far = s.model_tile_wires_arc(0, &cam_far, 1.0, 1000.0);
         let circle_wire_far = wires_far
@@ -13179,14 +13197,18 @@ mod layout_cache_tests {
     fn block_circles_and_arcs_extract_as_analytical_gpu_instances() {
         let mut s = Scene::new();
         // Create initial entities
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 50.0;
+        let circle = acadrust::entities::Circle {
+            radius: 50.0,
+            ..Default::default()
+        };
         let c_h = s.add_entity(EntityType::Circle(circle));
 
-        let mut arc = acadrust::entities::Arc::default();
-        arc.radius = 25.0;
-        arc.start_angle = 0.0;
-        arc.end_angle = std::f64::consts::PI;
+        let arc = acadrust::entities::Arc {
+            radius: 25.0,
+            start_angle: 0.0,
+            end_angle: std::f64::consts::PI,
+            ..Default::default()
+        };
         let a_h = s.add_entity(EntityType::Arc(arc));
 
         let line = acadrust::entities::Line::from_points(

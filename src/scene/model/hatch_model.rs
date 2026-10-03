@@ -221,6 +221,7 @@ pub struct HatchModel {
     ///   2) the GPU pipeline can pre-shift the quad in hatch-local
     ///      space (so the fragment shader's `xz` varying stays small)
     ///      and add `world_origin` back inside the view_proj multiply.
+    ///
     /// Reconstruct WCS-relative coords as `(world_origin.x + v.x as f64,
     /// world_origin.y + v.y as f64)`.
     pub world_origin: [f64; 2],

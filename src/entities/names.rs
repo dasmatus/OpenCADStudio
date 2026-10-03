@@ -3,7 +3,7 @@
 //! Two functions because they're used for different audiences:
 //!   - `ui_name`  — properties panel / status bar (mixed-case, friendly).
 //!   - `dxf_name` — command-line output / file format (uppercase, matches
-//!                  the DXF entity record type name).
+//!     the DXF entity record type name).
 //!
 //! Co-located so adding a new variant only requires updating one file.
 

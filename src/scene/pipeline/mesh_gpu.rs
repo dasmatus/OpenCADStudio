@@ -394,6 +394,9 @@ impl MeshBatchStubs {
     }
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 fn make_chunk(
     device: &wgpu::Device,
     queue: &wgpu::Queue,

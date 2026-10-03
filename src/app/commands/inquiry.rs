@@ -244,9 +244,9 @@ impl OpenCADStudio {
                             .iter()
                             .map(|(b, n)| format!("{b}×{n}"))
                             .collect();
-                        msg.push_str(&crate::tf!("\n  Blocks: {}", blocks.join(", ")).into_owned());
+                        msg.push_str(&crate::tf!("\n  Blocks: {}", blocks.join(", ")));
                     }
-                    msg.push_str(&crate::tf!("\n  Handles: {}", list.join(",")).into_owned());
+                    msg.push_str(&crate::tf!("\n  Handles: {}", list.join(",")));
                     self.command_line.push_output(&msg);
                 }
             }

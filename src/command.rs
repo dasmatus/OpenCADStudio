@@ -1500,7 +1500,7 @@ pub enum CmdResult {
     CommitSolid {
         entity: EntityType,
         solid: Box<cadkernel::brep::Body>,
-        history: acadrust::objects::SolidHistoryOperation,
+        history: Box<acadrust::objects::SolidHistoryOperation>,
         erase_source: Option<Handle>,
     },
     /// Commit an acadrust entity, end the command, and open the in-place text

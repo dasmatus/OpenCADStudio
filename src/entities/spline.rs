@@ -104,6 +104,8 @@ pub(crate) fn spline_knot_points(spline: &Spline) -> Vec<glam::DVec3> {
         return Vec::new();
     };
     let (from, to) = curve.domain();
+    #[allow(clippy::neg_cmp_op_on_partial_ord)]
+    // NaN must be rejected, which `>=` would let through
     if !(from.is_finite() && to.is_finite()) || !(to > from) {
         return Vec::new();
     }

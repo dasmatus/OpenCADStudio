@@ -463,7 +463,7 @@ use std::f64::consts::TAU as FTAU;
 
 enum PathStep {
     SelectPath,
-    Count { path_entity: EntityType },
+    Count { path_entity: Box<EntityType> },
 }
 
 pub struct ArrayPathCommand {
@@ -674,7 +674,7 @@ impl CadCommand for ArrayPathCommand {
         {
             self.pick_pt = pt;
             self.step = PathStep::Count {
-                path_entity: entity,
+                path_entity: Box::new(entity),
             };
         }
         CmdResult::NeedPoint

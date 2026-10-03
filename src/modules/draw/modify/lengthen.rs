@@ -59,7 +59,7 @@ enum LenState {
     DynamicPick,
     DynamicPoint {
         handle: Handle,
-        entity: EntityType,
+        entity: Box<EntityType>,
         pick: DVec3,
     },
 }
@@ -185,7 +185,7 @@ impl CadCommand for LengthenCommand {
             {
                 self.state = LenState::DynamicPoint {
                     handle,
-                    entity,
+                    entity: Box::new(entity),
                     pick: pt,
                 };
                 CmdResult::NeedPoint

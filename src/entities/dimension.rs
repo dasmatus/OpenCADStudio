@@ -5260,9 +5260,7 @@ fn append_diameter_dimension(
 
     let arrows_outside = if params.ticks || params.arrow_len <= 1e-6 {
         false
-    } else if text_outside {
-        true
-    } else if diameter < 2.0 * params.arrow_len {
+    } else if text_outside || diameter < 2.0 * params.arrow_len {
         true
     } else if diameter < params.text_width + 2.0 * params.arrow_len {
         match params.dimatfit {

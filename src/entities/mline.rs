@@ -97,6 +97,8 @@ pub(crate) fn rebuild_mline_geometry(mline: &mut MLine) -> bool {
         })
     };
 
+    // `index` drives the neighbour lookups, not only `flat[index]`.
+    #[allow(clippy::needless_range_loop)]
     for index in 0..count {
         let before = direction_before(index);
         let after = direction_after(index);
@@ -1267,6 +1269,8 @@ fn mline_perpendicular_offsets(mline: &MLine) -> Vec<Vec<Option<f64>>> {
 }
 
 fn restore_mline_offsets(mline: &mut MLine, offsets: &[Vec<Option<f64>>]) {
+    // `index` also selects the vertex for `mline_vertex_factor` and the mutable `mline.vertices`.
+    #[allow(clippy::needless_range_loop)]
     for index in 0..mline.vertices.len().min(offsets.len()) {
         let factor = mline_vertex_factor(mline, index);
         for (segment, offset) in mline.vertices[index]

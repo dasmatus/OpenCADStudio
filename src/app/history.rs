@@ -332,7 +332,7 @@ impl OpenCADStudio {
             active_layer: (pending.active_layer != active_layer_after)
                 .then_some((pending.active_layer, active_layer_after)),
             structure: structure_changed
-                .then_some(StructureSnapshot::Full(pending.structure_before)),
+                .then_some(StructureSnapshot::Full(Box::new(pending.structure_before))),
             parametric_constraints: Vec::new(),
             named_parameters: None,
             label: pending.label,
@@ -650,8 +650,8 @@ impl OpenCADStudio {
             dirty_after: true,
             active_layer: None,
             structure: Some(StructureSnapshot::Styles {
-                before,
-                after,
+                before: Box::new(before),
+                after: Box::new(after),
                 text_names,
                 dim_names,
                 object_handles,
@@ -787,24 +787,24 @@ impl OpenCADStudio {
         });
         let selected_after = self.tabs[i].scene.selected.iter().copied().collect();
         let dirty_after = self.tabs[i].dirty;
-        let mut structure = pending.structure_before.map(StructureSnapshot::Full);
-        if let Some(before_structure) = structure.as_mut() {
-            if let StructureSnapshot::Full(before_structure) = before_structure {
-                let after_structure = self.tabs[i].scene.document.snapshot_structure();
-                let added_handles: Vec<Handle> = entities
-                    .iter()
-                    .filter_map(|(handle, before, after)| {
-                        (before.is_none() && after.is_some()).then_some(*handle)
-                    })
-                    .collect();
-                acadrust::CadDocument::align_added_entity_structure(
-                    before_structure,
-                    &after_structure,
-                    &added_handles,
-                );
-                if *before_structure == after_structure {
-                    structure = None;
-                }
+        let mut structure = pending
+            .structure_before
+            .map(|doc| StructureSnapshot::Full(Box::new(doc)));
+        if let Some(StructureSnapshot::Full(before_structure)) = structure.as_mut() {
+            let after_structure = self.tabs[i].scene.document.snapshot_structure();
+            let added_handles: Vec<Handle> = entities
+                .iter()
+                .filter_map(|(handle, before, after)| {
+                    (before.is_none() && after.is_some()).then_some(*handle)
+                })
+                .collect();
+            acadrust::CadDocument::align_added_entity_structure(
+                before_structure,
+                &after_structure,
+                &added_handles,
+            );
+            if **before_structure == after_structure {
+                structure = None;
             }
         }
         if structure.is_none() && !objects.is_empty() {
@@ -847,8 +847,11 @@ impl OpenCADStudio {
                     let inverse = self.tabs[i]
                         .scene
                         .document
-                        .swap_structure(std::mem::replace(stored, acadrust::CadDocument::new()));
-                    *stored = inverse;
+                        .swap_structure(std::mem::replace(
+                            &mut **stored,
+                            acadrust::CadDocument::new(),
+                        ));
+                    **stored = inverse;
                     self.tabs[i].scene.invalidate_dependency_index();
                 }
                 StructureSnapshot::Layers(entries) => {

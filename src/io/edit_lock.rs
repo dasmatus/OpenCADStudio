@@ -146,6 +146,8 @@ impl EditLease {
             .read(true)
             .write(true)
             .create(true)
+            // An existing lease file must survive being reopened.
+            .truncate(false)
             .open(&lock_path)
             .map_err(|error| {
                 EditLeaseError::Unavailable(format!(

@@ -946,6 +946,9 @@ impl canvas::Program<Message> for GridCanvas {
     }
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 pub fn selection_overlay<'a>(
     selection: Arc<RefCell<SelectionState>>,
     snap: Option<(Point, SnapType)>,

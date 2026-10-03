@@ -9,10 +9,10 @@
 //! - `{"op":"new"}`                          — start an empty document
 //! - `{"op":"open","path":"file.dwg"}`       — load a drawing
 //! - `{"op":"run","cmd":"LAYER Walls"}`      — run a command (the same dispatcher
-//!                                             the GUI command line uses)
+//!   the GUI command line uses)
 //! - `{"op":"entities"}`                     — summary count by entity type
 //! - `{"op":"save","path":"out.dwg"}`        — write the document (path optional
-//!                                             once opened/saved)
+//!   once opened/saved)
 
 #[cfg(not(target_arch = "wasm32"))]
 use std::io::{BufRead, Write};

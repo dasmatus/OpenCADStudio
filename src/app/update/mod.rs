@@ -876,7 +876,7 @@ impl OpenCADStudio {
                     .unwrap_or_else(|| self.model_space.resolve_model_bg(&self.active_theme));
                 Task::perform(
                     crate::io::open_path_with_phase(path, progress, model_bg),
-                    move |result| Message::FileOpened(open_id, result),
+                    move |result| Message::FileOpened(open_id, result.map(Box::new)),
                 )
             }
 
@@ -917,7 +917,8 @@ impl OpenCADStudio {
                 } else {
                     Task::none()
                 };
-                let opened_task = self.update(Message::FileOpened(open_id, outcome.result));
+                let opened_task =
+                    self.update(Message::FileOpened(open_id, outcome.result.map(Box::new)));
                 Task::batch([recent_task, opened_task])
             }
 
@@ -938,14 +939,16 @@ impl OpenCADStudio {
                         Task::none()
                     }
                 };
-                let opened_task = self.update(Message::FileOpened(open_id, outcome.result));
+                let opened_task =
+                    self.update(Message::FileOpened(open_id, outcome.result.map(Box::new)));
                 Task::batch([recent_task, opened_task])
             }
 
-            Message::FileOpened(open_id, Ok((name, path, doc, caches))) => {
+            Message::FileOpened(open_id, Ok(opened)) => {
                 if self.opening.as_ref().map(|opening| opening.id) != Some(open_id) {
                     return Task::none();
                 }
+                let (name, path, doc, caches) = *opened;
                 self.on_file_opened(name, path, doc, caches)
             }
 
@@ -1666,7 +1669,7 @@ impl OpenCADStudio {
                     if self.tabs[idx].is_start {
                         self.ribbon.close_dropdown();
                     }
-                    if self.tabs[idx].is_start
+                    if (self.tabs[idx].is_start
                         && matches!(
                             self.active_modal,
                             Some(
@@ -1674,10 +1677,9 @@ impl OpenCADStudio {
                                     | super::ModalKind::LayerStateManager
                                     | super::ModalKind::LayerStateEditor
                             )
-                        )
+                        ))
+                        || self.active_modal == Some(super::ModalKind::LayerStateEditor)
                     {
-                        self.close_active_modal();
-                    } else if self.active_modal == Some(super::ModalKind::LayerStateEditor) {
                         self.close_active_modal();
                     } else if self.active_modal == Some(super::ModalKind::LayerStateManager) {
                         let mut names: Vec<String> = self.tabs[idx]
@@ -7805,7 +7807,7 @@ impl OpenCADStudio {
                         self.close_active_modal();
                         return Task::perform(
                             crate::io::open_path_with_phase(path, progress, model_bg),
-                            move |result| Message::FileOpened(open_id, result),
+                            move |result| Message::FileOpened(open_id, result.map(Box::new)),
                         );
                     }
                 }
@@ -7837,7 +7839,7 @@ impl OpenCADStudio {
                             initial_error,
                             initial_stats,
                         ),
-                        move |result| Message::FileOpened(open_id, result),
+                        move |result| Message::FileOpened(open_id, result.map(Box::new)),
                     )
                 }
                 #[cfg(target_arch = "wasm32")]

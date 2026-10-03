@@ -84,7 +84,7 @@ struct PreparedSlice {
 
 enum ModelSliceTool {
     Plane(cadkernel::space::Plane),
-    Surface(Body),
+    Surface(Box<Body>),
 }
 
 impl ModelSliceTool {
@@ -115,9 +115,9 @@ struct IntersectGroup {
 enum PreparedIntersectOutcome {
     Replace {
         retained: Handle,
-        entity: EntityType,
-        body: Body,
-        display: PreparedSolidDisplay,
+        entity: Box<EntityType>,
+        body: Box<Body>,
+        display: Box<PreparedSolidDisplay>,
     },
     Consume,
 }
@@ -291,7 +291,7 @@ fn entity_with_history_body(mut source: EntityType, body: &Body) -> Option<Entit
 }
 
 enum IntersectBodyOutcome {
-    Area(Body),
+    Area(Box<Body>),
     Touching,
     Disjoint,
 }
@@ -309,14 +309,16 @@ fn intersect_bodies(
                 return Ok(IntersectBodyOutcome::Disjoint);
             }
         }
-        return Ok(IntersectBodyOutcome::Area(result));
+        return Ok(IntersectBodyOutcome::Area(Box::new(result)));
     }
 
     let references = bodies.iter().collect::<Vec<_>>();
     let tolerance = cadkernel::brep::operation_tolerance(&references);
     Ok(
         match cadkernel::brep::intersect_planar_regions(&bodies, tolerance)? {
-            cadkernel::brep::PlanarIntersection::Area(body) => IntersectBodyOutcome::Area(body),
+            cadkernel::brep::PlanarIntersection::Area(body) => {
+                IntersectBodyOutcome::Area(Box::new(body))
+            }
             cadkernel::brep::PlanarIntersection::Touching => IntersectBodyOutcome::Touching,
             cadkernel::brep::PlanarIntersection::Disjoint => IntersectBodyOutcome::Disjoint,
         },
@@ -1104,9 +1106,9 @@ impl super::OpenCADStudio {
                         handles: group.handles,
                         outcome: PreparedIntersectOutcome::Replace {
                             retained,
-                            entity,
+                            entity: Box::new(entity),
                             body,
-                            display,
+                            display: Box::new(display),
                         },
                     });
                 }
@@ -1154,6 +1156,7 @@ impl super::OpenCADStudio {
                     body,
                     display,
                 } => {
+                    let (entity, body, display) = (*entity, *body, *display);
                     self.tabs[i].scene.delete_solid_history(retained);
                     if !self.tabs[i].scene.update_entity(entity) {
                         self.command_line.push_error(
@@ -1667,7 +1670,11 @@ impl super::OpenCADStudio {
         cutter: Body,
         keep_point: Option<glam::DVec3>,
     ) -> Task<Message> {
-        self.solid_slice_with_tool(requested, ModelSliceTool::Surface(cutter), keep_point)
+        self.solid_slice_with_tool(
+            requested,
+            ModelSliceTool::Surface(Box::new(cutter)),
+            keep_point,
+        )
     }
 
     fn solid_slice_with_tool(

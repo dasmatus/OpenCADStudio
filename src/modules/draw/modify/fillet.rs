@@ -476,6 +476,8 @@ fn fillet_entire_lwpolyline(poly: &LwPolyline, radius: f64) -> Option<LwPolyline
         n.saturating_sub(1)
     };
 
+    // `i` and its wrapped predecessor index `poly.vertices` and `corners` alike.
+    #[allow(clippy::needless_range_loop)]
     for i in first_corner..end_corner {
         let prev = if i == 0 { n - 1 } else { i - 1 };
 
@@ -1276,7 +1278,7 @@ enum FilletStep {
 
     Second {
         h1: Handle,
-        e1: FilletEntity,
+        e1: Box<FilletEntity>,
         click1: [f64; 2],
     },
 }
@@ -1315,7 +1317,7 @@ impl FilletCommand {
     /// it can be restored afterwards.
     fn enter_radius_substep(&mut self) {
         self.resume_second = if let FilletStep::Second { h1, e1, click1 } = &self.step {
-            Some((*h1, e1.clone(), *click1))
+            Some((*h1, (**e1).clone(), *click1))
         } else {
             None
         };
@@ -1326,7 +1328,11 @@ impl FilletCommand {
     /// was already chosen, otherwise restarting at the first pick.
     fn resume_after_radius(&mut self) {
         self.step = match self.resume_second.take() {
-            Some((h1, e1, click1)) => FilletStep::Second { h1, e1, click1 },
+            Some((h1, e1, click1)) => FilletStep::Second {
+                h1,
+                e1: Box::new(e1),
+                click1,
+            },
             None => FilletStep::First,
         };
     }
@@ -1559,7 +1565,7 @@ impl CadCommand for FilletCommand {
                 if let Some(e) = e1 {
                     self.step = FilletStep::Second {
                         h1: handle,
-                        e1: e,
+                        e1: Box::new(e),
                         click1: click,
                     };
                     CmdResult::NeedPoint
@@ -1569,7 +1575,7 @@ impl CadCommand for FilletCommand {
             }
             FilletStep::Second { h1, e1, click1 } => {
                 let h1 = *h1;
-                let e1 = e1.clone();
+                let e1 = (**e1).clone();
                 let click1 = *click1;
                 let same_entity = handle == h1;
 
@@ -2356,7 +2362,8 @@ mod tests {
         assert_eq!(keywords(&command), ["P", "R"]);
         // The host hands the restored document back; the cache follows it.
         let mut doc = acadrust::CadDocument::new();
-        doc.add_entity(line(0.0, 0.0, 20.0, 0.0, 7));
+        doc.add_entity(line(0.0, 0.0, 20.0, 0.0, 7))
+            .expect("the restored document accepts a line with a preset handle");
         command.on_document_undone(&doc);
         assert_eq!(command.all_entities.len(), 1);
         assert_eq!(command.all_entities[0].common().handle, Handle::new(7));

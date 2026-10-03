@@ -243,6 +243,9 @@ fn polyline_segment_widths(entity: &EntityType) -> Vec<(f32, f32)> {
     }
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 fn split_mixed_polyline(
     tangent_geoms: &[TangentGeom],
     key_vertices: &[[f64; 3]],
@@ -649,6 +652,9 @@ pub(crate) fn shift_wire_to_world(w: &mut WireModel, origin: [f64; 3]) {
 /// encoded as NaN-separated segments (wire_gpu skips NaN pairs).
 /// For Solid3D entities this returns an empty wire; mesh tessellation lives
 /// in `solid3d_tess` and is uploaded via the mesh pipeline instead.
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 pub fn tessellate(
     document: &CadDocument,
     handle: Handle,

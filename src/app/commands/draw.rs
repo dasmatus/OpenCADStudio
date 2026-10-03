@@ -57,7 +57,7 @@ impl OpenCADStudio {
                 return Some(Task::done(Message::ImagePick));
             }
 
-            cmd if cmd == "IMAGEEMBED" => {
+            "IMAGEEMBED" => {
                 return Some(Task::done(Message::ImageEmbedPick));
             }
 

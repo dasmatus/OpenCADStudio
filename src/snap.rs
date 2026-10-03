@@ -1363,6 +1363,8 @@ impl Snapper {
             // degenerate geometry is rejected: with priority selection a NaN
             // would otherwise pass the gate and be chosen on rank alone,
             // feeding a NaN snap point to the renderer. (#118)
+            #[allow(clippy::neg_cmp_op_on_partial_ord)]
+            // NaN must be rejected, which `>=` would let through
             if !(d2 < radius2) {
                 return;
             }
@@ -1443,7 +1445,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_snap_hint);
 
         // ── Endpoint ───────────────────────────────────────────────────────
         if self.is_on(SnapType::Endpoint) {
@@ -1694,7 +1695,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_ray_intersections);
 
         // ── Intersection — segment-segment intersections (pairwise, gated) ──
         if self.is_on(SnapType::Intersection)
@@ -1956,6 +1956,8 @@ impl Snapper {
                         continue;
                     };
                     let si = &screen_pts[i];
+                    // `j` indexes `in_range_wires` and `screen_pts` in lockstep from `i + 1`.
+                    #[allow(clippy::needless_range_loop)]
                     for j in (i + 1)..in_range_wires.len() {
                         let Some(wire_j) = in_range_wires.get(j) else {
                             continue;
@@ -3398,6 +3400,8 @@ pub(crate) fn foot_on_triangle(
     let ac = c - a;
     let n = ab.cross(ac);
     let n2 = n.length_squared();
+    #[allow(clippy::neg_cmp_op_on_partial_ord)]
+    // NaN must be rejected, which `>=` would let through
     if !(n2 > 1e-24) {
         return None;
     }
@@ -3627,10 +3631,12 @@ mod ext_tests {
 
     #[test]
     fn tracking_active_covers_otrack_and_extension() {
-        let mut s = Snapper::default();
         // OTRACK off, Extension not enabled → no acquisition.
-        s.snap_enabled = true;
-        s.otrack_enabled = false;
+        let mut s = Snapper {
+            snap_enabled: true,
+            otrack_enabled: false,
+            ..Default::default()
+        };
         assert!(!s.tracking_active());
         // Extension on with the snap master on → acquire, independent of OTRACK.
         s.enabled.insert(SnapType::Extension);

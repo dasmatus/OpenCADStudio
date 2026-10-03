@@ -712,7 +712,7 @@ impl PrimitiveCommand {
         CmdResult::CommitSolid {
             entity: EntityType::Solid3D(entity),
             solid: Box::new(solid),
-            history,
+            history: Box::new(history),
             erase_source: None,
         }
     }
@@ -1381,7 +1381,7 @@ impl PrimitiveCommand {
         CmdResult::CommitSolid {
             entity: EntityType::Solid3D(entity),
             solid: Box::new(solid),
-            history,
+            history: Box::new(history),
             erase_source: None,
         }
     }
@@ -2078,7 +2078,7 @@ impl PrimitiveCommand {
                         CmdResult::CommitSolid {
                             entity: EntityType::Solid3D(entity),
                             solid: Box::new(placed),
-                            history,
+                            history: Box::new(history),
                             erase_source: None,
                         }
                     }

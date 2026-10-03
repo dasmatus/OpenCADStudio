@@ -2107,10 +2107,11 @@ pub enum Message {
     WebFileOpened(u64, crate::io::WebOpenOutcome),
     #[cfg(target_arch = "wasm32")]
     WebFileCached(u64, crate::io::WebOpenOutcome, Result<(), String>),
+    // The document is boxed: unboxed, it made every `Message` 4.9 KiB.
     FileOpened(
         u64,
         Result<
-            (String, PathBuf, CadDocument, crate::scene::DerivedCaches),
+            Box<(String, PathBuf, CadDocument, crate::scene::DerivedCaches)>,
             crate::io::OpenLoadError,
         >,
     ),

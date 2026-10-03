@@ -4,6 +4,9 @@ mod changelog;
 pub mod clipboard;
 pub mod defaults;
 mod donate;
+// `modules::draw::draw` is the drawing-command set; renaming it would touch
+// every `draw::draw::` path in the tree.
+#[allow(clippy::module_inception)]
 pub mod draw;
 pub mod fence;
 pub mod groups;

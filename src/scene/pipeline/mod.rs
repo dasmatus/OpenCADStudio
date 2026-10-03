@@ -2528,13 +2528,7 @@ impl Pipeline {
         wires: &[WireModel],
         depth_map: &rustc_hash::FxHashMap<u64, [f32; 2]>,
         block_geometry: &mut wire_gpu::BlockGeometryCache,
-    ) -> (
-        std::sync::Arc<Vec<WireGpu>>,
-        std::sync::Arc<Vec<BlockWireGpu>>,
-        std::sync::Arc<rustc_hash::FxHashMap<u64, Vec<u32>>>,
-        std::sync::Arc<Vec<CircleGpu>>,
-        std::sync::Arc<Vec<EllipseGpu>>,
-    ) {
+    ) -> ResidentWireBuffers {
         // Batch the wire pass: instead of one GPU buffer + one draw call per
         // WireModel (tens of thousands on a large drawing), merge maximal runs
         // of *consecutive* wires that share scissor + mesh-edge state into one
@@ -5541,6 +5535,16 @@ fn create_msaa_texture(
     })
 }
 
+/// One set of resident wire batches: wires, block-instanced wires, the handle
+/// index into them, then the analytical circles and ellipses.
+pub type ResidentWireBuffers = (
+    std::sync::Arc<Vec<WireGpu>>,
+    std::sync::Arc<Vec<BlockWireGpu>>,
+    std::sync::Arc<rustc_hash::FxHashMap<u64, Vec<u32>>>,
+    std::sync::Arc<Vec<CircleGpu>>,
+    std::sync::Arc<Vec<EllipseGpu>>,
+);
+
 /// Holds one inner `Pipeline` per viewport drawn this frame. A single
 /// shader widget owns one `MultiPipeline`; the unified renderer grows the
 /// `inners` vector to match the viewport count and draws each into its own
@@ -5562,16 +5566,7 @@ pub struct MultiPipeline {
     /// Definition geometry shared across viewport slots.
     pub(crate) block_geometry: wire_gpu::BlockGeometryCache,
     /// Shared resident batches, keyed by wire content identity.
-    pub(crate) wire_buffer_cache: rustc_hash::FxHashMap<
-        u64,
-        (
-            std::sync::Arc<Vec<WireGpu>>,
-            std::sync::Arc<Vec<BlockWireGpu>>,
-            std::sync::Arc<rustc_hash::FxHashMap<u64, Vec<u32>>>,
-            std::sync::Arc<Vec<CircleGpu>>,
-            std::sync::Arc<Vec<EllipseGpu>>,
-        ),
-    >,
+    pub(crate) wire_buffer_cache: rustc_hash::FxHashMap<u64, ResidentWireBuffers>,
 }
 
 impl MultiPipeline {

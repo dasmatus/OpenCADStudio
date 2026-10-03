@@ -310,12 +310,16 @@ fn apply_source_geometry(
     y: DVec3,
 ) {
     let old_diameter = association.radius * 2.0;
-    let size_factor = (old_diameter > 1.0e-12)
-        .then_some(association.cross_size / old_diameter)
-        .unwrap_or(0.1);
-    let gap_factor = (old_diameter > 1.0e-12)
-        .then_some(association.cross_gap / old_diameter)
-        .unwrap_or(0.05);
+    let size_factor = if old_diameter > 1.0e-12 {
+        association.cross_size / old_diameter
+    } else {
+        0.1
+    };
+    let gap_factor = if old_diameter > 1.0e-12 {
+        association.cross_gap / old_diameter
+    } else {
+        0.05
+    };
     association.center = vector(center);
     association.radius = radius;
     association.plane_origin = vector(center);

@@ -173,7 +173,6 @@ pub(super) fn viewcube_ucs_picker<'a>(current: String, names: Vec<String>) -> El
                     radius: 3.0.into(),
                     color: palette.background.neutral.color,
                     width: 1.0,
-                    ..Default::default()
                 },
                 text_color: palette.background.base.text,
                 placeholder_color: palette.background.base.text.scale_alpha(0.68),

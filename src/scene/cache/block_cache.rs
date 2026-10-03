@@ -973,6 +973,9 @@ pub fn aabb_disjoint_xy(a: [f32; 4], b: [f32; 4]) -> bool {
 ///
 /// Returns `None` if no defn is cached for `ins.block_name`. Returns
 /// `Some(empty)` if the defn exists but is empty.
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 pub fn expand_insert(
     doc: &CadDocument,
     cache: &BlockCache,
@@ -1265,8 +1268,8 @@ fn translated_prototype_wire(source: &WireModel, name: &str, delta: [f64; 3]) ->
     let mut wire = source.clone();
     wire.name = name.to_string();
     if let Some(instance) = wire.render_instance.as_mut() {
-        for axis in 0..3 {
-            instance.translation[axis] += delta[axis];
+        for (t, d) in instance.translation.iter_mut().zip(delta) {
+            *t += d;
         }
     }
     translate_double_single(&mut wire.points, &mut wire.points_low, delta);
@@ -1573,6 +1576,9 @@ struct Batches {
 }
 
 impl BatchEntry {
+    // Each argument is an independent input from a different source; a
+    // parameter struct would only rename them.
+    #[allow(clippy::too_many_arguments)]
     fn new(
         color: [f32; 4],
         contrast_bg: Option<[f32; 4]>,
@@ -1739,6 +1745,9 @@ impl Batches {
     }
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 fn style_key(
     color: [f32; 4],
     contrast_bg: Option<[f32; 4]>,

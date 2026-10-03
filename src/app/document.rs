@@ -806,7 +806,7 @@ pub(super) struct DeltaSnapshot {
 #[derive(Clone)]
 pub(super) enum StructureSnapshot {
     /// Compatibility fallback for genuinely broad structural commands.
-    Full(CadDocument),
+    Full(Box<CadDocument>),
     /// Exact layer-table entries touched by one command.
     Layers(Vec<TableEntryDelta<acadrust::tables::Layer>>),
     /// Exact text-style entries touched by one command.
@@ -819,8 +819,8 @@ pub(super) enum StructureSnapshot {
     /// The bounded set of style tables, style objects, current-style pointers,
     /// and matching ribbon state touched by one Style Manager transaction.
     Styles {
-        before: super::style_ops::StyleStateSnapshot,
-        after: super::style_ops::StyleStateSnapshot,
+        before: Box<super::style_ops::StyleStateSnapshot>,
+        after: Box<super::style_ops::StyleStateSnapshot>,
         text_names: Vec<String>,
         dim_names: Vec<String>,
         object_handles: Vec<Handle>,

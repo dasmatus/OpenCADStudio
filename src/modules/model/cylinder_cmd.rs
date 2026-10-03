@@ -223,7 +223,7 @@ impl CylinderCommand {
         CmdResult::CommitSolid {
             entity: EntityType::Solid3D(entity),
             solid: Box::new(solid),
-            history,
+            history: Box::new(history),
             erase_source: None,
         }
     }

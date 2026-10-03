@@ -88,8 +88,8 @@ impl MeshMetrics {
                 .translated(delta),
             );
         } else {
-            for axis in 0..3 {
-                self.centroid[axis] += delta[axis];
+            for (c, d) in self.centroid.iter_mut().zip(delta) {
+                *c += d;
             }
         }
     }

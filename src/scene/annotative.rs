@@ -1853,7 +1853,7 @@ pub fn update_entity_from_annotation_style(
     enum StyleUpdate {
         Text { annotative: bool, height: f64 },
         Dimension { annotative: bool },
-        MultiLeader(acadrust::objects::MultiLeaderStyle),
+        MultiLeader(Box<acadrust::objects::MultiLeaderStyle>),
         ContextOnly,
     }
 
@@ -1916,7 +1916,7 @@ pub fn update_entity_from_annotation_style(
                 .style_handle
                 .and_then(|style_handle| match doc.objects.get(&style_handle) {
                     Some(ObjectType::MultiLeaderStyle(style)) => {
-                        Some(StyleUpdate::MultiLeader(style.clone()))
+                        Some(StyleUpdate::MultiLeader(Box::new(style.clone())))
                     }
                     _ => None,
                 })

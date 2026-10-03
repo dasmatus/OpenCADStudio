@@ -274,7 +274,8 @@ enum OpenAttempt {
 #[cfg(not(target_arch = "wasm32"))]
 struct OpenAttemptFailure {
     message: String,
-    read_stats: Option<acadrust::ReadStats>,
+    // Boxed: `ReadStats` alone made every `Result<_, OpenAttemptFailure>` 152+ bytes.
+    read_stats: Option<Box<acadrust::ReadStats>>,
     recoverable: bool,
 }
 
@@ -358,7 +359,7 @@ async fn open_path_with_phase_attempt(
                             message: format!(
                                 "normal read found {dropped} structurally invalid drawing records"
                             ),
-                            read_stats: Some(read_stats),
+                            read_stats: Some(Box::new(read_stats)),
                             recoverable: true,
                         });
                     }
@@ -445,12 +446,15 @@ async fn open_path_with_phase_attempt(
             let result = match attempted {
                 Ok(Ok(value)) => Ok(value),
                 Ok(Err(failure)) => Err(if recovery_available && failure.recoverable {
-                    OpenLoadError::recovery_prompt(failure.message, failure.read_stats)
+                    OpenLoadError::recovery_prompt(
+                        failure.message,
+                        failure.read_stats.map(|stats| *stats),
+                    )
                 } else {
                     OpenLoadError {
                         message: failure.message,
                         source_sha256: stable_sha256_file(&path2, initial_fingerprint.as_ref()),
-                        read_stats: failure.read_stats,
+                        read_stats: failure.read_stats.map(|stats| *stats),
                         recovery_available: false,
                     }
                 }),
@@ -828,7 +832,7 @@ fn load_file_for_open(
             if !outcome.stats.has_usable_drawing_data() {
                 return Err(OpenAttemptFailure {
                     message: "initial read returned no source drawing records".to_string(),
-                    read_stats: Some(outcome.stats),
+                    read_stats: Some(Box::new(outcome.stats)),
                     recoverable: true,
                 });
             }
@@ -846,7 +850,7 @@ fn load_file_for_open(
                     });
                 return Err(OpenAttemptFailure {
                     message,
-                    read_stats: Some(outcome.stats),
+                    read_stats: Some(Box::new(outcome.stats)),
                     recoverable: true,
                 });
             }
@@ -859,7 +863,7 @@ fn load_file_for_open(
                         "initial read failed: {initial_error}; recovery read failed: {}",
                         failure.message
                     ),
-                    read_stats: initial_stats.clone(),
+                    read_stats: initial_stats.clone().map(Box::new),
                     recoverable: false,
                 })?;
             if !outcome.stats.has_usable_drawing_data() {
@@ -870,7 +874,7 @@ fn load_file_for_open(
                     message: format!(
                         "initial read failed: {initial_error}; recovery found no usable drawing data"
                     ),
-                    read_stats: Some(outcome.stats),
+                    read_stats: Some(Box::new(outcome.stats)),
                     recoverable: false,
                 });
             }
@@ -1027,24 +1031,21 @@ fn read_dwg_path(
         // fault — or refuses to open under a third-party lock — falls back
         // to one in-memory snapshot read below.
         if !cloud_placeholder(path) {
-            match DwgReader::from_mmap(path) {
-                Ok(mut reader) => {
-                    reader.options = options.clone();
-                    if let Some(progress) = &progress {
-                        reader.set_progress_callback(progress.clone());
-                    }
-                    match reader.read_with_stats() {
-                        Ok(outcome) => return Ok(outcome),
-                        // The file shrank or became unreadable mid-parse;
-                        // retry from a snapshot instead of reporting a bare
-                        // I/O error.
-                        Err(acadrust::DxfError::Io(_)) => {}
-                        Err(error) => return Err(ReaderFailure::from_reader(error)),
-                    }
+            // Locked or unmappable (`Err`): the snapshot read below surfaces the
+            // real error when the file genuinely cannot be read.
+            if let Ok(mut reader) = DwgReader::from_mmap(path) {
+                reader.options = options.clone();
+                if let Some(progress) = &progress {
+                    reader.set_progress_callback(progress.clone());
                 }
-                // Locked or unmappable: the snapshot read surfaces the real
-                // error when the file genuinely cannot be read.
-                Err(_) => {}
+                match reader.read_with_stats() {
+                    Ok(outcome) => return Ok(outcome),
+                    // The file shrank or became unreadable mid-parse;
+                    // retry from a snapshot instead of reporting a bare
+                    // I/O error.
+                    Err(acadrust::DxfError::Io(_)) => {}
+                    Err(error) => return Err(ReaderFailure::from_reader(error)),
+                }
             }
         }
         let bytes = read_drawing_snapshot(path).map_err(|error| {

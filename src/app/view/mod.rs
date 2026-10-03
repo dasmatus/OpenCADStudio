@@ -535,15 +535,17 @@ bg={bg_ms:.1}ms n={view_count}"
                     .then_some(sel_h)
                     .flatten()
                     .and_then(|h| {
-                        let indexed = match tab.scene.document.get_entity(h) {
-                            Some(acadrust::EntityType::LwPolyline(_))
-                            | Some(acadrust::EntityType::Polyline2D(_))
-                            | Some(acadrust::EntityType::Polyline3D(_))
-                            | Some(acadrust::EntityType::Spline(_))
-                            | Some(acadrust::EntityType::Face3D(_))
-                            | Some(acadrust::EntityType::PolygonMesh(_)) => true,
-                            _ => false,
-                        };
+                        let indexed = matches!(
+                            tab.scene.document.get_entity(h),
+                            Some(
+                                acadrust::EntityType::LwPolyline(_)
+                                    | acadrust::EntityType::Polyline2D(_)
+                                    | acadrust::EntityType::Polyline3D(_)
+                                    | acadrust::EntityType::Spline(_)
+                                    | acadrust::EntityType::Face3D(_)
+                                    | acadrust::EntityType::PolygonMesh(_)
+                            )
+                        );
                         indexed.then_some(tab.properties.prop_vertex)
                     });
                 // In-viewport grips are model-space; project them with the
@@ -3368,6 +3370,9 @@ pub(super) fn start_page_view<'a>(
     .into()
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 fn start_page_content<'a>(
     patrons: &'a [(String, i64)],
     videos: &'a [crate::videos::VideoEntry],

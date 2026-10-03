@@ -34,11 +34,11 @@ enum AddStep {
     PickMLeader,
     PickArrowhead {
         handle: Handle,
-        entity: Option<EntityType>,
+        entity: Option<Box<EntityType>>,
     },
     CollectPoints {
         handle: Handle,
-        entity: EntityType,
+        entity: Box<EntityType>,
         pts: Vec<DVec3>,
     },
 }
@@ -98,14 +98,14 @@ impl CadCommand for MLeaderAddCommand {
     fn on_point(&mut self, pt: DVec3) -> CmdResult {
         match &mut self.step {
             AddStep::PickArrowhead { handle, entity } => {
-                if let Some(ent) = entity.take() {
+                if let Some(ent) = entity.take().map(|boxed| *boxed) {
                     if !matches!(ent, EntityType::MultiLeader(_)) {
                         return CmdResult::Cancel;
                     }
                     let h = *handle;
                     self.step = AddStep::CollectPoints {
                         handle: h,
-                        entity: ent,
+                        entity: Box::new(ent),
                         pts: vec![pt],
                     };
                     return CmdResult::NeedPoint;
@@ -131,7 +131,7 @@ impl CadCommand for MLeaderAddCommand {
                 return CmdResult::Cancel;
             }
             let h = *handle;
-            if let EntityType::MultiLeader(ref mut ml) = entity {
+            if let EntityType::MultiLeader(ref mut ml) = **entity {
                 let points: Vec<Vector3> =
                     pts.iter().map(|p| Vector3::new(p.x, p.y, p.z)).collect();
                 let template_root = ml.context.leader_roots.first().cloned();
@@ -170,7 +170,7 @@ impl CadCommand for MLeaderAddCommand {
                     line.arrowhead_size = arrowhead_size;
                 }
             }
-            let updated = std::mem::replace(entity, EntityType::XLine(Default::default()));
+            let updated = std::mem::replace(&mut **entity, EntityType::XLine(Default::default()));
             return CmdResult::ReplaceEntity(h, vec![updated]);
         }
         CmdResult::Cancel
@@ -190,7 +190,7 @@ impl CadCommand for MLeaderAddCommand {
 
     fn inject_picked_entity(&mut self, entity: EntityType) {
         if let AddStep::PickArrowhead { entity: slot, .. } = &mut self.step {
-            *slot = Some(entity);
+            *slot = Some(Box::new(entity));
         }
     }
 }
@@ -213,7 +213,7 @@ enum RemoveStep {
     PickMLeader,
     PickLeaderToRemove {
         handle: Handle,
-        entity: Option<EntityType>,
+        entity: Option<Box<EntityType>>,
     },
 }
 
@@ -267,7 +267,7 @@ impl CadCommand for MLeaderRemoveCommand {
     fn on_point(&mut self, pt: DVec3) -> CmdResult {
         let pt = pt.as_vec3();
         if let RemoveStep::PickLeaderToRemove { handle, entity } = &mut self.step {
-            if let Some(mut ent) = entity.take() {
+            if let Some(mut ent) = entity.take().map(|boxed| *boxed) {
                 let h = *handle;
                 if let EntityType::MultiLeader(ref mut ml) = ent {
                     let pick = Vector3::new(pt.x as f64, pt.y as f64, pt.z as f64);
@@ -328,7 +328,7 @@ impl CadCommand for MLeaderRemoveCommand {
 
     fn inject_picked_entity(&mut self, entity: EntityType) {
         if let RemoveStep::PickLeaderToRemove { entity: slot, .. } = &mut self.step {
-            *slot = Some(entity);
+            *slot = Some(Box::new(entity));
         }
     }
 }

@@ -47,6 +47,9 @@ pub struct RecoveryReport {
 }
 
 impl RecoveryReport {
+    // Each argument is an independent input from a different source; a
+    // parameter struct would only rename them.
+    #[allow(clippy::too_many_arguments)]
     pub fn recovered(
         tab_id: u64,
         path: &Path,

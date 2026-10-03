@@ -234,14 +234,14 @@ impl Canvas {
                 for fy in 0..factor {
                     for fx in 0..factor {
                         let i = ((oy * factor + fy) * self.w + ox * factor + fx) * 4;
-                        for k in 0..4 {
-                            acc[k] += self.px[i + k] as u32;
+                        for (a, p) in acc.iter_mut().zip(&self.px[i..i + 4]) {
+                            *a += *p as u32;
                         }
                     }
                 }
                 let o = (oy * ow + ox) * 4;
-                for k in 0..4 {
-                    out[o + k] = (acc[k] / n) as u8;
+                for (dst, a) in out[o..o + 4].iter_mut().zip(acc) {
+                    *dst = (a / n) as u8;
                 }
             }
         }

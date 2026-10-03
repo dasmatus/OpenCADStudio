@@ -369,6 +369,9 @@ pub(crate) fn insert_attribute_entities(
         .collect()
 }
 
+// Each argument is an independent input from a different source; a
+// parameter struct would only rename them.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn append_insert_attribute_wires(
     wires: &mut Vec<WireModel>,
     document: &acadrust::CadDocument,

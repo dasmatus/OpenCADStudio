@@ -1718,6 +1718,9 @@ pub(crate) fn block_content_insert(
 /// text strokes, frame, background fill) so each piece can carry its
 /// own colour.
 pub trait MultiLeaderTess {
+    // Each argument is an independent input from a different source; a
+    // parameter struct would only rename them.
+    #[allow(clippy::too_many_arguments)]
     fn tessellate(
         &self,
         document: &acadrust::CadDocument,
@@ -2149,7 +2152,6 @@ impl MultiLeaderTess for MultiLeader {
                 })
                 .unwrap_or_else(|| "STANDARD".to_string());
             let style = resolve_text_style(&style_name, document);
-            let mut rot = rot;
             if style.is_upside_down {
                 rot += std::f32::consts::PI;
             }

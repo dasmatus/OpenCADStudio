@@ -442,9 +442,7 @@ impl StorageHatchBatch {
                 instance_index: instance_index as u32,
             }));
             for index in mesh_indices {
-                let Some(index) = base.checked_add(index) else {
-                    return None;
-                };
+                let index = base.checked_add(index)?;
                 indices.push(index);
             }
             let Ok(end) = u32::try_from(indices.len()) else {

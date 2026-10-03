@@ -314,6 +314,7 @@ impl XrefManagerPanel {
     /// - Ctrl/Cmd-click toggles one row;
     /// - Shift-click extends a contiguous range from the anchor (or the
     ///   clicked row when there is no anchor yet).
+    ///
     /// Tree mode always single-selects per spec, whatever the modifiers.
     pub fn click_select(&mut self, index: usize, extend: SelectExtend) {
         if index == HOST_ROW || index >= self.entries.len() {
@@ -1733,11 +1734,11 @@ fn row_menu_for(index: usize, change_path_open: bool) -> Element<'static, Messag
 
     let main: Element<'static, Message> = container(
         column![
-            item(&crate::t!("Open").into_owned(), XrefPaletteOp::Open),
-            item(&crate::t!("Attach...").into_owned(), XrefPaletteOp::Attach),
-            item(&crate::t!("Unload").into_owned(), XrefPaletteOp::Unload),
-            item(&crate::t!("Reload").into_owned(), XrefPaletteOp::Reload),
-            item(&crate::t!("Detach").into_owned(), XrefPaletteOp::Detach),
+            item(&crate::t!("Open"), XrefPaletteOp::Open),
+            item(&crate::t!("Attach..."), XrefPaletteOp::Attach),
+            item(&crate::t!("Unload"), XrefPaletteOp::Unload),
+            item(&crate::t!("Reload"), XrefPaletteOp::Reload),
+            item(&crate::t!("Detach"), XrefPaletteOp::Detach),
             menu_separator(),
             change_path_row,
             menu_separator(),
@@ -1780,9 +1781,9 @@ fn row_menu_for(index: usize, change_path_open: bool) -> Element<'static, Messag
     // break click delivery inside the `ContextMenu` overlay — see `menu_row`.
     let flyout: Element<'static, Message> = container(
         column![
-            pathtype_item(&crate::t!("Make Absolute").into_owned(), Pathtype::Full),
-            pathtype_item(&crate::t!("Make Relative").into_owned(), Pathtype::Relative),
-            pathtype_item(&crate::t!("Remove Path").into_owned(), Pathtype::None),
+            pathtype_item(&crate::t!("Make Absolute"), Pathtype::Full),
+            pathtype_item(&crate::t!("Make Relative"), Pathtype::Relative),
+            pathtype_item(&crate::t!("Remove Path"), Pathtype::None),
         ]
         .spacing(MENU_SPACING)
         .padding(MENU_PADDING),

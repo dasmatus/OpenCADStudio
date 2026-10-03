@@ -13,7 +13,7 @@
 //! 10. UI Ribbon View Widget Tree Construction
 //! 11. UI Viewport Grid Geometry Projection & Overlay Cache Key Evaluation
 //! 12. UI Themed SVG Icon Lookup Caching vs Uncached Parse
-//! 12b. Plot Style Layer-Usage Table Rebuild (256-bucket ACI table)
+//!     12b. Plot Style Layer-Usage Table Rebuild (256-bucket ACI table)
 //! 13. Wide & Tapered Arc + Donut Tessellation (7.5k offset polyline curves)
 //! 14. Model Space Extents & Bounding Box Calculation (ZOOM EXTENTS)
 //! 15. Batch Entity Transformation & Incremental Dirty-Tracking

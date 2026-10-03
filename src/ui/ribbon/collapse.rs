@@ -331,6 +331,8 @@ impl<'a> Widget<Message, Theme, Renderer> for CollapsePanels<'a> {
         // Place the chosen element for each panel left-to-right.
         let mut placed: Vec<(layout::Node, f32, f32)> = Vec::with_capacity(n);
         let mut x = 0.0f32;
+        // `i` is the panel slot passed to `slot`/`shown_mut`, not only `levels[i]`.
+        #[allow(clippy::needless_range_loop)]
         for i in 0..n {
             if i > 0 {
                 x -= squeeze;

@@ -2887,7 +2887,7 @@ impl OpenCADStudio {
                 });
                 let pending =
                     self.begin_undo(i, label, 1 + usize::from(erase_source.is_some()), true);
-                let handle = self.add_solid_model(entity, *solid, history);
+                let handle = self.add_solid_model(entity, *solid, *history);
                 if !handle.is_null() {
                     if let Some(source) = erase_source {
                         self.tabs[i].scene.erase_entities(&[source]);

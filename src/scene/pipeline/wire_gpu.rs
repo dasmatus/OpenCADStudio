@@ -543,6 +543,8 @@ fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
         let mut has_break = false;
         // Accumulate arc-length in f64 from double-single deltas (high + low).
         let mut acc = 0.0_f64;
+        // `i` and `i - 1` index `wire.points` and `points_low` alongside `dists`.
+        #[allow(clippy::needless_range_loop)]
         for i in 1..n {
             let p = wire.points[i - 1];
             let q = wire.points[i];
