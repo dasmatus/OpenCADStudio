@@ -66,6 +66,22 @@ class ReleaseTests(unittest.TestCase):
             with self.assertRaises(ValueError, msg=value):
                 release.versions(value)
 
+    def test_latest_release_when_none_exists(self):
+        def fail(*args):
+            raise subprocess.CalledProcessError(1, args)
+
+        def no_release(*args):
+            if args[1:3] == ("release", "list"):
+                return "[]"
+            fail(*args)
+
+        with patch.object(release, "run", no_release):
+            self.assertIsNone(release.latest_release())
+        with patch.object(release, "run", fail), self.assertRaises(subprocess.CalledProcessError):
+            release.latest_release()
+        with patch.object(release, "run", lambda *a: '[{"tagName": "v1"}]' if a[2] == "list" else fail(*a)), self.assertRaises(subprocess.CalledProcessError):
+            release.latest_release()
+
     def test_release_commit_push_and_retry(self):
         original_run = release.run
         releases = {"v0.9.8": {"name": "v0.9.8", "body": "Previous notes", "isDraft": False}}

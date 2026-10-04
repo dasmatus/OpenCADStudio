@@ -19,6 +19,18 @@ def gh(*args):
     return json.loads(run("gh", *args))
 
 
+def latest_release():
+    """Return the newest release tag, or None when no release exists yet."""
+    try:
+        return gh("release", "view", "--json", "tagName")["tagName"]
+    except subprocess.CalledProcessError:
+        # gh exits 1 for "release not found" and for real failures alike, so
+        # confirm with the list endpoint: only an empty list means no release.
+        if gh("release", "list", "--limit", "1", "--json", "tagName") == []:
+            return None
+        raise
+
+
 def versions(tag):
     version = tag.removeprefix("v")
     weekly = re.fullmatch(r"(20\d{2})\.(\d{2})", version)
@@ -63,7 +75,7 @@ def release_notes(previous, tag, repo, head="HEAD"):
         "Interface, web and plugins": [],
         "Maintenance": [],
     }
-    entries = run("git", "log", "--first-parent", "--format=%s%x1f%b%x1e", f"{previous}..{head}")
+    entries = run("git", "log", "--first-parent", "--format=%s%x1f%b%x1e", f"{previous}..{head}" if previous else head)
     for entry in entries.split("\x1e"):
         if "\x1f" not in entry:
             continue
@@ -91,7 +103,8 @@ def release_notes(previous, tag, repo, head="HEAD"):
             # ponytail: six recent entries per section; full history is linked below.
             lines += [f"- {subject}" for subject in subjects[:6]]
             lines += [""]
-    lines += [f"**Full Changelog:** https://github.com/{repo}/compare/{previous}...{tag}", ""]
+    if previous:
+        lines += [f"**Full Changelog:** https://github.com/{repo}/compare/{previous}...{tag}", ""]
     return "\n".join(lines)
 
 
@@ -102,7 +115,7 @@ def prepare(publish):
     current = datetime.now(timezone.utc)
     tag = current.strftime("v%G.%V")
     version = versions(tag)
-    latest = gh("release", "view", "--json", "tagName")["tagName"]
+    latest = latest_release()
     if publish and os.environ.get("GITHUB_REF") != "refs/heads/main":
         raise ValueError("Weekly releases must run on main")
     existing = run("git", "tag", "--list", tag)
@@ -116,7 +129,7 @@ def prepare(publish):
                 raise ValueError("Existing weekly release metadata is invalid")
             output({"ready": str(publish).lower(), "tag": tag, "commit": sha})
             return
-    elif run("git", "rev-list", "--count", f"{latest}..HEAD") == "0":
+    elif latest and run("git", "rev-list", "--count", f"{latest}..HEAD") == "0":
         output({"ready": "false"})
         return
     notes = release_notes(latest, tag, repo, tag if existing else "HEAD")
