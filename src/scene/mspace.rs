@@ -146,7 +146,7 @@ impl Scene {
         Some(ViewportFrame {
             viewport: vp_handle,
             paper_center,
-            model_target: glam::DVec2::new(cam.target.x as f64, cam.target.y as f64),
+            model_target: glam::DVec2::new(cam.target.x, cam.target.y),
             scale,
             twist,
             locked,
@@ -213,48 +213,6 @@ impl Scene {
             point,
             cadkernel::geom2d::Tolerance::new(1e-9),
         )
-    }
-}
-
-#[cfg(test)]
-mod clip_tests {
-    use super::*;
-
-    #[test]
-    fn concave_clip_boundary_rejects_the_notch() {
-        let mut scene = Scene::new();
-        let mut poly = acadrust::entities::LwPolyline::from_points(
-            [
-                (0.0, 0.0),
-                (10.0, 0.0),
-                (10.0, 5.0),
-                (5.0, 5.0),
-                (5.0, 10.0),
-                (0.0, 10.0),
-            ]
-            .map(|(x, y)| acadrust::types::Vector2::new(x, y))
-            .to_vec(),
-        );
-        poly.is_closed = true;
-        let clip = scene.add_entity(EntityType::LwPolyline(poly));
-        let mut viewport = acadrust::entities::Viewport::new();
-        viewport.center = acadrust::types::Vector3::new(5.0, 5.0, 0.0);
-        viewport.width = 20.0;
-        viewport.height = 20.0;
-        viewport.clip_boundary_handle = clip;
-        let viewport = scene.add_entity(EntityType::Viewport(viewport));
-        for (x, y, inside) in [
-            (2.0, 2.0, true),
-            (8.0, 2.0, true),
-            (8.0, 8.0, false),
-            (-1.0, 5.0, false),
-            (5.0, 7.0, true),
-        ] {
-            assert_eq!(
-                scene.viewport_displays_paper_point(viewport, glam::DVec2::new(x, y)),
-                inside,
-            );
-        }
     }
 }
 
@@ -768,5 +726,47 @@ impl Scene {
                 None
             }
         })
+    }
+}
+
+#[cfg(test)]
+mod clip_tests {
+    use super::*;
+
+    #[test]
+    fn concave_clip_boundary_rejects_the_notch() {
+        let mut scene = Scene::new();
+        let mut poly = acadrust::entities::LwPolyline::from_points(
+            [
+                (0.0, 0.0),
+                (10.0, 0.0),
+                (10.0, 5.0),
+                (5.0, 5.0),
+                (5.0, 10.0),
+                (0.0, 10.0),
+            ]
+            .map(|(x, y)| acadrust::types::Vector2::new(x, y))
+            .to_vec(),
+        );
+        poly.is_closed = true;
+        let clip = scene.add_entity(EntityType::LwPolyline(poly));
+        let mut viewport = acadrust::entities::Viewport::new();
+        viewport.center = acadrust::types::Vector3::new(5.0, 5.0, 0.0);
+        viewport.width = 20.0;
+        viewport.height = 20.0;
+        viewport.clip_boundary_handle = clip;
+        let viewport = scene.add_entity(EntityType::Viewport(viewport));
+        for (x, y, inside) in [
+            (2.0, 2.0, true),
+            (8.0, 2.0, true),
+            (8.0, 8.0, false),
+            (-1.0, 5.0, false),
+            (5.0, 7.0, true),
+        ] {
+            assert_eq!(
+                scene.viewport_displays_paper_point(viewport, glam::DVec2::new(x, y)),
+                inside,
+            );
+        }
     }
 }

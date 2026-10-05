@@ -249,7 +249,7 @@ fn to_render(ml: &MultiLeader, document: &acadrust::CadDocument) -> Option<Rende
                 first = false;
 
                 // Build the full control-point list: line.points + landing point
-                let mut ctrl: Vec<[f64; 3]> = line.points.iter().map(|p| p3(p)).collect();
+                let mut ctrl: Vec<[f64; 3]> = line.points.iter().map(&p3).collect();
 
                 let last_f = *ctrl.last().unwrap_or(&elbow_pt);
 
@@ -569,12 +569,12 @@ pub(crate) const MOVE_ALL_GRIP: usize = usize::MAX;
 fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
     if grip_id == MOVE_ALL_GRIP {
         let (dx, dy, dz) = match apply {
-            GripApply::Translate(d) => (d.x as f64, d.y as f64, d.z as f64),
+            GripApply::Translate(d) => (d.x, d.y, d.z),
 
             GripApply::Absolute(a) => (
-                a.x as f64 - ml.context.text_location.x,
-                a.y as f64 - ml.context.text_location.y,
-                a.z as f64 - ml.context.text_location.z,
+                a.x - ml.context.text_location.x,
+                a.y - ml.context.text_location.y,
+                a.z - ml.context.text_location.z,
             ),
         };
 
@@ -612,15 +612,15 @@ fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
                 if idx == grip_id {
                     match apply {
                         GripApply::Absolute(a) => {
-                            p.x = a.x as f64;
-                            p.y = a.y as f64;
-                            p.z = a.z as f64;
+                            p.x = a.x;
+                            p.y = a.y;
+                            p.z = a.z;
                         }
 
                         GripApply::Translate(d) => {
-                            p.x += d.x as f64;
-                            p.y += d.y as f64;
-                            p.z += d.z as f64;
+                            p.x += d.x;
+                            p.y += d.y;
+                            p.z += d.z;
                         }
                     }
 
@@ -641,10 +641,8 @@ fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
     if let Some((old_elbow, axis, old_sign, dogleg, gap)) = landing {
         if grip_id == idx {
             let target = match apply {
-                GripApply::Absolute(a) => DVec3::new(a.x as f64, a.y as f64, a.z as f64),
-                GripApply::Translate(d) => {
-                    old_elbow + DVec3::new(d.x as f64, d.y as f64, d.z as f64)
-                }
+                GripApply::Absolute(a) => DVec3::new(a.x, a.y, a.z),
+                GripApply::Translate(d) => old_elbow + DVec3::new(d.x, d.y, d.z),
             };
             let arrow = ml
                 .context
@@ -691,8 +689,8 @@ fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
             ml.context.text_location.z,
         );
         let target = match apply {
-            GripApply::Absolute(a) => DVec3::new(a.x as f64, a.y as f64, a.z as f64),
-            GripApply::Translate(d) => old_end + DVec3::new(d.x as f64, d.y as f64, d.z as f64),
+            GripApply::Absolute(a) => DVec3::new(a.x, a.y, a.z),
+            GripApply::Translate(d) => old_end + DVec3::new(d.x, d.y, d.z),
         };
 
         if let Some((elbow, axis, sign, _, gap)) = landing {
@@ -715,9 +713,9 @@ fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
         let (dir, far) = text_box_geom(ml);
 
         let (nx, ny) = match apply {
-            GripApply::Absolute(a) => (a.x as f64, a.y as f64),
+            GripApply::Absolute(a) => (a.x, a.y),
 
-            GripApply::Translate(d) => (far[0] + d.x as f64, far[1] + d.y as f64),
+            GripApply::Translate(d) => (far[0] + d.x, far[1] + d.y),
         };
 
         let tl = &ml.context.text_location;
@@ -1690,7 +1688,7 @@ pub(crate) fn block_content_insert(
         }
         if bounds[0] <= bounds[2] && bounds[1] <= bounds[3] {
             let to_block = Transform::rotation(-ml.block_rotation);
-            let from_left = ml.context.leader_roots.first().map_or(true, |root| {
+            let from_left = ml.context.leader_roots.first().is_none_or(|root| {
                 to_block.apply_vector([root.direction.x, root.direction.y])[0] >= 0.0
             });
             let anchor_x = if from_left { bounds[0] } else { bounds[2] } as f64;
@@ -1709,7 +1707,7 @@ pub(crate) fn block_content_insert(
     insert.rotation = ml.block_rotation;
     insert.normal = ml.context.block_content_normal;
     insert.common = ml.common.clone();
-    insert.common.color = ml.block_content_color.clone();
+    insert.common.color = ml.block_content_color;
     insert.common.color_name = None;
     insert.common.color_book_handle = None;
     Some(insert)
@@ -1901,7 +1899,7 @@ impl MultiLeaderTess for MultiLeader {
                     }
                     first = false;
 
-                    let mut ctrl: Vec<[f32; 3]> = line.points.iter().map(|p| p3(p)).collect();
+                    let mut ctrl: Vec<[f32; 3]> = line.points.iter().map(&p3).collect();
                     let last_f = *ctrl.last().unwrap_or(&cp_f);
                     let dist =
                         ((last_f[0] - cp_f[0]).powi(2) + (last_f[1] - cp_f[1]).powi(2)).sqrt();
@@ -2151,7 +2149,6 @@ impl MultiLeaderTess for MultiLeader {
                 })
                 .unwrap_or_else(|| "STANDARD".to_string());
             let style = resolve_text_style(&style_name, document);
-            let mut rot = rot;
             if style.is_upside_down {
                 rot += std::f32::consts::PI;
             }

@@ -283,7 +283,7 @@ impl OpenCADStudio {
             self.save_dialog_for_unsaved = true;
             let close = self.close_unsaved_dialog_window();
             let save = self.save_with_default_format(idx);
-            return Task::batch([close, save]);
+            Task::batch([close, save])
         }
 
         #[cfg(target_arch = "wasm32")]
@@ -1657,7 +1657,7 @@ mod tests {
             Some((crate::app::config::DockSide::Right, 0))
         );
         let _ = app.on_dock(crate::ui::dock::DockMsg::DockGrab(id));
-        app.win_size = (1600.0, 900.0).into();
+        app.win_size = (1600.0, 900.0);
         let _ = app.on_dock(crate::ui::dock::DockMsg::DragMove(iced::Point::new(
             100.0, 100.0,
         )));
@@ -1708,7 +1708,7 @@ mod tests {
         app.show_properties = true;
         let i = app.active_tab;
         app.tabs[i].scene.selection.borrow_mut().vp_size = (1600.0, 900.0);
-        app.win_size = (1600.0, 900.0).into();
+        app.win_size = (1600.0, 900.0);
         let id = crate::ui::dock::PanelId::Properties;
         let _ = app.on_dock(crate::ui::dock::DockMsg::DockGrab(id));
         // Pointer near the bottom of the left edge: one visible panel means a
@@ -1736,7 +1736,7 @@ mod tests {
         app.show_properties = true;
         let i = app.active_tab;
         app.tabs[i].scene.selection.borrow_mut().vp_size = (1600.0, 900.0);
-        app.win_size = (1600.0, 900.0).into();
+        app.win_size = (1600.0, 900.0);
         let id = crate::ui::dock::PanelId::Properties;
         let _ = app.on_dock(crate::ui::dock::DockMsg::DockGrab(id));
         let _ = app.on_dock(crate::ui::dock::DockMsg::DragMove(iced::Point::new(

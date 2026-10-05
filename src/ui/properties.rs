@@ -165,7 +165,7 @@ impl canvas::Program<Message> for HatchPatternPreview {
                             Point::new(segment[0][0] as f32, bounds.height - segment[0][1] as f32),
                             Point::new(segment[1][0] as f32, bounds.height - segment[1][1] as f32),
                         ),
-                        stroke.clone(),
+                        stroke,
                     );
                 }
             }
@@ -836,7 +836,7 @@ impl PropertiesPanel {
             PropValue::EditChoice { value, options } => {
                 self.render_edit_choice_row(label, prop.field, value, options)
             }
-            PropValue::BoolToggle { field, value } => render_bool_row(label, *field, *value),
+            PropValue::BoolToggle { field, value } => render_bool_row(label, field, *value),
             PropValue::Stepper { display, .. } => render_stepper_row(label, display),
             PropValue::EditText(val) | PropValue::PlainText(val) => {
                 self.render_edit_row(label, prop.field, val)

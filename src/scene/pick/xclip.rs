@@ -601,7 +601,7 @@ fn seg_cross_t(p0: [f32; 3], p1: [f32; 3], a: [f32; 2], b: [f32; 2]) -> Option<f
 /// approximate for concave ones.
 fn clip_triangles(tris: &[[f32; 3]], poly: &[[f32; 2]]) -> Vec<[f32; 3]> {
     let mut out = Vec::new();
-    for tri in tris.chunks_exact(3) {
+    for tri in tris.as_chunks::<3>().0 {
         let clipped = sutherland_hodgman(tri, poly);
         for k in 1..clipped.len().saturating_sub(1) {
             out.push(clipped[0]);

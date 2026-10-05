@@ -256,7 +256,7 @@ pub fn optimize(entity: &mut EntityType, tolerance: f64) {
             .collect();
         let indices = cadkernel::space::simplify_linear_chain(&points, tolerance);
         if indices.len() >= if p.is_closed { 3 } else { 2 } {
-            p.vertices = indices.into_iter().map(|i| p.vertices[i].clone()).collect();
+            p.vertices = indices.into_iter().map(|i| p.vertices[i]).collect();
         }
     }
 }

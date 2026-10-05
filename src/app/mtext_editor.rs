@@ -264,7 +264,7 @@ impl MTextEditorState {
     fn apply_globals(&self, doc: &mut MTextDocument) {
         let font = self.font.trim();
         let color = (self.color_aci != 256 && self.color_aci != 0)
-            .then(|| MTextColor::Index(self.color_aci));
+            .then_some(MTextColor::Index(self.color_aci));
         let oblique = parse_non_default(&self.oblique, 0.0);
         let width = parse_non_default(&self.width, 1.0);
         let tracking = parse_non_default(&self.char_space, 0.0);
@@ -276,7 +276,7 @@ impl MTextEditorState {
                 }
                 if p.color.is_none() && p.color_rgb.is_none() {
                     if let Some(ref c) = color {
-                        p.color = Some(c.clone());
+                        p.color = Some(*c);
                     }
                 }
                 if p.oblique_angle.is_none() {
@@ -1375,10 +1375,7 @@ impl super::OpenCADStudio {
         // value stays standard (#308).
         let normalized;
         let s: &str = if s.contains(['\n', '\r']) {
-            normalized = s
-                .replace("\r\n", "\\P")
-                .replace('\n', "\\P")
-                .replace('\r', "\\P");
+            normalized = s.replace("\r\n", "\\P").replace(['\n', '\r'], "\\P");
             &normalized
         } else {
             s
@@ -1606,7 +1603,7 @@ impl super::OpenCADStudio {
                     ed.record_undo();
                     for c in &mut cells[a..b] {
                         if let Cell::Char(_, p) | Cell::Stack { props: p, .. } = c {
-                            p.color = mcolor.clone();
+                            p.color = mcolor;
                             p.color_rgb = rgb;
                         }
                     }

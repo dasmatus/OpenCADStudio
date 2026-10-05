@@ -394,8 +394,10 @@ fn equal_sized_sources_remain_distinct_across_pages() {
         let red = image();
         let mut cyan = image();
         Arc::make_mut(&mut cyan.image.pixels)
-            .chunks_exact_mut(4)
-            .for_each(|pixel| pixel.copy_from_slice(&[0, 255, 255, 255]));
+            .as_chunks_mut::<4>()
+            .0
+            .iter_mut()
+            .for_each(|pixel| *pixel = [0, 255, 255, 255]);
         assert!(!Arc::ptr_eq(&red.image.pixels, &cyan.image.pixels));
         vec![
             page(vec![red.clone()]),
@@ -439,8 +441,10 @@ fn equal_sized_sources_remain_distinct_across_pages() {
 fn affine_triangle_clip_has_no_shared_edge_seam() {
     let mut plot = image();
     Arc::make_mut(&mut plot.image.pixels)
-        .chunks_exact_mut(4)
-        .for_each(|pixel| pixel.copy_from_slice(&[0, 0, 0, 128]));
+        .as_chunks_mut::<4>()
+        .0
+        .iter_mut()
+        .for_each(|pixel| *pixel = [0, 0, 0, 128]);
     let mut sheared = plot.clone();
     let transform = |[x, y, z]: [f32; 3]| [x + 0.27 * y + 5.0, 0.19 * x + y + 3.0, z];
     sheared

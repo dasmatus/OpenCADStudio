@@ -233,6 +233,7 @@ pub fn apply_common_prop(entity: &mut EntityType, field: &str, value: &str) {
 ///     `raw_dwg_eed`, and that verbatim blob *wins* over a structured record on
 ///     save. Editing an existing record therefore also has to drop that app's
 ///     stale verbatim block (matched by APPID handle) so the new value wins.
+///
 /// Other applications' verbatim blocks are preserved for round-trip fidelity.
 pub fn set_entity_xdata(
     doc: &mut acadrust::CadDocument,

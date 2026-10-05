@@ -24,6 +24,12 @@ pub struct ZoomWindowCommand {
     scale_prompt: bool,
 }
 
+impl Default for ZoomWindowCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ZoomWindowCommand {
     pub fn new() -> Self {
         Self {

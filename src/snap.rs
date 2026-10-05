@@ -336,10 +336,8 @@ impl<'a> InRangeWires<'a> {
         } else {
             if self.heap.is_empty() {
                 self.heap.reserve(16);
-                for slot in &self.stack {
-                    if let Some(w) = slot {
-                        self.heap.push(*w);
-                    }
+                for w in self.stack.iter().flatten() {
+                    self.heap.push(*w);
                 }
             }
             self.heap.push(wire);
@@ -905,7 +903,7 @@ impl Snapper {
                     continue;
                 }
                 let sd = screen_dist(x);
-                if sd < r && best_x.as_ref().map_or(true, |(bd, _)| sd < *bd) {
+                if sd < r && best_x.as_ref().is_none_or(|(bd, _)| sd < *bd) {
                     // Report an acquired tracking ray (not an auxiliary
                     // last_point ray) as base/dir for typed-distance entry.
                     let (ot, other) =
@@ -967,7 +965,7 @@ impl Snapper {
                 ray.origin.z,
             );
             let sd = screen_dist(aligned);
-            if sd < r && best.as_ref().map_or(true, |(bd, _)| sd < *bd) {
+            if sd < r && best.as_ref().is_none_or(|(bd, _)| sd < *bd) {
                 let dir_out = if t >= 0.0 { ray.dir } else { -ray.dir };
                 best = Some((
                     sd,
@@ -1035,7 +1033,7 @@ impl Snapper {
         };
         // Restart the dwell when the hovered line changes (different direction,
         // or a parallel line far from the candidate's point on screen).
-        let same_candidate = self.parallel_dwell.map_or(false, |(cd, cp, _, _)| {
+        let same_candidate = self.parallel_dwell.is_some_and(|(cd, cp, _, _)| {
             parallel(cd, dir)
                 && screen_perp_dist(pt, cp, cd, view_rot, eye, bounds) < self.osnap_radius_px
         });
@@ -1044,7 +1042,7 @@ impl Snapper {
                 if !fired && now.duration_since(since).as_millis() >= PAR_DWELL_MS {
                     // Dwelt long enough: acquire this line, or remove it if it is
                     // already the reference (hovering it a second time toggles).
-                    let is_ref = self.parallel_ref.map_or(false, |(rd, rp)| {
+                    let is_ref = self.parallel_ref.is_some_and(|(rd, rp)| {
                         parallel(rd, dir)
                             && screen_perp_dist(pt, rp, rd, view_rot, eye, bounds)
                                 < self.osnap_radius_px
@@ -1361,11 +1359,11 @@ impl Snapper {
                 return;
             }
             let d2 = dist2(screen, cursor_screen);
-            // `!(d2 < radius2)` (not `d2 >= radius2`) so a NaN distance from
+            // `partial_cmp` is `Less` (not `d2 < radius2` negated) so a NaN distance from
             // degenerate geometry is rejected: with priority selection a NaN
             // would otherwise pass the gate and be chosen on rank alone,
             // feeding a NaN snap point to the renderer. (#118)
-            if !(d2 < radius2) {
+            if !matches!(d2.partial_cmp(&radius2), Some(std::cmp::Ordering::Less)) {
                 return;
             }
             let (tier, sub) = (snap_tier(snap_type), snap_priority(snap_type));
@@ -1445,7 +1443,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_snap_hint);
 
         // ── Endpoint ───────────────────────────────────────────────────────
         if self.is_on(SnapType::Endpoint) {
@@ -1696,7 +1693,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_ray_intersections);
 
         // ── Intersection — segment-segment intersections (pairwise, gated) ──
         if self.is_on(SnapType::Intersection)
@@ -1958,11 +1954,15 @@ impl Snapper {
                         continue;
                     };
                     let si = &screen_pts[i];
-                    for j in (i + 1)..in_range_wires.len() {
+                    for (j, sj) in screen_pts
+                        .iter()
+                        .enumerate()
+                        .take(in_range_wires.len())
+                        .skip(i + 1)
+                    {
                         let Some(wire_j) = in_range_wires.get(j) else {
                             continue;
                         };
-                        let sj = &screen_pts[j];
                         for ai in 0..wire_i.points.len().saturating_sub(1) {
                             let sa0 = si[ai];
                             let sa1 = si[ai + 1];
@@ -3400,7 +3400,7 @@ pub(crate) fn foot_on_triangle(
     let ac = c - a;
     let n = ab.cross(ac);
     let n2 = n.length_squared();
-    if !(n2 > 1e-24) {
+    if !matches!(n2.partial_cmp(&1e-24), Some(std::cmp::Ordering::Greater)) {
         return None;
     }
     let dist = (base - a).dot(n) / n2.sqrt();

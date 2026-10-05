@@ -1972,7 +1972,7 @@ fn rigid_set_references(
         let Some(reference) = refs.get(geometry_id).copied() else {
             continue;
         };
-        if !entities.iter().any(|existing| *existing == reference) {
+        if !entities.contains(&reference) {
             entities.push(reference);
         }
         let Some(entity) = document.get_entity(reference.entity) else {
@@ -2502,10 +2502,11 @@ fn materialize_scope(
         let Some(entity_nodes) = entities.get(entity_handle) else {
             continue;
         };
-        if entity_nodes.geometry_node_id == 0 {
-            if entity_nodes.segments.is_empty() && entity_nodes.axes.is_empty() {
-                continue;
-            }
+        if entity_nodes.geometry_node_id == 0
+            && entity_nodes.segments.is_empty()
+            && entity_nodes.axes.is_empty()
+        {
+            continue;
         }
         let dep_handle = allocator.geom_dependency(group_handle?, *entity_handle, index as i32 + 1);
         geometry_dependencies.push(dep_handle);

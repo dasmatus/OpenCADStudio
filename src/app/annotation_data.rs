@@ -42,8 +42,8 @@ impl ExtractionRecord {
 fn table_styles(doc: &CadDocument) -> Vec<String> {
     let mut styles: Vec<String> = doc
         .objects
-        .iter()
-        .filter_map(|(_, object)| match object {
+        .values()
+        .filter_map(|object| match object {
             ObjectType::TableStyle(style) => Some(style.name.clone()),
             _ => None,
         })
@@ -104,7 +104,7 @@ fn data_link_choices(doc: &CadDocument) -> Vec<DataLinkChoice> {
     links
 }
 
-fn data_link<'a>(doc: &'a CadDocument, handle: Handle) -> Option<&'a DataLink> {
+fn data_link(doc: &CadDocument, handle: Handle) -> Option<&DataLink> {
     match doc.objects.get(&handle) {
         Some(ObjectType::ClassObject(object)) => match &object.data {
             ClassObjectData::DataLink(link) => Some(link),
@@ -114,7 +114,7 @@ fn data_link<'a>(doc: &'a CadDocument, handle: Handle) -> Option<&'a DataLink> {
     }
 }
 
-fn data_link_mut<'a>(doc: &'a mut CadDocument, handle: Handle) -> Option<&'a mut DataLink> {
+fn data_link_mut(doc: &mut CadDocument, handle: Handle) -> Option<&mut DataLink> {
     match doc.objects.get_mut(&handle) {
         Some(ObjectType::ClassObject(object)) => match &mut object.data {
             ClassObjectData::DataLink(link) => Some(link),

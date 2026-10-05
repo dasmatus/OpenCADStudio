@@ -586,7 +586,7 @@ impl OpenCADStudio {
                     })
                     .collect();
                 sized_flow(ex, 360, 420, |flow| {
-                    crate::ui::style::anno_object_scale::view_window(&label, &scales, flow)
+                    crate::ui::style::anno_object_scale::view_window(label, &scales, flow)
                 })
             }
             super::super::ModalKind::InsertTable => sized_flow(ex, 620, 650, |flow| {
@@ -1625,7 +1625,7 @@ impl OpenCADStudio {
                 let fonts = self.missing_fonts.as_ref()?;
                 let font_source = &self.font_source_input;
                 automatic_flow(ex, |flow| {
-                    crate::ui::window::missing_fonts::view_window(fonts, &font_source, flow)
+                    crate::ui::window::missing_fonts::view_window(fonts, font_source, flow)
                 })
             }
             super::super::ModalKind::Recovery => {

@@ -123,7 +123,6 @@ impl OpenCADStudio {
     }
 
     /// Mutable access to a table style's cell style by row (0=Data,1=Header,2=Title).
-
     pub(in crate::app) fn ts_cell_of(
         s: &mut acadrust::objects::TableStyle,
         row: u8,
@@ -138,7 +137,6 @@ impl OpenCADStudio {
 
     /// Mutable access to a cell's border by index
     /// (0=left 1=right 2=top 3=bottom 4=horizontal-inside 5=vertical-inside).
-
     pub(in crate::app) fn ts_border_of(
         c: &mut acadrust::objects::RowCellStyle,
         border: u8,
@@ -155,7 +153,6 @@ impl OpenCADStudio {
     }
 
     /// Populate margin + per-cell edit buffers from the selected table style.
-
     pub(in crate::app) fn load_tablestyle_bufs(&mut self, tab: usize) {
         use acadrust::objects::ObjectType;
         let name = self.tablestyle_selected.clone();
@@ -211,7 +208,6 @@ impl OpenCADStudio {
     }
 
     /// Mutable access to the currently selected multileader style.
-
     pub(in crate::app) fn mleaderstyle_mut(
         &mut self,
         tab: usize,
@@ -230,7 +226,6 @@ impl OpenCADStudio {
     }
 
     /// Populate all edit buffers from the currently selected multileader style.
-
     pub(in crate::app) fn load_mleaderstyle_bufs(&mut self, tab: usize) {
         use acadrust::objects::ObjectType;
         let name = self.mleaderstyle_selected.clone();
@@ -280,7 +275,6 @@ impl OpenCADStudio {
     }
 
     /// Populate all edit buffers from the currently selected dim style.
-
     pub(in crate::app) fn load_dimstyle_bufs(&mut self, tab: usize) {
         let doc = &self.tabs[tab].scene.document;
         let Some(ds) = doc.dim_styles.get(&self.dimstyle_selected) else {
@@ -359,7 +353,6 @@ impl OpenCADStudio {
     }
 
     /// Write edit buffers back into the selected dim style document entry.
-
     pub(in crate::app) fn apply_dimstyle_bufs(&mut self, tab: usize) {
         let doc = &mut self.tabs[tab].scene.document;
 
@@ -491,7 +484,6 @@ impl OpenCADStudio {
     }
 
     /// Update a single string buffer field.
-
     pub(in crate::app) fn apply_ds_edit(&mut self, field: crate::app::DsField, val: String) {
         use crate::app::DsField::*;
         match field {
@@ -562,7 +554,6 @@ impl OpenCADStudio {
     }
 
     /// Toggle a boolean buffer field.
-
     pub(in crate::app) fn apply_ds_toggle(&mut self, field: crate::app::DsField) {
         use crate::app::DsField::*;
         match field {
@@ -593,7 +584,6 @@ impl OpenCADStudio {
     }
 
     /// Populate edit buffers from the currently selected text style.
-
     pub(in crate::app) fn load_textstyle_bufs(&mut self, tab: usize) {
         let doc = &self.tabs[tab].scene.document;
         if let Some(s) = doc.text_styles.get(&self.textstyle_selected) {

@@ -108,7 +108,7 @@ impl RenderConvertible for Underlay {
             // Rendered page: draw its frame so selection/pick cover the
             // visible extent instead of a lone cross under the raster.
             let pts = vec![q[0], q[1], q[2], q[3], q[0]];
-            let pick_tris = crate::entities::mesh::triangulate_planar(&q.to_vec());
+            let pick_tris = crate::entities::mesh::triangulate_planar(q.as_ref());
             Some(RenderEntity {
                 pick_tris,
                 object: RenderObject::Lines(pts),
@@ -172,14 +172,14 @@ impl Grippable for Underlay {
             // Insertion point grip.
             match apply {
                 GripApply::Translate(d) => {
-                    self.insertion_point.x += d.x as f64;
-                    self.insertion_point.y += d.y as f64;
-                    self.insertion_point.z += d.z as f64;
+                    self.insertion_point.x += d.x;
+                    self.insertion_point.y += d.y;
+                    self.insertion_point.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    self.insertion_point.x = p.x as f64;
-                    self.insertion_point.y = p.y as f64;
-                    self.insertion_point.z = p.z as f64;
+                    self.insertion_point.x = p.x;
+                    self.insertion_point.y = p.y;
+                    self.insertion_point.z = p.z;
                 }
             }
         } else {
@@ -195,16 +195,16 @@ impl Grippable for Underlay {
             let new_world = match apply {
                 GripApply::Absolute(p) => {
                     // world → local: translate, un-rotate, un-scale
-                    let wx = p.x as f64 - self.insertion_point.x;
-                    let wy = p.y as f64 - self.insertion_point.y;
+                    let wx = p.x - self.insertion_point.x;
+                    let wy = p.y - self.insertion_point.y;
                     let lx = (wx * cos_r + wy * sin_r) / self.x_scale.max(1e-10);
                     let ly = (-wx * sin_r + wy * cos_r) / self.y_scale.max(1e-10);
                     (lx, ly)
                 }
                 GripApply::Translate(d) => {
                     let v = &self.clip_boundary_vertices[idx];
-                    let wx = d.x as f64 / self.x_scale.max(1e-10);
-                    let wy = d.y as f64 / self.y_scale.max(1e-10);
+                    let wx = d.x / self.x_scale.max(1e-10);
+                    let wy = d.y / self.y_scale.max(1e-10);
                     let lx = wx * cos_r + wy * sin_r;
                     let ly = -wx * sin_r + wy * cos_r;
                     (v.x + lx, v.y + ly)
@@ -416,9 +416,9 @@ impl Transformable for Underlay {
         use crate::scene::view::transform::reflect_xy_point;
         match t {
             EntityTransform::Translate(d) => {
-                self.insertion_point.x += d.x as f64;
-                self.insertion_point.y += d.y as f64;
-                self.insertion_point.z += d.z as f64;
+                self.insertion_point.x += d.x;
+                self.insertion_point.y += d.y;
+                self.insertion_point.z += d.z;
             }
             EntityTransform::Mirror {
                 p1,
@@ -446,16 +446,16 @@ impl Transformable for Underlay {
                     *p2,
                 );
                 // Reflect rotation angle.
-                let dx = (p2.x - p1.x) as f64;
-                let dy = (p2.y - p1.y) as f64;
+                let dx = p2.x - p1.x;
+                let dy = p2.y - p1.y;
                 let axis_angle = dy.atan2(dx);
                 self.rotation = 2.0 * axis_angle - self.rotation;
             }
             EntityTransform::Scale { center, factor } => {
-                let bx = center.x as f64;
-                let by = center.y as f64;
-                let bz = center.z as f64;
-                let f = *factor as f64;
+                let bx = center.x;
+                let by = center.y;
+                let bz = center.z;
+                let f = *factor;
                 self.insertion_point.x = bx + (self.insertion_point.x - bx) * f;
                 self.insertion_point.y = by + (self.insertion_point.y - by) * f;
                 self.insertion_point.z = bz + (self.insertion_point.z - bz) * f;
@@ -474,9 +474,9 @@ impl Transformable for Underlay {
                     );
                     return;
                 }
-                let bx = center.x as f64;
-                let by = center.y as f64;
-                let a = *angle_rad as f64;
+                let bx = center.x;
+                let by = center.y;
+                let a = *angle_rad;
                 let cos_a = a.cos();
                 let sin_a = a.sin();
                 let dx = self.insertion_point.x - bx;

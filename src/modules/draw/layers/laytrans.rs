@@ -57,10 +57,10 @@ impl Report {
     pub fn to_log(&self) -> String {
         let mut out = String::new();
         for (from, to, moved) in &self.translated {
-            out.push_str(&crate::tf!("{from} -> {to}  ({moved} object(s))\n").into_owned());
+            out.push_str(&crate::tf!("{from} -> {to}  ({moved} object(s))\n"));
         }
         for (layer, reason) in &self.skipped {
-            out.push_str(&crate::tf!("{layer}: skipped — {reason}\n").into_owned());
+            out.push_str(&crate::tf!("{layer}: skipped — {reason}\n"));
         }
         out
     }
@@ -83,7 +83,7 @@ pub fn load_targets(path: &Path) -> Result<Vec<TargetLayer>, String> {
             layer: layer.clone(),
         })
         .collect();
-    targets.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    targets.sort_by_key(|a| a.name.to_lowercase());
     if targets.is_empty() {
         return Err(crate::t!("no layers found in that file").into_owned());
     }

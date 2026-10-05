@@ -61,14 +61,14 @@ impl Grippable for Polyline {
         if let Some(v) = self.vertices.get_mut(grip_id) {
             match apply {
                 GripApply::Translate(d) => {
-                    v.location.x += d.x as f64;
-                    v.location.y += d.y as f64;
-                    v.location.z += d.z as f64;
+                    v.location.x += d.x;
+                    v.location.y += d.y;
+                    v.location.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    v.location.x = p.x as f64;
-                    v.location.y = p.y as f64;
-                    v.location.z = p.z as f64;
+                    v.location.x = p.x;
+                    v.location.y = p.y;
+                    v.location.z = p.z;
                 }
             }
         }
@@ -519,12 +519,12 @@ impl Grippable for Polyline2D {
         if let Some(v) = self.vertices.get_mut(grip_id) {
             match apply {
                 GripApply::Translate(d) => {
-                    v.location.x += d.x as f64;
-                    v.location.y += d.y as f64;
+                    v.location.x += d.x;
+                    v.location.y += d.y;
                 }
                 GripApply::Absolute(p) => {
-                    v.location.x = p.x as f64;
-                    v.location.y = p.y as f64;
+                    v.location.x = p.x;
+                    v.location.y = p.y;
                 }
             }
         }
@@ -655,9 +655,8 @@ pub(crate) fn polyline2d_global_width(pline: &Polyline2D) -> Option<f64> {
         return None;
     }
     let w0 = w0_start;
-    for i in 1..seg_count {
-        let (sw, ew) =
-            polyline2d_vertex_segment_widths(&verts[i], pline.start_width, pline.end_width);
+    for vertex in verts.iter().take(seg_count).skip(1) {
+        let (sw, ew) = polyline2d_vertex_segment_widths(vertex, pline.start_width, pline.end_width);
         if (sw - ew).abs() > 1e-6 || (sw - w0).abs() > 1e-6 {
             return None;
         }
@@ -1116,14 +1115,14 @@ impl Grippable for Polyline3D {
         if let Some(v) = raw_index.and_then(|index| self.vertices.get_mut(index)) {
             match apply {
                 GripApply::Translate(d) => {
-                    v.position.x += d.x as f64;
-                    v.position.y += d.y as f64;
-                    v.position.z += d.z as f64;
+                    v.position.x += d.x;
+                    v.position.y += d.y;
+                    v.position.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    v.position.x = p.x as f64;
-                    v.position.y = p.y as f64;
-                    v.position.z = p.z as f64;
+                    v.position.x = p.x;
+                    v.position.y = p.y;
+                    v.position.z = p.z;
                 }
             }
             if self.smooth_type != acadrust::entities::polyline3d::SmoothSurfaceType::None {

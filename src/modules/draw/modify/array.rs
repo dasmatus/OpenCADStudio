@@ -273,7 +273,7 @@ impl CadCommand for ArrayRectCommand {
 
     fn on_enter(&mut self) -> CmdResult {
         // Enter with empty input = use default for current step
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -436,7 +436,7 @@ impl CadCommand for ArrayPolarCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -762,7 +762,7 @@ impl CadCommand for ArrayPathCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {
@@ -1017,7 +1017,7 @@ impl CadCommand for Array3DCommand {
     }
 
     fn on_enter(&mut self) -> CmdResult {
-        self.on_text_input("").map_or(CmdResult::NeedPoint, |r| r)
+        self.on_text_input("").unwrap_or(CmdResult::NeedPoint)
     }
 
     fn on_escape(&mut self) -> CmdResult {

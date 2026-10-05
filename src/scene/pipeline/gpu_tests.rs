@@ -953,7 +953,7 @@ fn test_pline_arc_switch_preview_and_render() {
     let depth = rustc_hash::FxHashMap::default();
     use crate::command::CadCommand;
 
-    let mut cmd = crate::modules::draw::draw::polyline::PlineCommand::new();
+    let mut cmd = crate::modules::draw::drawing::polyline::PlineCommand::new();
     cmd.on_point(glam::DVec3::new(0.0, 0.0, 0.0));
     let _res = cmd.on_point(glam::DVec3::new(10.0, 0.0, 0.0));
     cmd.set_live_handle(acadrust::Handle::new(1));

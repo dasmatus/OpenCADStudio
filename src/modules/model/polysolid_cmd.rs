@@ -6,7 +6,7 @@ use acadrust::{EntityType, Handle};
 use glam::{DVec2, DVec3};
 
 use crate::command::{CadCommand, CmdOption, CmdResult, WorkingPlane};
-use crate::modules::draw::draw::polyline::{arc_sample_points, compute_bulge, seg_exit_tangent};
+use crate::modules::draw::drawing::polyline::{arc_sample_points, compute_bulge, seg_exit_tangent};
 use crate::scene::model::solid_model;
 use crate::scene::model::sweep_model::{self, PolysolidJustification};
 use crate::scene::model::wire_model::WireModel;

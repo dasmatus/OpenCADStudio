@@ -213,14 +213,14 @@ impl Scene {
         let width = height; // caller can adjust; rough square
         let mut view = acadrust::tables::View::new(name);
         view.center = Vector3 {
-            x: cam.target.x as f64,
-            y: cam.target.y as f64,
+            x: cam.target.x,
+            y: cam.target.y,
             z: 0.0,
         };
         view.target = Vector3 {
-            x: cam.target.x as f64,
-            y: cam.target.y as f64,
-            z: cam.target.z as f64,
+            x: cam.target.x,
+            y: cam.target.y,
+            z: cam.target.z,
         };
         view.direction = Vector3 {
             x: eye_dir.x as f64,
@@ -1170,9 +1170,9 @@ impl Scene {
             true
         } else {
             let target_wcs = acadrust::types::Vector3 {
-                x: cam.target.x as f64,
-                y: cam.target.y as f64,
-                z: cam.target.z as f64,
+                x: cam.target.x,
+                y: cam.target.y,
+                z: cam.target.z,
             };
 
             // The sheet viewport entity is the authoritative paper-space view;
@@ -1503,7 +1503,7 @@ impl Scene {
                 continue;
             }
             let wire = &wires[c.idx];
-            let hw = (wire.world_width * 0.5) as f32;
+            let hw = wire.world_width * 0.5;
             for &[x, y, z] in &wire.points {
                 if !x.is_finite() || !y.is_finite() || !z.is_finite() {
                     continue;

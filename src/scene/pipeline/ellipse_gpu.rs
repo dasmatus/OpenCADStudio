@@ -285,10 +285,9 @@ pub fn extract_ellipse_instances(
 
     let mut instances = Vec::with_capacity(wire.tangent_geoms.len());
     for geom in &wire.tangent_geoms {
-        if let Some(inst) = extract_ellipse_instance_from_geom(geom, wire, draw_depth) {
+        {
+            let inst = extract_ellipse_instance_from_geom(geom, wire, draw_depth)?;
             instances.push(inst);
-        } else {
-            return None;
         }
     }
     Some(instances)

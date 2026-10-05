@@ -742,8 +742,9 @@ impl PrimitiveCommand {
         else {
             return None;
         };
-        let candidates = crate::modules::draw::draw::circle::ttr_candidates(first, second, radius);
-        let local = crate::modules::draw::draw::circle::best_of(
+        let candidates =
+            crate::modules::draw::drawing::circle::ttr_candidates(first, second, radius);
+        let local = crate::modules::draw::drawing::circle::best_of(
             &candidates,
             (first_hit + second_hit) * 0.5,
         )?;
@@ -1041,7 +1042,8 @@ impl PrimitiveCommand {
     }
 
     fn on_cone_tangent(&mut self, object: TangentObject, hit: DVec3) -> CmdResult {
-        let object = crate::modules::draw::draw::circle::tangent_object_local(object, self.plane);
+        let object =
+            crate::modules::draw::drawing::circle::tangent_object_local(object, self.plane);
         let hit = self.plane.to_local(hit);
         match self.cone_step {
             ConeStep::TtrFirst => {

@@ -148,6 +148,12 @@ fn selected_row_style(table_style: &acadrust::objects::TableStyle, name: &str) -
     cell_style_from_row(style)
 }
 
+impl Default for TableCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TableCommand {
     pub fn new() -> Self {
         Self {

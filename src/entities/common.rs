@@ -155,7 +155,7 @@ fn format_signed_length(value: f64) -> String {
             let whole = (rest / denom).floor();
             let mut n = (rest - whole * denom).round() as u64;
             let mut d = denom as u64;
-            while d > 1 && n % 2 == 0 && d % 2 == 0 {
+            while d > 1 && n.is_multiple_of(2) && d.is_multiple_of(2) {
                 n /= 2;
                 d /= 2;
             }
@@ -166,7 +166,7 @@ fn format_signed_length(value: f64) -> String {
             };
             let unit_suffix = if ctx.lunits == 4 { "\"" } else { "" };
             match feet {
-                Some(f) if f == 0.0 => {
+                Some(0.0) => {
                     format!("{}{:.0}{}{}", sign, whole, frac_str, unit_suffix)
                 }
                 Some(f) => format!("{}{:.0}'-{:.0}{}{}", sign, f, whole, frac_str, unit_suffix),
@@ -181,7 +181,7 @@ fn format_signed_length(value: f64) -> String {
 /// scalar even when linear distances use architectural or fractional notation.
 pub fn format_area(value: f64) -> String {
     let ctx = unit_context();
-    let precision = ctx.luprec.max(0).min(15) as usize;
+    let precision = ctx.luprec.clamp(0, 15) as usize;
     if ctx.lunits == 1 {
         format!("{:.*e}", precision, value)
     } else {
@@ -790,7 +790,7 @@ pub fn bulge_arc_to_tangent(
 /// Falls back to `triangulate_planar` if the vertex count is odd or less than 4.
 pub(crate) fn triangulate_band_ring(ring: &[[f64; 3]]) -> Vec<[f64; 3]> {
     let n = ring.len();
-    if n >= 4 && n % 2 == 0 {
+    if n >= 4 && n.is_multiple_of(2) {
         let m = n / 2;
         let mut tris = Vec::with_capacity((m - 1) * 6);
         for j in 0..m - 1 {
@@ -1148,8 +1148,8 @@ pub(crate) fn polyline_segment_fill(
         let sign = b.signum();
         let cx = (mx + sign * d_perp * perp_x) as f32;
         let cy = (my + sign * d_perp * perp_y) as f32;
-        let a0 = ((p0[1] - cy) as f32).atan2((p0[0] - cx) as f32);
-        let a1 = ((p1[1] - cy) as f32).atan2((p1[0] - cx) as f32);
+        let a0 = (p0[1] - cy).atan2(p0[0] - cx);
+        let a1 = (p1[1] - cy).atan2(p1[0] - cx);
         let (sa, mut ea) = if bulge > 0.0 { (a0, a1) } else { (a1, a0) };
         if ea < sa {
             ea += std::f32::consts::TAU;
@@ -1245,7 +1245,7 @@ mod length_format_tests {
     fn formatted_lengths_read_back() {
         for lunits in [3, 4, 5] {
             for value in [0.995f64, 5.995, 11.999, 23.999, 66.5, 9.25] {
-                let shown = with_units(lunits, if lunits == 3 { 4 } else { 4 }, value);
+                let shown = with_units(lunits, 4, value);
                 let read = parse_length(&shown).unwrap_or_else(|| {
                     panic!("lunits {lunits} wrote {shown:?}, which does not read back")
                 });

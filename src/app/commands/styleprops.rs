@@ -98,7 +98,7 @@ impl OpenCADStudio {
             cmd if cmd.starts_with("LINETYPE ") || cmd.starts_with("LT ") => {
                 let raw_rest = cmd.split_once(' ').map(|(_, r)| r.trim()).unwrap_or("");
                 let parts: Vec<&str> = raw_rest.split_whitespace().collect();
-                let sub = parts.get(0).map(|s| s.to_uppercase()).unwrap_or_default();
+                let sub = parts.first().map(|s| s.to_uppercase()).unwrap_or_default();
                 match sub.as_str() {
                     "" | "LIST" | "?" => {
                         let ltypes: Vec<String> = self.tabs[i]
@@ -911,8 +911,8 @@ impl OpenCADStudio {
                                     let replacement = if union.full_circle {
                                         let mut circle = acadrust::entities::Circle::new();
                                         circle.common = source.common.clone();
-                                        circle.center = source.center.clone();
-                                        circle.normal = source.normal.clone();
+                                        circle.center = source.center;
+                                        circle.normal = source.normal;
                                         circle.radius = source.radius;
                                         circle.thickness = source.thickness;
                                         acadrust::EntityType::Circle(circle)
@@ -1023,7 +1023,7 @@ impl OpenCADStudio {
             }
             cmd if cmd.starts_with("PICKADD ") || cmd.starts_with("PICKDRAG ") => {
                 let is_add = cmd.starts_with("PICKADD");
-                let arg = cmd.splitn(2, ' ').nth(1).unwrap_or("").trim();
+                let arg = cmd.split_once(' ').map(|x| x.1).unwrap_or("").trim();
                 if arg.is_empty() {
                     let v = if is_add {
                         u8::from(self.pick_add)
@@ -3255,7 +3255,7 @@ impl OpenCADStudio {
                     );
                 }
             }
-            cmd if cmd == "DDPTYPE" => {
+            "DDPTYPE" => {
                 // The dialog shows the magnitude; the sign (relative/absolute)
                 // is driven by the radio buttons. A positive PDSIZE is absolute;
                 // zero or negative is relative.

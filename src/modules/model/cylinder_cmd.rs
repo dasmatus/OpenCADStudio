@@ -76,6 +76,12 @@ pub struct CylinderCommand {
     plane: WorkingPlane,
 }
 
+impl Default for CylinderCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl CylinderCommand {
     pub fn new() -> Self {
         let remembered = defaults().lock().map(|value| *value).unwrap_or_default();
@@ -247,8 +253,9 @@ impl CylinderCommand {
         else {
             return None;
         };
-        let candidates = crate::modules::draw::draw::circle::ttr_candidates(first, second, radius);
-        let local = crate::modules::draw::draw::circle::best_of(
+        let candidates =
+            crate::modules::draw::drawing::circle::ttr_candidates(first, second, radius);
+        let local = crate::modules::draw::drawing::circle::best_of(
             &candidates,
             (first_hit + second_hit) * 0.5,
         )?;
@@ -299,7 +306,8 @@ impl CylinderCommand {
     }
 
     fn on_tangent(&mut self, object: TangentObject, hit: DVec3) -> CmdResult {
-        let object = crate::modules::draw::draw::circle::tangent_object_local(object, self.plane);
+        let object =
+            crate::modules::draw::drawing::circle::tangent_object_local(object, self.plane);
         let hit = self.plane.to_local(hit);
         match self.step {
             Step::TtrFirst => self.step = Step::TtrSecond { object, hit },

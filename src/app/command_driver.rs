@@ -699,7 +699,7 @@ impl OpenCADStudio {
         let gathering = self.tabs[i]
             .active_cmd
             .as_ref()
-            .map_or(false, |c| c.is_selection_gathering());
+            .is_some_and(|c| c.is_selection_gathering());
         if !gathering {
             return None;
         }
@@ -927,9 +927,9 @@ impl OpenCADStudio {
             }
             self.last_point = Some(wcs);
             self.push_ucs_to_cmd(i);
-            return self.feed_command(StepInput::Point(wcs));
+            self.feed_command(StepInput::Point(wcs))
         } else {
-            return self.feed_command(StepInput::Text(token.to_string()));
+            self.feed_command(StepInput::Text(token.to_string()))
         }
     }
 
@@ -2146,11 +2146,11 @@ impl OpenCADStudio {
                 viewport,
                 preserve_view,
             } => {
-                let saved_view = preserve_view.then(|| {
+                let saved_view = preserve_view.then_some({
                     (
-                        viewport.view_target.clone(),
-                        viewport.view_direction.clone(),
-                        viewport.view_center.clone(),
+                        viewport.view_target,
+                        viewport.view_direction,
+                        viewport.view_center,
                         viewport.view_height,
                         viewport.custom_scale,
                         viewport.lens_length,
@@ -2339,7 +2339,7 @@ impl OpenCADStudio {
                         .entity_belongs_to_active_space(handle)
                         .then(|| scene.document.get_entity(handle))
                         .flatten()
-                        .and_then(crate::modules::draw::draw::wipeout::wipeout_from_polyline)
+                        .and_then(crate::modules::draw::drawing::wipeout::wipeout_from_polyline)
                 };
                 if let Some(wipeout) = wipeout {
                     if erase_source {
@@ -2353,7 +2353,8 @@ impl OpenCADStudio {
                 self.command_line.push_error(
                     crate::t!("WIPEOUT Polyline: select a straight, closed, planar 2D polyline with at least 3 non-intersecting vertices.").as_ref(),
                 );
-                let command = crate::modules::draw::draw::wipeout::WipeoutCommand::new_polyline();
+                let command =
+                    crate::modules::draw::drawing::wipeout::WipeoutCommand::new_polyline();
                 self.command_line
                     .push_info(&crate::command::CadCommand::prompt(&command));
                 self.tabs[i].active_cmd = Some(Box::new(command));
@@ -3135,7 +3136,7 @@ impl OpenCADStudio {
                     let new_handle =
                         self.tabs[i]
                             .scene
-                            .add_hatch(hatch, Some(&layer), entity_style.clone());
+                            .add_hatch(hatch, Some(&layer), entity_style);
                     if !new_handle.is_null() {
                         self.tabs[i].scene.select_entity(new_handle, true);
                     }
@@ -4972,7 +4973,7 @@ impl OpenCADStudio {
                                 dst_common.linetype = common.linetype.clone();
                                 dst_common.linetype_handle = common.linetype_handle;
                                 dst_common.linetype_scale = common.linetype_scale;
-                                dst_common.transparency = common.transparency.clone();
+                                dst_common.transparency = common.transparency;
                                 dst_common.color_name = common.color_name.clone();
                                 dst_common.color_book_handle = common.color_book_handle;
                                 dst_common.full_visual_style_handle =
@@ -5009,34 +5010,34 @@ impl OpenCADStudio {
                         // Dim-style overrides follow the style for dimension /
                         // leader destinations — through set_entity_xdata so no
                         // stale raw record survives.
-                        if dstyle_xdata.is_some()
+                        if (dstyle_xdata.is_some()
                             || matches!(
                                 app.tabs[i].scene.document.get_entity(handle),
                                 Some(
                                     acadrust::EntityType::Dimension(_)
                                         | acadrust::EntityType::Leader(_)
                                 )
-                            )
-                        {
-                            if matches!(
+                            ))
+                            && matches!(
                                 app.tabs[i].scene.document.get_entity(handle),
                                 Some(
                                     acadrust::EntityType::Dimension(_)
                                         | acadrust::EntityType::Leader(_)
                                 )
-                            ) && matches!(
+                            )
+                            && matches!(
                                 src_clone,
                                 Some(
                                     acadrust::EntityType::Dimension(_)
                                         | acadrust::EntityType::Leader(_)
                                 )
-                            ) {
-                                crate::entities::dim_override::replace(
-                                    &mut app.tabs[i].scene.document,
-                                    handle,
-                                    dstyle_xdata.clone().unwrap_or_default(),
-                                );
-                            }
+                            )
+                        {
+                            crate::entities::dim_override::replace(
+                                &mut app.tabs[i].scene.document,
+                                handle,
+                                dstyle_xdata.clone().unwrap_or_default(),
+                            );
                         }
                         // A restyled dimension renders from its baked *D block —
                         // drop the stale block so the new style shows (#398).
@@ -5813,9 +5814,9 @@ impl OpenCADStudio {
                     })
                 };
 
-                let dx = delta.x as f64;
-                let dy = delta.y as f64; // drawing plane is world XY
-                let dz = delta.z as f64;
+                let dx = delta.x;
+                let dy = delta.y; // drawing plane is world XY
+                let dz = delta.z;
 
                 // Dimensions whose points moved — their baked *D block is
                 // stale afterwards and must be dropped (see #398 / #372).
@@ -6901,7 +6902,7 @@ impl OpenCADStudio {
                             let mut sources =
                                 self.tabs[i].scene.boundary_sources_on_plane(plane, 1e-6);
                             sources.remove(&handle);
-                            let command=crate::modules::draw::draw::hatchedit::HatcheditCommand::for_association(handle,name,scale,angle,plane,sources);
+                            let command=crate::modules::draw::drawing::hatchedit::HatcheditCommand::for_association(handle,name,scale,angle,plane,sources);
                             self.tabs[i].scene.deselect_all();
                             self.command_line.push_info(&command.prompt());
                             self.tabs[i].active_cmd = Some(Box::new(command));
@@ -9416,7 +9417,7 @@ mod parametric_constraint_undo_tests {
             acadrust::types::Vector3::new(10.0, 0.0, 0.0),
         ));
         app.tabs[app.active_tab].active_cmd = Some(Box::new(
-            crate::modules::draw::draw::line::LineCommand::new(),
+            crate::modules::draw::drawing::line::LineCommand::new(),
         ));
         let _ = app.apply_cmd_result(CmdResult::CommitEntity(new_line));
 

@@ -37,7 +37,7 @@ impl FieldContext for OcsFieldContext {
     fn getenv(&self, name: &str) -> Option<String> {
         #[cfg(not(target_arch = "wasm32"))]
         {
-            return std::env::var(name).ok().filter(|v| !v.is_empty());
+            std::env::var(name).ok().filter(|v| !v.is_empty())
         }
         #[cfg(target_arch = "wasm32")]
         {

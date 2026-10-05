@@ -47,9 +47,9 @@ pub struct MLeaderCommand {
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum CreationOrder {
-    ArrowFirst,
-    LandingFirst,
-    ContentFirst,
+    Arrow,
+    Landing,
+    Content,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -69,6 +69,12 @@ enum Step {
     BlockSource,
 }
 
+impl Default for MLeaderCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MLeaderCommand {
     pub fn new() -> Self {
         Self {
@@ -76,7 +82,7 @@ impl MLeaderCommand {
             plane: WorkingPlane::default(),
             style: None,
             display_scale: 1.0,
-            order: CreationOrder::ArrowFirst,
+            order: CreationOrder::Arrow,
             step: Step::PickPoints,
             content_type: LeaderContentType::MText,
             path_type: MultiLeaderPathType::StraightLineSegments,
@@ -110,7 +116,7 @@ impl MLeaderCommand {
             plane: WorkingPlane::default(),
             style: Some(style.clone()),
             display_scale,
-            order: CreationOrder::ArrowFirst,
+            order: CreationOrder::Arrow,
             step: Step::PickPoints,
             content_type: (style.content_type as i16).into(),
             path_type: (style.path_type as i16).into(),
@@ -145,7 +151,7 @@ impl MLeaderCommand {
     }
 
     fn point_limit(&self) -> usize {
-        if self.order == CreationOrder::ContentFirst {
+        if self.order == CreationOrder::Content {
             2
         } else {
             self.max_points.max(2)
@@ -162,13 +168,13 @@ impl MLeaderCommand {
             .map(|point| self.plane.to_local(*point))
             .collect();
         let (leader_points, content_point) = match self.order {
-            CreationOrder::ArrowFirst => (local, None),
-            CreationOrder::LandingFirst => {
+            CreationOrder::Arrow => (local, None),
+            CreationOrder::Landing => {
                 let mut points = local;
                 points.reverse();
                 (points, None)
             }
-            CreationOrder::ContentFirst => {
+            CreationOrder::Content => {
                 let content = local[0];
                 let arrow = local[1];
                 let sign = if content.x >= arrow.x { 1.0 } else { -1.0 };
@@ -279,8 +285,8 @@ impl MLeaderCommand {
         };
         let segment_index = self.verts.len() - 1;
         let constraint = match (self.order, segment_index) {
-            (CreationOrder::LandingFirst, 0) => self.second_angle,
-            (CreationOrder::LandingFirst, 1) => self.first_angle,
+            (CreationOrder::Landing, 0) => self.second_angle,
+            (CreationOrder::Landing, 1) => self.first_angle,
             (_, 0) => self.first_angle,
             (_, 1) => self.second_angle,
             _ => None,
@@ -343,11 +349,11 @@ impl CadCommand for MLeaderCommand {
             Step::SelectMText => t!("MLEADER  Select an MText object:").into_owned(),
             Step::BlockSource => t!("MLEADER  Enter source block name:").into_owned(),
             Step::PickPoints if self.verts.is_empty() => match self.order {
-                CreationOrder::ArrowFirst => t!("MLEADER  Specify arrowhead point or [Landing first/Content first/Text/Select MText/Options]:").into_owned(),
-                CreationOrder::LandingFirst => t!("MLEADER  Specify landing point or [Arrowhead first/Content first/Text/Select MText/Options]:").into_owned(),
-                CreationOrder::ContentFirst => t!("MLEADER  Specify content location or [Arrowhead first/Landing first/Text/Select MText/Options]:").into_owned(),
+                CreationOrder::Arrow => t!("MLEADER  Specify arrowhead point or [Landing first/Content first/Text/Select MText/Options]:").into_owned(),
+                CreationOrder::Landing => t!("MLEADER  Specify landing point or [Arrowhead first/Content first/Text/Select MText/Options]:").into_owned(),
+                CreationOrder::Content => t!("MLEADER  Specify content location or [Arrowhead first/Landing first/Text/Select MText/Options]:").into_owned(),
             },
-            Step::PickPoints if self.order == CreationOrder::ContentFirst => {
+            Step::PickPoints if self.order == CreationOrder::Content => {
                 t!("MLEADER  Specify arrowhead point:").into_owned()
             }
             Step::PickPoints => t!("MLEADER  Specify next leader point or press Enter to finish:").into_owned(),
@@ -439,12 +445,12 @@ impl CadCommand for MLeaderCommand {
             .collect();
         local_points.push(self.plane.to_local(self.constrained_point(pt)));
         let pts: Vec<Vec3> = match self.order {
-            CreationOrder::ArrowFirst => local_points,
-            CreationOrder::LandingFirst => {
+            CreationOrder::Arrow => local_points,
+            CreationOrder::Landing => {
                 local_points.reverse();
                 local_points
             }
-            CreationOrder::ContentFirst => {
+            CreationOrder::Content => {
                 let content = local_points[0];
                 let arrow = *local_points.last().unwrap_or(&content);
                 let sign = if content.x >= arrow.x { 1.0 } else { -1.0 };
@@ -501,9 +507,9 @@ impl CadCommand for MLeaderCommand {
         let upper = text.to_ascii_uppercase();
         match self.step {
             Step::PickPoints if self.verts.is_empty() => match upper.as_str() {
-                "A" | "ARROWHEAD" | "ARROWHEAD FIRST" => self.order = CreationOrder::ArrowFirst,
-                "L" | "LANDING" | "LANDING FIRST" => self.order = CreationOrder::LandingFirst,
-                "C" | "CONTENT" | "CONTENT FIRST" => self.order = CreationOrder::ContentFirst,
+                "A" | "ARROWHEAD" | "ARROWHEAD FIRST" => self.order = CreationOrder::Arrow,
+                "L" | "LANDING" | "LANDING FIRST" => self.order = CreationOrder::Landing,
+                "C" | "CONTENT" | "CONTENT FIRST" => self.order = CreationOrder::Content,
                 "T" | "TEXT" => self.step = Step::PreEnterText,
                 "S" | "SELECT" | "SELECT MTEXT" => self.step = Step::SelectMText,
                 "O" | "OPTIONS" => self.step = Step::Options,
@@ -592,14 +598,11 @@ impl CadCommand for MLeaderCommand {
                 if text.is_empty() {
                     return None;
                 }
-                let Some(layer) = self
+                let layer = self
                     .layers
                     .iter()
                     .find(|layer| layer.eq_ignore_ascii_case(text))
-                    .cloned()
-                else {
-                    return None;
-                };
+                    .cloned()?;
                 self.layer = layer;
                 self.step = Step::Options;
             }
@@ -610,13 +613,10 @@ impl CadCommand for MLeaderCommand {
             }
             Step::SelectMText => return None,
             Step::BlockSource => {
-                let Some((_, handle)) = self
+                let (_, handle) = self
                     .block_sources
                     .iter()
-                    .find(|(name, _)| name.eq_ignore_ascii_case(text))
-                else {
-                    return None;
-                };
+                    .find(|(name, _)| name.eq_ignore_ascii_case(text))?;
                 self.block_handle = Some(*handle);
                 self.content_type = LeaderContentType::Block;
                 self.step = Step::Options;
@@ -651,7 +651,7 @@ impl CadCommand for MLeaderCommand {
         self.text = text.value.clone();
         self.selected_mtext = Some(text);
         self.content_type = LeaderContentType::MText;
-        self.order = CreationOrder::ContentFirst;
+        self.order = CreationOrder::Content;
         self.step = Step::PickPoints;
         CmdResult::NeedPoint
     }

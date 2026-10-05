@@ -54,7 +54,7 @@ pub(crate) fn parse_coord(text: &str) -> Option<(glam::DVec3, CoordKind)> {
         }
         // A cylindrical `distance<angle,z` splits on the comma — but a
         // surveyor's bearing has none, so nothing here can eat one.
-        let (angle, z) = match angles.split_once(|c| c == ',' || c == ';') {
+        let (angle, z) = match angles.split_once([',', ';']) {
             Some((angle, z)) => (parse_direction(angle)?, parse_length(z)?),
             None => (parse_direction(angles)?, 0.0),
         };
@@ -64,7 +64,7 @@ pub(crate) fn parse_coord(text: &str) -> Option<(glam::DVec3, CoordKind)> {
         ));
     }
     let parts: Vec<f64> = rest
-        .split(|c| c == ',' || c == ';')
+        .split([',', ';'])
         .map(parse_length)
         .collect::<Option<Vec<f64>>>()?;
     match parts.as_slice() {
@@ -168,12 +168,12 @@ impl UcsXform {
     }
 
     /// UCS point → WCS.
-    pub(super) fn to_wcs(&self, p: glam::DVec3) -> glam::DVec3 {
+    pub(super) fn to_wcs(self, p: glam::DVec3) -> glam::DVec3 {
         self.origin + self.x * p.x + self.y * p.y + self.z * p.z
     }
 
     /// WCS point → UCS.
-    pub(super) fn to_ucs(&self, p: glam::DVec3) -> glam::DVec3 {
+    pub(super) fn to_ucs(self, p: glam::DVec3) -> glam::DVec3 {
         let d = p - self.origin;
         glam::DVec3::new(d.dot(self.x), d.dot(self.y), d.dot(self.z))
     }
@@ -211,7 +211,7 @@ impl UcsXform {
 
     /// Full UCS-local → WCS transform, using `origin` as local zero while
     /// retaining this UCS's orthonormal axes.
-    pub(super) fn to_wcs_transform_at(&self, origin: glam::DVec3) -> acadrust::types::Transform {
+    pub(super) fn to_wcs_transform_at(self, origin: glam::DVec3) -> acadrust::types::Transform {
         use acadrust::types::{Matrix4, Transform};
         Transform::from_matrix(Matrix4 {
             m: [
@@ -224,7 +224,7 @@ impl UcsXform {
     }
 
     /// Full WCS → UCS-local transform, using `origin` as the local zero.
-    pub(super) fn to_ucs_transform_at(&self, origin: glam::DVec3) -> acadrust::types::Transform {
+    pub(super) fn to_ucs_transform_at(self, origin: glam::DVec3) -> acadrust::types::Transform {
         use acadrust::types::{Matrix4, Transform};
         Transform::from_matrix(Matrix4 {
             m: [
@@ -237,7 +237,7 @@ impl UcsXform {
     }
 
     /// Convert from the represented UCS into its canonical local frame.
-    pub(super) fn to_ucs_transform(&self) -> acadrust::types::Transform {
+    pub(super) fn to_ucs_transform(self) -> acadrust::types::Transform {
         self.to_ucs_transform_at(self.origin)
     }
 }

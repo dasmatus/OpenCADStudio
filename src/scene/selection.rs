@@ -1206,7 +1206,7 @@ mod tests {
 
         // Picked in an order that is neither creation nor handle order.
         let picked = |handles: &[Handle]| -> Vec<Handle> {
-            let mut order: Vec<_> = handles.iter().copied().collect();
+            let mut order: Vec<_> = handles.to_vec();
             order.reverse();
             order.retain(|h| h.value() % 3 != 0);
             order

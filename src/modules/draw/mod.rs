@@ -4,7 +4,7 @@ mod changelog;
 pub mod clipboard;
 pub mod defaults;
 mod donate;
-pub mod draw;
+pub mod drawing;
 pub mod fence;
 pub mod groups;
 pub mod inquiry;
@@ -33,7 +33,7 @@ impl CadModule for DrawModule {
         };
         use crate::modules::insert::{create_block, insert_block};
         use clipboard::{copy_clip, cut, paste};
-        use draw::{arc, circle, ellipse, hatch, line, polyline, shapes};
+        use drawing::{arc, circle, ellipse, hatch, line, polyline, shapes};
         use groups::{group, ungroup};
         use inquiry::{area, dist};
         use layers::{

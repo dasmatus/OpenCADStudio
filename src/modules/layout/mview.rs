@@ -7,7 +7,7 @@ use acadrust::types::{Vector2, Vector3};
 use acadrust::{EntityType, Handle};
 
 use crate::command::{CadCommand, CmdOption, CmdResult, InputKind};
-use crate::modules::draw::draw::polyline::{
+use crate::modules::draw::drawing::polyline::{
     arc_sample_points, compute_bulge, seg_exit_tangent, update_tangent_after_arc,
 };
 use crate::modules::{IconKind, ModuleEvent, ToolDef};
@@ -116,8 +116,8 @@ impl MviewCommand {
         viewport.width = width;
         viewport.height = height;
         viewport.id = 2;
-        viewport.view_target = view.target.clone();
-        viewport.view_direction = view.direction.clone();
+        viewport.view_target = view.target;
+        viewport.view_direction = view.direction;
         viewport.view_height = source_height;
         viewport.custom_scale = height / source_height;
         viewport.lens_length = view.lens_length;

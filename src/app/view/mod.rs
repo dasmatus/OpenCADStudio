@@ -532,18 +532,18 @@ bg={bg_ms:.1}ms n={view_count}"
                 let current_vertex_grip: Option<usize> = tab
                     .properties
                     .prop_vertex_indicator_active
-                    .then(|| sel_h)
+                    .then_some(sel_h)
                     .flatten()
                     .and_then(|h| {
-                        let indexed = match tab.scene.document.get_entity(h) {
+                        let indexed = matches!(
+                            tab.scene.document.get_entity(h),
                             Some(acadrust::EntityType::LwPolyline(_))
-                            | Some(acadrust::EntityType::Polyline2D(_))
-                            | Some(acadrust::EntityType::Polyline3D(_))
-                            | Some(acadrust::EntityType::Spline(_))
-                            | Some(acadrust::EntityType::Face3D(_))
-                            | Some(acadrust::EntityType::PolygonMesh(_)) => true,
-                            _ => false,
-                        };
+                                | Some(acadrust::EntityType::Polyline2D(_))
+                                | Some(acadrust::EntityType::Polyline3D(_))
+                                | Some(acadrust::EntityType::Spline(_))
+                                | Some(acadrust::EntityType::Face3D(_))
+                                | Some(acadrust::EntityType::PolygonMesh(_))
+                        );
                         indexed.then_some(tab.properties.prop_vertex)
                     });
                 // In-viewport grips are model-space; project them with the
@@ -2598,7 +2598,7 @@ impl OpenCADStudio {
                         Some(Message::OsWindowClosed(win_id))
                     }
                     iced::Event::Window(window::Event::Resized(sz)) => {
-                        Some(Message::WindowResized(sz.width as f32, sz.height as f32))
+                        Some(Message::WindowResized(sz.width, sz.height))
                     }
                     iced::Event::Window(window::Event::FileDropped(path)) => {
                         Some(Message::FileDropped(path))

@@ -495,7 +495,7 @@ fn min_dist_to_strokes(x: f32, y: f32, strokes: &[Vec<[f32; 2]>]) -> f32 {
 /// True if `(x, y)` lies in any triangle of a flat triangle-vertex list
 /// (3 vertices per triangle).
 fn point_in_fill(x: f32, y: f32, tris: &[[f32; 2]]) -> bool {
-    for t in tris.chunks_exact(3) {
+    for t in tris.as_chunks::<3>().0 {
         if point_in_tri(x, y, t[0], t[1], t[2]) {
             return true;
         }

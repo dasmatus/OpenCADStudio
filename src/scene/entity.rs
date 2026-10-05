@@ -2094,8 +2094,7 @@ impl Scene {
                     .filter_map(crate::entities::hatch::edge_curve)
                     .collect()
             };
-            if let Some(refined) =
-                cadkernel::geom2d::refine_spline_boundary(&ring, curves, &project)
+            if let Some(refined) = cadkernel::geom2d::refine_spline_boundary(&ring, curves, project)
             {
                 if boundary.len() - range.len() + refined.len() > MAX_HATCH_MODEL_VERTS {
                     continue;

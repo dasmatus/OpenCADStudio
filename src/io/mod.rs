@@ -1027,24 +1027,21 @@ fn read_dwg_path(
         // fault — or refuses to open under a third-party lock — falls back
         // to one in-memory snapshot read below.
         if !cloud_placeholder(path) {
-            match DwgReader::from_mmap(path) {
-                Ok(mut reader) => {
-                    reader.options = options.clone();
-                    if let Some(progress) = &progress {
-                        reader.set_progress_callback(progress.clone());
-                    }
-                    match reader.read_with_stats() {
-                        Ok(outcome) => return Ok(outcome),
-                        // The file shrank or became unreadable mid-parse;
-                        // retry from a snapshot instead of reporting a bare
-                        // I/O error.
-                        Err(acadrust::DxfError::Io(_)) => {}
-                        Err(error) => return Err(ReaderFailure::from_reader(error)),
-                    }
+            // A locked or unmappable file is skipped: the snapshot read
+            // surfaces the real error when it genuinely cannot be read.
+            if let Ok(mut reader) = DwgReader::from_mmap(path) {
+                reader.options = options.clone();
+                if let Some(progress) = &progress {
+                    reader.set_progress_callback(progress.clone());
                 }
-                // Locked or unmappable: the snapshot read surfaces the real
-                // error when the file genuinely cannot be read.
-                Err(_) => {}
+                match reader.read_with_stats() {
+                    Ok(outcome) => return Ok(outcome),
+                    // The file shrank or became unreadable mid-parse;
+                    // retry from a snapshot instead of reporting a bare
+                    // I/O error.
+                    Err(acadrust::DxfError::Io(_)) => {}
+                    Err(error) => return Err(ReaderFailure::from_reader(error)),
+                }
             }
         }
         let bytes = read_drawing_snapshot(path).map_err(|error| {
@@ -1261,7 +1258,7 @@ pub(crate) fn resolve_image_file(raw: &str, base_dir: Option<&Path>) -> Option<S
     if joined.is_file() {
         return Some(joined.to_string_lossy().into_owned());
     }
-    let name = raw.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(raw);
+    let name = raw.rsplit(['/', '\\']).next().unwrap_or(raw);
     let cand = base_dir.join(name);
     if cand.is_file() {
         return Some(cand.to_string_lossy().into_owned());
@@ -2344,11 +2341,8 @@ fn fix_viewport_status_flags(doc: &mut CadDocument) {
 /// reader, so arms for them here would convert twice.
 fn fix_dxf_dimension_rotations(doc: &mut CadDocument) {
     for entity in doc.entities_mut() {
-        match entity {
-            EntityType::Shape(s) => {
-                s.rotation = s.rotation.to_radians();
-            }
-            _ => {}
+        if let EntityType::Shape(s) = entity {
+            s.rotation = s.rotation.to_radians();
         }
     }
 }

@@ -252,7 +252,7 @@ impl Scene {
     /// their own points and are left alone; non-solids are untouched.
     /// Idempotent: a wire already carrying 3D snaps is skipped, so shared
     /// memo entries can pass through every assembly path safely.
-    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut Vec<WireModel>) {
+    pub(crate) fn attach_solid_snaps(&self, handle: Handle, wires: &mut [WireModel]) {
         use crate::scene::model::wire_model::SnapHint;
         let points = self.solid_snap_points(handle);
         if points.is_empty() {
@@ -309,7 +309,7 @@ impl Scene {
         if !(aperture_px.is_finite() && aperture_px > 0.0) {
             return None;
         }
-        let perp_base = want_perp.then(|| base).flatten();
+        let perp_base = want_perp.then_some(base).flatten();
         let project = |world: glam::DVec3| {
             let ndc = view_rot.project_point3((world - eye).as_vec3());
             [
@@ -333,7 +333,9 @@ impl Scene {
                             screen: [f32; 2],
                             d2: f32,
                             handle: Handle| {
-            if !(d2 < radius2) || !in_bounds(screen) {
+            if !matches!(d2.partial_cmp(&radius2), Some(std::cmp::Ordering::Less))
+                || !in_bounds(screen)
+            {
                 return;
             }
             let (tier, sub) = (snap_tier(snap_type), snap_priority(snap_type));
@@ -412,7 +414,7 @@ impl Scene {
             {
                 continue;
             }
-            for tri in lod.indices.chunks_exact(3) {
+            for tri in lod.indices.as_chunks::<3>().0 {
                 let mut v = [glam::DVec3::ZERO; 3];
                 let mut ok = true;
                 for (slot, index) in v.iter_mut().zip(tri.iter()) {
@@ -1509,9 +1511,7 @@ fn offset_centroid(e: &EntityType, model_block: Handle, prep: &OffsetPrep) -> Op
         set.contains(&h)
     } else if c.owner_handle == model_block {
         true
-    } else if !c.owner_handle.is_null() {
-        false
-    } else if prep.owned_by_other_block.contains(&h) {
+    } else if !c.owner_handle.is_null() || prep.owned_by_other_block.contains(&h) {
         false
     } else {
         // owner null + h not enumerated by any block: legacy permissive
@@ -2895,7 +2895,7 @@ impl Scene {
         }
         // Complex-linetype glyphs ride the host entity's wire.
         let lt = crate::scene::view::render::linetype_name_for(&self.document, entity);
-        crate::io::linetypes::resolve_complex_lt(&self.document, &lt).is_some()
+        crate::io::linetypes::resolve_complex_lt(&self.document, lt).is_some()
     }
 
     /// Stage the cache categories an entity belongs to before erase removes the
@@ -3538,7 +3538,7 @@ impl Scene {
         }
         self.nav_changed_at
             .get()
-            .map_or(false, |t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
     }
 
     pub(crate) fn record_nav_perf(&self, op: NavPerfOp, started: iced::time::Instant) {
@@ -3591,9 +3591,9 @@ impl Scene {
     /// (hatched) frame actually renders after the cursor stops, even when no
     /// input event would otherwise trigger a redraw. Read-only (no side effect).
     pub fn is_settling(&self) -> bool {
-        self.nav_changed_at.get().map_or(false, |t| {
-            t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130
-        })
+        self.nav_changed_at
+            .get()
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130)
     }
 
     /// Prepare display geometry without changing the entity or resident caches.
@@ -7946,12 +7946,16 @@ impl Scene {
             *self.viewport_style_override_cache.borrow_mut() =
                 Some((self.geometry_epoch, overridden));
         }
-        self.viewport_style_override_cache
+        if self
+            .viewport_style_override_cache
             .borrow()
             .as_ref()
             .is_some_and(|(_, overridden)| overridden.contains(&viewport))
-            .then_some(viewport.value())
-            .unwrap_or(0)
+        {
+            viewport.value()
+        } else {
+            0
+        }
     }
 
     /// Hatch / 2-D-solid fills for a content viewport, with its frozen layers
@@ -8468,7 +8472,6 @@ impl Scene {
     }
 
     /// Instanced hatch models keyed by their block-backed host handle.
-
     pub fn insert_hatches_for_click(&self) -> Arc<HashMap<Handle, Vec<HatchModel>>> {
         let interaction_block = self.interaction_block_handle();
         let space_key = self.interaction_space_key();
@@ -11595,7 +11598,7 @@ vis_index={:.1} visible_probe={:.1}",
         let margin = 1.1_f64;
         let scale_w = vp.width / (content_w as f64 * margin);
         let scale_h = vp.height / (content_h as f64 * margin);
-        let fit_scale = scale_w.min(scale_h).min(1000.0).max(1e-6);
+        let fit_scale = scale_w.min(scale_h).clamp(1e-6, 1000.0);
 
         vp.custom_scale = fit_scale;
         vp.view_height = vp.height / fit_scale;
@@ -11628,14 +11631,16 @@ mod section_tests {
             bottom_height: 2.0,
             indicator_alpha: 70,
             indicator_color: Color::from_index(9),
-            back_line_vertices: (depth > 0.0)
-                .then(|| {
+            back_line_vertices: if depth > 0.0 {
+                {
                     vertices
                         .iter()
                         .map(|point| *point + Vector3::new(-depth, 0.0, 0.0))
                         .collect()
-                })
-                .unwrap_or_default(),
+                }
+            } else {
+                Default::default()
+            },
             vertices,
             settings_handle: Handle::NULL,
         }
