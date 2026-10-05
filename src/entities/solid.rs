@@ -211,8 +211,11 @@ impl RenderConvertible for Solid {
                 .iter()
                 .map(|(start, end)| ((dvec3(*start) + dvec3(*end)) * 0.5, SnapHint::Midpoint)),
         );
-        let pick_tris = if geometry
-            .extruded { geometry.fill_tris.clone() } else { Default::default() };
+        let pick_tris = if geometry.extruded {
+            geometry.fill_tris.clone()
+        } else {
+            Default::default()
+        };
 
         Some(RenderEntity {
             pick_tris,

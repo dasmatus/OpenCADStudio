@@ -1375,9 +1375,7 @@ impl super::OpenCADStudio {
         // value stays standard (#308).
         let normalized;
         let s: &str = if s.contains(['\n', '\r']) {
-            normalized = s
-                .replace("\r\n", "\\P")
-                .replace(['\n', '\r'], "\\P");
+            normalized = s.replace("\r\n", "\\P").replace(['\n', '\r'], "\\P");
             &normalized
         } else {
             s

@@ -472,7 +472,9 @@ fn vector_text(vector: &acadrust::types::Vector3) -> String {
 
 fn matrix_text(matrix: &[f64; 16]) -> String {
     matrix
-        .as_chunks::<4>().0.iter()
+        .as_chunks::<4>()
+        .0
+        .iter()
         .map(|row| {
             format!(
                 "[{:.4}, {:.4}, {:.4}, {:.4}]",

@@ -1223,10 +1223,12 @@ mod tests {
         line.push_error(error);
         line.push_output(output);
 
-        let expected = [format!("❯ {} {command}", t!("Command:")),
+        let expected = [
+            format!("❯ {} {command}", t!("Command:")),
             format!("{INFO_PREFIX}{info}"),
             format!("{ERROR_PREFIX}{}: {error}", t!("Invalid").to_uppercase()),
-            output.to_string()];
+            output.to_string(),
+        ];
         let actual = line
             .history
             .iter()

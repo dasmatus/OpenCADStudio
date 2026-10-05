@@ -429,7 +429,9 @@ pub(crate) fn decode_pattern_station_map(
         .map(|value| *value as i32)
         .collect();
     let pieces = data[metadata_start..]
-        .as_chunks::<8>().0.iter()
+        .as_chunks::<8>()
+        .0
+        .iter()
         .map(|values| PatternStationPiece {
             source_segment: values[0] as u32,
             source_distances: [values[1], values[2]],

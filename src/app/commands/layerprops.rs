@@ -512,11 +512,7 @@ impl OpenCADStudio {
                             let ucs = self.tabs[i]
                                 .active_ucs
                                 .get_or_insert_with(|| Ucs::new("*ACTIVE*"));
-                            ucs.origin = Vector3::new(
-                                wcs_origin.x,
-                                wcs_origin.y,
-                                wcs_origin.z,
-                            );
+                            ucs.origin = Vector3::new(wcs_origin.x, wcs_origin.y, wcs_origin.z);
                             active_changed = true;
                             self.command_line.push_output(
                                 crate::tf!(

@@ -4352,8 +4352,11 @@ impl CadCommand for ExtrimCommand {
         };
         let q = [pt.x, pt.y];
         let geos = self.geos.clone();
-        let side =
-            |m: [f64; 2]| line_seg_ts(m[0], m[1], q[0], q[1], Handle::NULL, &geos).len().is_multiple_of(2);
+        let side = |m: [f64; 2]| {
+            line_seg_ts(m[0], m[1], q[0], q[1], Handle::NULL, &geos)
+                .len()
+                .is_multiple_of(2)
+        };
         let mut repl: Vec<(Handle, Vec<EntityType>)> = Vec::new();
         for (h, e) in &self.all {
             if *h == bh {
@@ -4433,8 +4436,11 @@ impl CadCommand for ExtrimCommand {
         }
         let q = [pt.x, pt.y];
         let geos = &self.geos;
-        let side =
-            |m: [f64; 2]| line_seg_ts(m[0], m[1], q[0], q[1], Handle::NULL, geos).len().is_multiple_of(2);
+        let side = |m: [f64; 2]| {
+            line_seg_ts(m[0], m[1], q[0], q[1], Handle::NULL, geos)
+                .len()
+                .is_multiple_of(2)
+        };
         // Removed (pick side) → red, surviving → blue; the boundary → yellow.
         let mut removed: Vec<[f32; 3]> = Vec::new();
         let mut kept: Vec<[f32; 3]> = Vec::new();

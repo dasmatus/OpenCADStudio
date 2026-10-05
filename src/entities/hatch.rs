@@ -1032,14 +1032,13 @@ impl Grippable for Hatch {
                 self.rotate_pattern_about_origin(delta);
                 self.pattern_angle = angle;
             }
-            A::HatchScale
-                if value > 0.0 => {
-                    if self.pattern_scale > 1e-12 {
-                        let factor = value / self.pattern_scale;
-                        self.scale_pattern_about_origin(factor);
-                    }
-                    self.pattern_scale = value;
+            A::HatchScale if value > 0.0 => {
+                if self.pattern_scale > 1e-12 {
+                    let factor = value / self.pattern_scale;
+                    self.scale_pattern_about_origin(factor);
                 }
+                self.pattern_scale = value;
+            }
             _ => {}
         }
     }

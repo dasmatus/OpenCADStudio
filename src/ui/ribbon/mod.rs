@@ -1359,11 +1359,7 @@ fn item_id(it: &RibbonItem) -> Option<&'static str> {
 /// panel's first tool-like item.
 fn representative<'g>(group: &'g RibbonGroup, last_used: Option<&str>) -> Option<&'g RibbonItem> {
     if let Some(want) = last_used {
-        if let Some(found) = group
-            .tools
-            .iter()
-            .find(|&it| item_id(it) == Some(want))
-        {
+        if let Some(found) = group.tools.iter().find(|&it| item_id(it) == Some(want)) {
             return Some(found);
         }
     }

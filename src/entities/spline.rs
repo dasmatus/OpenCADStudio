@@ -532,8 +532,11 @@ fn fit_spline_slopes(spl: &Spline, p: &[[f64; 3]]) -> Option<(Vec<f64>, [Vec<f64
             spl.begin_tangent.z,
         ]
     });
-    let end = nonzero(&spl.end_tangent)
-        .then_some([spl.end_tangent.x, spl.end_tangent.y, spl.end_tangent.z]);
+    let end = nonzero(&spl.end_tangent).then_some([
+        spl.end_tangent.x,
+        spl.end_tangent.y,
+        spl.end_tangent.z,
+    ]);
 
     // Solve for the knot slopes m_i = dP/dt per coordinate. The tridiagonal is
     // the C² continuity system; the end rows are the clamped tangent (m fixed)
@@ -986,9 +989,11 @@ fn apply_geom_prop(spline: &mut Spline, field: &str, value: &str) {
                     spline.cv_frame_visible = false;
                 }
             } else if value == "Control Vertices"
-                && !spline.flags.periodic && control_vertices(spline).len() >= 2 {
-                    spline.cv_frame_visible = true;
-                }
+                && !spline.flags.periodic
+                && control_vertices(spline).len() >= 2
+            {
+                spline.cv_frame_visible = true;
+            }
             return;
         }
         "knot_param" => {
@@ -1142,9 +1147,10 @@ fn apply_grip(spline: &mut Spline, grip_id: usize, apply: GripApply) {
     } else if !editing_fit
         && (uses_fit_method(spline) || !spline.fit_points.is_empty())
         && !spline.flags.periodic
-        && !convert_to_control_method(spline) {
-            return;
-        }
+        && !convert_to_control_method(spline)
+    {
+        return;
+    }
     let target = if editing_fit {
         spline.fit_points.get_mut(grip_id)
     } else {

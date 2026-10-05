@@ -201,7 +201,9 @@ fn compute_mesh_metrics(lods: &[MeshModel]) -> MeshMetrics {
         normals: Vec::new(),
         triangles: mesh
             .indices
-            .as_chunks::<3>().0.iter()
+            .as_chunks::<3>()
+            .0
+            .iter()
             .map(|triangle| {
                 [
                     triangle[0] as usize,

@@ -526,8 +526,7 @@ impl StorageHatchBatch {
             (count as u64).saturating_mul(stride as u64) <= limits.max_buffer_size
         };
         let storage_fits = |count: usize, stride: usize| {
-            (count as u64).saturating_mul(stride as u64)
-                <= limits.max_storage_buffer_binding_size
+            (count as u64).saturating_mul(stride as u64) <= limits.max_storage_buffer_binding_size
         };
         if !buffer_fits(verts.len(), std::mem::size_of::<HatchVertex>())
             || !buffer_fits(indices.len(), std::mem::size_of::<u32>())

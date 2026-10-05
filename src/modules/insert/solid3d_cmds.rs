@@ -2039,10 +2039,8 @@ impl CadCommand for SweepCommand {
                 }
             }
             SweepStep::ReferenceLength => {
-                {
-                    let length = crate::entities::common::parse_typed_length(value)?;
-                    self.set_reference_length(length);
-                }
+                let length = crate::entities::common::parse_typed_length(value)?;
+                self.set_reference_length(length);
             }
             SweepStep::NewLength => {
                 if "POINTS".starts_with(&keyword) {

@@ -102,7 +102,9 @@ pub(crate) fn style_for_property<'a>(
         table.base_style.as_ref(),
     ]
     .into_iter()
-    .flatten().find(|&style| style.property_flags.contains(property)).map(|v| v as _)
+    .flatten()
+    .find(|&style| style.property_flags.contains(property))
+    .map(|v| v as _)
 }
 
 fn style_for_border<'a>(

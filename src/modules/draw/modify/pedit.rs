@@ -2171,8 +2171,8 @@ pub fn join_selection_extend(
     fn move_endpoint(entity: &mut EntityType, start: bool, point: [f64; 3]) -> Option<()> {
         match entity {
             EntityType::LwPolyline(p) => {
-                let local = crate::entities::curve::ocs_plane(p.normal, p.elevation)
-                    .project(point)?;
+                let local =
+                    crate::entities::curve::ocs_plane(p.normal, p.elevation).project(point)?;
                 let index = if start {
                     0
                 } else {
@@ -2181,8 +2181,8 @@ pub fn join_selection_extend(
                 p.vertices[index].location = Vector2::new(local[0], local[1]);
             }
             EntityType::Polyline2D(p) => {
-                let local = crate::entities::curve::ocs_plane(p.normal, p.elevation)
-                    .project(point)?;
+                let local =
+                    crate::entities::curve::ocs_plane(p.normal, p.elevation).project(point)?;
                 let index = if start {
                     0
                 } else {

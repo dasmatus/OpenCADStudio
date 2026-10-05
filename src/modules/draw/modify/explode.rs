@@ -189,15 +189,9 @@ fn explode_polyline2d(p: &Polyline2D) -> Vec<EntityType> {
                 normal,
                 ..LineEnt::new()
             }));
-        } else if let Some(arc) = bulge_to_arc(
-            p0,
-            p1,
-            v0.bulge,
-            elevation,
-            &p.common,
-            p.thickness,
-            normal,
-        ) {
+        } else if let Some(arc) =
+            bulge_to_arc(p0, p1, v0.bulge, elevation, &p.common, p.thickness, normal)
+        {
             result.push(arc);
         }
     }

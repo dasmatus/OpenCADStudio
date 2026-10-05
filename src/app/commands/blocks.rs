@@ -618,7 +618,9 @@ impl OpenCADStudio {
                 // `-XREF` is accepted as an alias for industry muscle memory
                 // (modern CAD opens the palette on `XREF`); bare `XREF` keeps
                 // this repo's legacy list output for compatibility.
-                let rest = cmd.split_once(char::is_whitespace).map(|x| x.1)
+                let rest = cmd
+                    .split_once(char::is_whitespace)
+                    .map(|x| x.1)
                     .unwrap_or("")
                     .trim();
                 let mut parts = rest.split_whitespace();

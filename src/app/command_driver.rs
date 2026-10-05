@@ -5023,19 +5023,21 @@ impl OpenCADStudio {
                                     acadrust::EntityType::Dimension(_)
                                         | acadrust::EntityType::Leader(_)
                                 )
-                            ) && matches!(
+                            )
+                            && matches!(
                                 src_clone,
                                 Some(
                                     acadrust::EntityType::Dimension(_)
                                         | acadrust::EntityType::Leader(_)
                                 )
-                            ) {
-                                crate::entities::dim_override::replace(
-                                    &mut app.tabs[i].scene.document,
-                                    handle,
-                                    dstyle_xdata.clone().unwrap_or_default(),
-                                );
-                            }
+                            )
+                        {
+                            crate::entities::dim_override::replace(
+                                &mut app.tabs[i].scene.document,
+                                handle,
+                                dstyle_xdata.clone().unwrap_or_default(),
+                            );
+                        }
                         // A restyled dimension renders from its baked *D block —
                         // drop the stale block so the new style shows (#398).
                         if is_dim {

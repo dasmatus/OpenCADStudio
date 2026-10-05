@@ -889,7 +889,9 @@ fn mesh_click_result<'a>(
         }
         let local_t = mesh
             .indices
-            .as_chunks::<3>().0.iter()
+            .as_chunks::<3>()
+            .0
+            .iter()
             .filter_map(|triangle| {
                 ray_triangle(
                     origin,

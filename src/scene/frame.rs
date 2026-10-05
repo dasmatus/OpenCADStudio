@@ -94,7 +94,12 @@ pub(crate) fn master_mode(document: &CadDocument) -> i16 {
     if ALL_KINDS
         .iter()
         .skip(1)
-        .all(|kind| mode(document, *kind) == first) { first } else { 3 }
+        .all(|kind| mode(document, *kind) == first)
+    {
+        first
+    } else {
+        3
+    }
 }
 
 fn attach_root_entry(document: &mut CadDocument, name: &str, handle: Handle) {

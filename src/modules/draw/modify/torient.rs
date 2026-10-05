@@ -50,9 +50,8 @@ impl TorientCommand {
                     changed = true;
                 }
                 EntityType::MText(mtext) => {
-                    let angle = new_angle_rad.unwrap_or_else(|| {
-                        most_readable_angle(mtext.rotation, self.view_twist)
-                    });
+                    let angle = new_angle_rad
+                        .unwrap_or_else(|| most_readable_angle(mtext.rotation, self.view_twist));
                     mtext.rotation = angle;
                     changed = true;
                 }

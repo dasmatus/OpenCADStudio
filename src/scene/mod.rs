@@ -3591,9 +3591,9 @@ impl Scene {
     /// (hatched) frame actually renders after the cursor stops, even when no
     /// input event would otherwise trigger a redraw. Read-only (no side effect).
     pub fn is_settling(&self) -> bool {
-        self.nav_changed_at.get().is_some_and(|t| {
-            t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130
-        })
+        self.nav_changed_at
+            .get()
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130)
     }
 
     /// Prepare display geometry without changing the entity or resident caches.
@@ -11628,12 +11628,16 @@ mod section_tests {
             bottom_height: 2.0,
             indicator_alpha: 70,
             indicator_color: Color::from_index(9),
-            back_line_vertices: if depth > 0.0 { {
+            back_line_vertices: if depth > 0.0 {
+                {
                     vertices
                         .iter()
                         .map(|point| *point + Vector3::new(-depth, 0.0, 0.0))
                         .collect()
-                } } else { Default::default() },
+                }
+            } else {
+                Default::default()
+            },
             vertices,
             settings_handle: Handle::NULL,
         }

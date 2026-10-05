@@ -1529,7 +1529,9 @@ fn build_instanced_chunks(
                 let indices: Vec<_> = (0..vertices.len() as u32).collect();
                 let wire_indices: Vec<_> = if needs_wire_vertices {
                     indices
-                        .as_chunks::<3>().0.iter()
+                        .as_chunks::<3>()
+                        .0
+                        .iter()
                         .flat_map(|t| [t[0], t[1], t[1], t[2], t[2], t[0]])
                         .collect()
                 } else {

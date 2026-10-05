@@ -1738,7 +1738,9 @@ mod pixel_placement_tests {
                 let row = (rect.y + rect.height * 0.5) as usize;
                 let expected = rect.x + u * rect.width;
                 let row_has_wire = bytes[48 * 256 * 4..49 * 256 * 4]
-                    .as_chunks::<4>().0.iter()
+                    .as_chunks::<4>()
+                    .0
+                    .iter()
                     .any(|pixel| pixel[..3] != [0, 0, 0]);
                 assert_eq!(
                     row_has_wire, !parent_clip,

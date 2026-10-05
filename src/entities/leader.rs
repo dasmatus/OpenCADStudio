@@ -174,9 +174,7 @@ fn apply_grip(leader: &mut Leader, grip_id: usize, apply: GripApply) {
                         p.y - old_elbow.y,
                         p.z - old_elbow.z,
                     ),
-                    GripApply::Translate(d) => {
-                        acadrust::types::Vector3::new(d.x, d.y, d.z)
-                    }
+                    GripApply::Translate(d) => acadrust::types::Vector3::new(d.x, d.y, d.z),
                 };
 
                 leader.vertices[n - 2].x = old_elbow.x + delta.x;
@@ -225,9 +223,7 @@ fn apply_grip(leader: &mut Leader, grip_id: usize, apply: GripApply) {
             }
         }
     } else if let GripApply::Translate(d) = apply {
-        leader.translate(acadrust::types::Vector3::new(
-            d.x, d.y, d.z,
-        ));
+        leader.translate(acadrust::types::Vector3::new(d.x, d.y, d.z));
     }
 }
 

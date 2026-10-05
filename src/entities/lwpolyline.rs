@@ -1079,12 +1079,11 @@ fn apply_geom_prop(pline: &mut LwPolyline, field: &str, value: &str) {
                 vtx.end_width = v;
             }
         }
-        "bulge"
-            if v.is_finite() => {
-                if let Some(vtx) = pline.vertices.get_mut(vi) {
-                    vtx.bulge = v.clamp(-1.0e6, 1.0e6);
-                }
+        "bulge" if v.is_finite() => {
+            if let Some(vtx) = pline.vertices.get_mut(vi) {
+                vtx.bulge = v.clamp(-1.0e6, 1.0e6);
             }
+        }
         _ => {}
     }
 }
@@ -1301,7 +1300,11 @@ impl crate::entities::traits::Grippable for LwPolyline {
         if is_rectangle(self) && seg < 4 {
             // Moving an edge changes the dimension perpendicular to it.
             items.push(GripMenuItem {
-                label: if seg.is_multiple_of(2) { "Height" } else { "Width" },
+                label: if seg.is_multiple_of(2) {
+                    "Height"
+                } else {
+                    "Width"
+                },
                 action: if seg.is_multiple_of(2) {
                     GripMenuAction::RectangleHeight
                 } else {

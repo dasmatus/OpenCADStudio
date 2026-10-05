@@ -41,7 +41,9 @@ impl ExtractionRecord {
 
 fn table_styles(doc: &CadDocument) -> Vec<String> {
     let mut styles: Vec<String> = doc
-        .objects.values().filter_map(|object| match object {
+        .objects
+        .values()
+        .filter_map(|object| match object {
             ObjectType::TableStyle(style) => Some(style.name.clone()),
             _ => None,
         })

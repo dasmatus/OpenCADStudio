@@ -319,7 +319,9 @@ fn emit_image(
             ops,
             image
                 .verts
-                .as_chunks::<3>().0.iter()
+                .as_chunks::<3>()
+                .0
+                .iter()
                 .map(|tri| {
                     tri.iter()
                         .map(|vertex| to_page(vertex.pos, vertex.pos_low))

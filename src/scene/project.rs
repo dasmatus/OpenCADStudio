@@ -202,7 +202,9 @@ impl Scene {
                         let p = proj_abs(x, y, z);
                         (p[0] as f64, p[1] as f64, p[2] as f64)
                     })
-                    .as_chunks::<6>().0.iter()
+                    .as_chunks::<6>()
+                    .0
+                    .iter()
                     .filter(|quad| {
                         let (sx, sy) = quad.iter().fold((0.0f32, 0.0f32), |(ax, ay), v| {
                             (ax + v.pos[0] + v.pos_low[0], ay + v.pos[1] + v.pos_low[1])

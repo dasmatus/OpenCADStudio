@@ -2503,9 +2503,11 @@ fn materialize_scope(
             continue;
         };
         if entity_nodes.geometry_node_id == 0
-            && entity_nodes.segments.is_empty() && entity_nodes.axes.is_empty() {
-                continue;
-            }
+            && entity_nodes.segments.is_empty()
+            && entity_nodes.axes.is_empty()
+        {
+            continue;
+        }
         let dep_handle = allocator.geom_dependency(group_handle?, *entity_handle, index as i32 + 1);
         geometry_dependencies.push(dep_handle);
         for node_id in std::iter::once(entity_nodes.geometry_node_id)

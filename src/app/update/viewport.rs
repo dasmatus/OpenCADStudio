@@ -2379,11 +2379,7 @@ impl OpenCADStudio {
             if needs_structure {
                 use crate::snap::{SnapResult, SnapType};
                 let pick = self.tabs[i].active_cmd.as_ref().and_then(|c| {
-                    c.resolve_object_pick(
-                        &self.tabs[i].scene,
-                        effective.x,
-                        effective.y,
-                    )
+                    c.resolve_object_pick(&self.tabs[i].scene, effective.x, effective.y)
                 });
                 if let Some(pick) = pick {
                     let world = glam::DVec3::new(pick.x, pick.y, effective.z);
@@ -5913,12 +5909,11 @@ properties={:.1}ms picked={}",
                 .active_cmd
                 .as_ref()
                 .is_some_and(|command| command.name() == "MVIEW");
-        if context_changed
-            && preserve_active_command {
-                // MVIEW keeps its command-owned step data, but all host-owned
-                // cursor/snap/dynamic-input state belongs to the old space.
-                self.reset_space_interaction_state();
-            }
+        if context_changed && preserve_active_command {
+            // MVIEW keeps its command-owned step data, but all host-owned
+            // cursor/snap/dynamic-input state belongs to the old space.
+            self.reset_space_interaction_state();
+        }
         let cancel_task = if context_changed && !preserve_active_command {
             self.cancel_active_command_for_space_change()
         } else {
@@ -6118,9 +6113,7 @@ properties={:.1}ms picked={}",
                     }
                     return Task::none();
                 }
-                let exists = self.tabs[i]
-                    .scene
-                    .layout_names().contains(&new_name);
+                let exists = self.tabs[i].scene.layout_names().contains(&new_name);
                 if exists {
                     self.command_line
                         .push_error(crate::tf!("\"{}\" name already in use", new_name).as_ref());

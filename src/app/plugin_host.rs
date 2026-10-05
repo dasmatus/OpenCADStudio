@@ -540,8 +540,7 @@ impl crate::command::CadCommand for PluginInteractiveAdapter {
     }
     fn on_entity_pick(&mut self, handle: Handle, pt: glam::DVec3) -> crate::command::CmdResult {
         crate::plugin::guard("InteractiveCommand::on_object_pick", || {
-            self.inner
-                .on_object_pick(handle, [pt.x, pt.y, pt.z])
+            self.inner.on_object_pick(handle, [pt.x, pt.y, pt.z])
         })
         .map(plugin_step_to_result)
         .unwrap_or(crate::command::CmdResult::Cancel)

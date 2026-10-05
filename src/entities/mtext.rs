@@ -634,20 +634,12 @@ fn apply_grip(t: &mut MText, grip_id: usize, apply: GripApply) {
         }
         (3, GripApply::Absolute(p)) => {
             let (dir, k) = width_grip_axis(t);
-            let delta = glam::DVec3::new(
-                p.x - t.insertion_point.x,
-                p.y - t.insertion_point.y,
-                0.0,
-            );
+            let delta = glam::DVec3::new(p.x - t.insertion_point.x, p.y - t.insertion_point.y, 0.0);
             t.column_data.width = (delta.dot(dir) / k).max(0.01);
         }
         (4, GripApply::Absolute(p)) => {
             let (dir, k) = width_grip_axis(t);
-            let delta = glam::DVec3::new(
-                p.x - t.insertion_point.x,
-                p.y - t.insertion_point.y,
-                0.0,
-            );
+            let delta = glam::DVec3::new(p.x - t.insertion_point.x, p.y - t.insertion_point.y, 0.0);
             t.column_data.gutter = (delta.dot(dir) / k - t.column_data.width).max(0.0);
         }
         _ => {}

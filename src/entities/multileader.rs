@@ -642,9 +642,7 @@ fn apply_grip(ml: &mut MultiLeader, grip_id: usize, apply: GripApply) {
         if grip_id == idx {
             let target = match apply {
                 GripApply::Absolute(a) => DVec3::new(a.x, a.y, a.z),
-                GripApply::Translate(d) => {
-                    old_elbow + DVec3::new(d.x, d.y, d.z)
-                }
+                GripApply::Translate(d) => old_elbow + DVec3::new(d.x, d.y, d.z),
             };
             let arrow = ml
                 .context

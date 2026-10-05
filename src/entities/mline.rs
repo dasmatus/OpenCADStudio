@@ -876,9 +876,7 @@ impl Grippable for MLine {
                 vertex.position.y + delta.y,
                 vertex.position.z + delta.z,
             ),
-            GripApply::Absolute(point) => {
-                acadrust::types::Vector3::new(point.x, point.y, point.z)
-            }
+            GripApply::Absolute(point) => acadrust::types::Vector3::new(point.x, point.y, point.z),
         };
         let count = self.vertices.len();
         let segment_count = if self.is_closed() {

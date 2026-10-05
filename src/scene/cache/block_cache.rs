@@ -1828,12 +1828,7 @@ fn expand_defn(
                 // `defn_lo` (in f64) before composing with `accum_xform`
                 // so culling uses correct world-space corners.
                 let world = transform_aabb_xy(lw.aabb_local, accum_xform);
-                let local = [
-                    world[0],
-                    world[1],
-                    world[2],
-                    world[3],
-                ];
+                let local = [world[0], world[1], world[2], world[3]];
                 if let Some(view) = ctx.view_aabb {
                     if aabb_disjoint_xy(local, view) {
                         continue;
@@ -1909,12 +1904,7 @@ fn expand_defn(
                             transform_aabb_xy(nested_defn.metrics.aabb_local, &composed),
                         )
                     });
-                let local = [
-                    world[0],
-                    world[1],
-                    world[2],
-                    world[3],
-                ];
+                let local = [world[0], world[1], world[2], world[3]];
                 if let Some(view) = ctx.view_aabb {
                     if aabb_disjoint_xy(local, view) {
                         continue;

@@ -1156,10 +1156,9 @@ fn direct_identities(doc: &CadDocument) -> HashSet<(u64, String)> {
             ObjectType::ImageDefinition(def) => {
                 ids.insert((handle.value(), def.file_name.clone()));
             }
-            ObjectType::UnderlayDefinition(def)
-                if def.underlay_type == UnderlayType::Pdf => {
-                    ids.insert((handle.value(), def.file_path.clone()));
-                }
+            ObjectType::UnderlayDefinition(def) if def.underlay_type == UnderlayType::Pdf => {
+                ids.insert((handle.value(), def.file_path.clone()));
+            }
             _ => {}
         }
     }

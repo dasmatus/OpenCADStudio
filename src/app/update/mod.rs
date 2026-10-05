@@ -1792,8 +1792,7 @@ impl OpenCADStudio {
                     });
                     self.command_line
                         .push_output(crate::tf!("Copied path: {}", full_path.display()).as_ref());
-                    iced::clipboard::write(full_path.to_string_lossy().into_owned())
-                        .discard()
+                    iced::clipboard::write(full_path.to_string_lossy().into_owned()).discard()
                 }
                 #[cfg(target_arch = "wasm32")]
                 {
@@ -4398,13 +4397,15 @@ impl OpenCADStudio {
                     .header
                     .current_annotation_scale
                     .clone();
-                if !sel.is_empty() && !sel.eq_ignore_ascii_case(&cur)
-                    && self.tabs[i].scene.remove_scale(&sel) {
-                        self.scale_manager_selected.clear();
-                        self.scale_manager_paper_buf.clear();
-                        self.scale_manager_drawing_buf.clear();
-                        self.scale_stage_mark();
-                    }
+                if !sel.is_empty()
+                    && !sel.eq_ignore_ascii_case(&cur)
+                    && self.tabs[i].scene.remove_scale(&sel)
+                {
+                    self.scale_manager_selected.clear();
+                    self.scale_manager_paper_buf.clear();
+                    self.scale_manager_drawing_buf.clear();
+                    self.scale_stage_mark();
+                }
                 Task::none()
             }
             Message::ScaleManagerSetCurrent => {

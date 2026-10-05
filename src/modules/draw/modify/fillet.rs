@@ -2116,9 +2116,7 @@ impl CadCommand for ChamferCommand {
         let click = [pt.x, pt.y];
 
         match &self.step {
-            ChamferStep::WaitingForDist1 | ChamferStep::WaitingForDist2 => {
-                CmdResult::NeedPoint
-            }
+            ChamferStep::WaitingForDist1 | ChamferStep::WaitingForDist2 => CmdResult::NeedPoint,
             ChamferStep::First => {
                 match self.entity_index.get(&self.all_entities, handle) {
                     Some(EntityType::Line(l)) => {

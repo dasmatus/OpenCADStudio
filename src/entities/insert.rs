@@ -316,11 +316,7 @@ fn apply_transform(ins: &mut Insert, t: &EntityTransform) {
         };
         let t = Transform::from_translation(Vector3::new(-p1.x, -p1.y, 0.0))
             .then(&Transform::from_matrix(mirror))
-            .then(&Transform::from_translation(Vector3::new(
-                p1.x,
-                p1.y,
-                0.0,
-            )));
+            .then(&Transform::from_translation(Vector3::new(p1.x, p1.y, 0.0)));
         acadrust::Entity::apply_transform(entity, &t);
     });
 }
