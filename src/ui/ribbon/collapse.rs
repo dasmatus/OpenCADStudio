@@ -331,11 +331,10 @@ impl<'a> Widget<Message, Theme, Renderer> for CollapsePanels<'a> {
         // Place the chosen element for each panel left-to-right.
         let mut placed: Vec<(layout::Node, f32, f32)> = Vec::with_capacity(n);
         let mut x = 0.0f32;
-        for i in 0..n {
+        for (i, &level) in levels.iter().enumerate().take(n) {
             if i > 0 {
                 x -= squeeze;
             }
-            let level = levels[i];
             let tree_idx = slot(i, level);
             let node = self.shown_mut(i, level).as_widget_mut().layout(
                 &mut tree.children[tree_idx],

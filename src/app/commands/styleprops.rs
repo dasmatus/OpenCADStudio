@@ -3255,7 +3255,7 @@ impl OpenCADStudio {
                     );
                 }
             }
-            cmd if cmd == "DDPTYPE" => {
+            "DDPTYPE" => {
                 // The dialog shows the magnitude; the sign (relative/absolute)
                 // is driven by the radio buttons. A positive PDSIZE is absolute;
                 // zero or negative is relative.

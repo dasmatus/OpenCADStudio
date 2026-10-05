@@ -94,7 +94,7 @@ fn tris_hit_depth(
     while t + 2 < tris.len() {
         let mut sp = [Point::ORIGIN; 3];
         let mut depth = 0.0f32;
-        for j in 0..3 {
+        for (j, slot) in sp.iter_mut().enumerate() {
             let k = t + j;
             let hi = tris[k];
             let lo = tris_low.get(k).copied().unwrap_or([0.0; 3]);
@@ -104,7 +104,7 @@ fn tris_hit_depth(
                 hi[2] as f64 + lo[2] as f64,
             );
             let ndc = view_rot.project_point3((world - eye).as_vec3());
-            sp[j] = Point::new(
+            *slot = Point::new(
                 (ndc.x + 1.0) * 0.5 * bounds.width,
                 (1.0 - ndc.y) * 0.5 * bounds.height,
             );

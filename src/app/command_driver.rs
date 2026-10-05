@@ -2339,7 +2339,7 @@ impl OpenCADStudio {
                         .entity_belongs_to_active_space(handle)
                         .then(|| scene.document.get_entity(handle))
                         .flatten()
-                        .and_then(crate::modules::draw::draw::wipeout::wipeout_from_polyline)
+                        .and_then(crate::modules::draw::drawing::wipeout::wipeout_from_polyline)
                 };
                 if let Some(wipeout) = wipeout {
                     if erase_source {
@@ -2353,7 +2353,8 @@ impl OpenCADStudio {
                 self.command_line.push_error(
                     crate::t!("WIPEOUT Polyline: select a straight, closed, planar 2D polyline with at least 3 non-intersecting vertices.").as_ref(),
                 );
-                let command = crate::modules::draw::draw::wipeout::WipeoutCommand::new_polyline();
+                let command =
+                    crate::modules::draw::drawing::wipeout::WipeoutCommand::new_polyline();
                 self.command_line
                     .push_info(&crate::command::CadCommand::prompt(&command));
                 self.tabs[i].active_cmd = Some(Box::new(command));
@@ -6901,7 +6902,7 @@ impl OpenCADStudio {
                             let mut sources =
                                 self.tabs[i].scene.boundary_sources_on_plane(plane, 1e-6);
                             sources.remove(&handle);
-                            let command=crate::modules::draw::draw::hatchedit::HatcheditCommand::for_association(handle,name,scale,angle,plane,sources);
+                            let command=crate::modules::draw::drawing::hatchedit::HatcheditCommand::for_association(handle,name,scale,angle,plane,sources);
                             self.tabs[i].scene.deselect_all();
                             self.command_line.push_info(&command.prompt());
                             self.tabs[i].active_cmd = Some(Box::new(command));
@@ -9416,7 +9417,7 @@ mod parametric_constraint_undo_tests {
             acadrust::types::Vector3::new(10.0, 0.0, 0.0),
         ));
         app.tabs[app.active_tab].active_cmd = Some(Box::new(
-            crate::modules::draw::draw::line::LineCommand::new(),
+            crate::modules::draw::drawing::line::LineCommand::new(),
         ));
         let _ = app.apply_cmd_result(CmdResult::CommitEntity(new_line));
 

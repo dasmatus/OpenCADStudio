@@ -2655,10 +2655,9 @@ handles={handles_ms:.1} panel={:.1} ribbon={ribbon_ms:.1} tail={:.1} selected={}
             self.cancel_active_grip_edit();
             return;
         }
-        let is_paper = self.tabs[i].scene.current_layout != "Model";
         // Paper-space entity coordinates are NOT offset by world_offset (same rule
         // as wire tessellation in wires_for_block). Only subtract in model space.
-        let wo = if is_paper { [0.0f64; 3] } else { [0.0_f64; 3] };
+        let wo = [0.0_f64; 3];
         let (new_handle, new_grips, new_grip_handles) = {
             let annotation_scale_handle = self.tabs[i].scene.displayed_annotation_scale_handle();
             let selected = self.tabs[i].scene.selected_entities();

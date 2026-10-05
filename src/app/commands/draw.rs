@@ -5,14 +5,14 @@ impl OpenCADStudio {
         match cmd {
             // ── Draw commands ──────────────────────────────────────────────
             "LINE" => {
-                use crate::modules::draw::draw::line::LineCommand;
+                use crate::modules::draw::drawing::line::LineCommand;
                 let new_cmd = LineCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "MLINE" => {
-                use crate::modules::draw::draw::mline::MlineCommand;
+                use crate::modules::draw::drawing::mline::MlineCommand;
                 let header = &self.tabs[i].scene.document.header;
                 let style_name = header.multiline_style.clone();
                 let scale = header.multiline_scale;
@@ -35,7 +35,7 @@ impl OpenCADStudio {
             }
 
             cmd if cmd == "WIPEOUT" || cmd == "WO" || cmd.starts_with("WIPEOUT ") => {
-                use crate::modules::draw::draw::wipeout::WipeoutCommand;
+                use crate::modules::draw::drawing::wipeout::WipeoutCommand;
                 let args = cmd
                     .split_once(' ')
                     .map(|(_, r)| r.trim().to_uppercase())
@@ -44,7 +44,7 @@ impl OpenCADStudio {
                     "P" | "POLYLINE" => WipeoutCommand::new_polyline(),
                     "R" | "RECTANGULAR" => WipeoutCommand::new_rectangular(),
                     _ => WipeoutCommand::new_polygonal(
-                        crate::modules::draw::draw::wipeout::wipeout_frame_mode(
+                        crate::modules::draw::drawing::wipeout::wipeout_frame_mode(
                             &self.tabs[i].scene.document,
                         ),
                     ),
@@ -57,12 +57,12 @@ impl OpenCADStudio {
                 return Some(Task::done(Message::ImagePick));
             }
 
-            cmd if cmd == "IMAGEEMBED" => {
+            "IMAGEEMBED" => {
                 return Some(Task::done(Message::ImageEmbedPick));
             }
 
             "REVCLOUD" | "REVCLOUD_RECTANGULAR" | "REVCLOUD_POLYGONAL" | "REVCLOUD_FREEHAND" => {
-                use crate::modules::draw::draw::revcloud::RevCloudCommand;
+                use crate::modules::draw::drawing::revcloud::RevCloudCommand;
                 let view_height = self.tabs[i].scene.camera.borrow().ortho_size() as f64 * 2.0;
                 let default_arc_length = (view_height * 0.0125).max(1.0e-6);
                 let sources = self.tabs[i]
@@ -80,7 +80,7 @@ impl OpenCADStudio {
             }
 
             "ATTDEF" => {
-                use crate::modules::draw::draw::attdef::AttdefCommand;
+                use crate::modules::draw::drawing::attdef::AttdefCommand;
                 let defaults = crate::scene::creation_style::current_text_defaults(
                     &self.tabs[i].scene.document,
                 );
@@ -263,38 +263,38 @@ impl OpenCADStudio {
             }
 
             "DONUT" => {
-                use crate::modules::draw::draw::donut::DonutCommand;
+                use crate::modules::draw::drawing::donut::DonutCommand;
                 let cmd = DonutCommand::new();
                 self.command_line.push_info(&cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(cmd));
             }
 
             "CIRCLE" => {
-                use crate::modules::draw::draw::circle::CircleCommand;
+                use crate::modules::draw::drawing::circle::CircleCommand;
                 let new_cmd = CircleCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "CIRCLE_CD" => {
-                use crate::modules::draw::draw::circle::CircleCDCommand;
+                use crate::modules::draw::drawing::circle::CircleCDCommand;
                 let new_cmd = CircleCDCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "CIRCLE_2P" => {
-                use crate::modules::draw::draw::circle::Circle2PCommand;
+                use crate::modules::draw::drawing::circle::Circle2PCommand;
                 let new_cmd = Circle2PCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "CIRCLE_3P" => {
-                use crate::modules::draw::draw::circle::Circle3PCommand;
+                use crate::modules::draw::drawing::circle::Circle3PCommand;
                 let new_cmd = Circle3PCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "CIRCLE_TTR" => {
-                use crate::modules::draw::draw::circle::CircleTTRCommand;
+                use crate::modules::draw::drawing::circle::CircleTTRCommand;
                 let new_cmd = CircleTTRCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.pre_cmd_tangent = Some(self.snapper.is_on(crate::snap::SnapType::Tangent));
@@ -302,7 +302,7 @@ impl OpenCADStudio {
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "CIRCLE_TTT" => {
-                use crate::modules::draw::draw::circle::CircleTTTCommand;
+                use crate::modules::draw::drawing::circle::CircleTTTCommand;
                 let new_cmd = CircleTTTCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.pre_cmd_tangent = Some(self.snapper.is_on(crate::snap::SnapType::Tangent));
@@ -311,73 +311,73 @@ impl OpenCADStudio {
             }
 
             "ARC" => {
-                use crate::modules::draw::draw::arc::ArcCommand;
+                use crate::modules::draw::drawing::arc::ArcCommand;
                 let new_cmd = ArcCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_3P" => {
-                use crate::modules::draw::draw::arc::Arc3PCommand;
+                use crate::modules::draw::drawing::arc::Arc3PCommand;
                 let new_cmd = Arc3PCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_CSE" => {
-                use crate::modules::draw::draw::arc::ArcCSECommand;
+                use crate::modules::draw::drawing::arc::ArcCSECommand;
                 let new_cmd = ArcCSECommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SCE" => {
-                use crate::modules::draw::draw::arc::ArcSCECommand;
+                use crate::modules::draw::drawing::arc::ArcSCECommand;
                 let new_cmd = ArcSCECommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SCA" => {
-                use crate::modules::draw::draw::arc::ArcSCACommand;
+                use crate::modules::draw::drawing::arc::ArcSCACommand;
                 let new_cmd = ArcSCACommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SCL" => {
-                use crate::modules::draw::draw::arc::ArcSCLCommand;
+                use crate::modules::draw::drawing::arc::ArcSCLCommand;
                 let new_cmd = ArcSCLCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SEA" => {
-                use crate::modules::draw::draw::arc::ArcSEACommand;
+                use crate::modules::draw::drawing::arc::ArcSEACommand;
                 let new_cmd = ArcSEACommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SER" => {
-                use crate::modules::draw::draw::arc::ArcSERCommand;
+                use crate::modules::draw::drawing::arc::ArcSERCommand;
                 let new_cmd = ArcSERCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_SED" => {
-                use crate::modules::draw::draw::arc::ArcSEDCommand;
+                use crate::modules::draw::drawing::arc::ArcSEDCommand;
                 let new_cmd = ArcSEDCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_CSA" => {
-                use crate::modules::draw::draw::arc::ArcCSACommand;
+                use crate::modules::draw::drawing::arc::ArcCSACommand;
                 let new_cmd = ArcCSACommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_CSL" => {
-                use crate::modules::draw::draw::arc::ArcCSLCommand;
+                use crate::modules::draw::drawing::arc::ArcCSLCommand;
                 let new_cmd = ArcCSLCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "ARC_CONT" => {
-                use crate::modules::draw::draw::arc::{continue_anchor, ArcContCommand};
+                use crate::modules::draw::drawing::arc::{continue_anchor, ArcContCommand};
                 // Prefer the anchor recorded when the last line/arc was drawn (it
                 // knows the true drawing-end tangent); otherwise fall back to the
                 // last line/arc found in the document (e.g. after a file load).
@@ -405,7 +405,7 @@ impl OpenCADStudio {
             }
 
             "RECT" | "RECTANG" => {
-                use crate::modules::draw::draw::shapes::RectCommand;
+                use crate::modules::draw::drawing::shapes::RectCommand;
                 let new_cmd = RectCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 if self.ortho_mode {
@@ -415,7 +415,7 @@ impl OpenCADStudio {
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "RECT_ROT" => {
-                use crate::modules::draw::draw::shapes::RectRotCommand;
+                use crate::modules::draw::drawing::shapes::RectRotCommand;
                 let new_cmd = RectRotCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 if self.ortho_mode {
@@ -425,7 +425,7 @@ impl OpenCADStudio {
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "RECT_CEN" => {
-                use crate::modules::draw::draw::shapes::RectCenCommand;
+                use crate::modules::draw::drawing::shapes::RectCenCommand;
                 let new_cmd = RectCenCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 if self.ortho_mode {
@@ -435,54 +435,54 @@ impl OpenCADStudio {
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "POLY" | "POLYGON" => {
-                use crate::modules::draw::draw::shapes::PolyCommand;
+                use crate::modules::draw::drawing::shapes::PolyCommand;
                 let new_cmd = PolyCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "POLY_C" => {
-                use crate::modules::draw::draw::shapes::PolyCCommand;
+                use crate::modules::draw::drawing::shapes::PolyCCommand;
                 let new_cmd = PolyCCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
             "POLY_E" => {
-                use crate::modules::draw::draw::shapes::PolyECommand;
+                use crate::modules::draw::drawing::shapes::PolyECommand;
                 let new_cmd = PolyECommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "PLINE" => {
-                use crate::modules::draw::draw::polyline::PlineCommand;
+                use crate::modules::draw::drawing::polyline::PlineCommand;
                 let new_cmd = PlineCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "3DPOLY" => {
-                use crate::modules::draw::draw::poly3d::Poly3dCommand;
+                use crate::modules::draw::drawing::poly3d::Poly3dCommand;
                 let new_cmd = Poly3dCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "3DMESH" => {
-                use crate::modules::draw::draw::mesh3d::Mesh3dCommand;
+                use crate::modules::draw::drawing::mesh3d::Mesh3dCommand;
                 let new_cmd = Mesh3dCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "3DFACE" => {
-                use crate::modules::draw::draw::face3d::Face3dCommand;
+                use crate::modules::draw::drawing::face3d::Face3dCommand;
                 let new_cmd = Face3dCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "EDGE" => {
-                use crate::modules::draw::draw::face3d::FaceEdgeCommand;
+                use crate::modules::draw::drawing::face3d::FaceEdgeCommand;
                 let faces = self.tabs[i]
                     .scene
                     .document
@@ -502,28 +502,28 @@ impl OpenCADStudio {
             // 2D filled solid. Reached via SO / SOLID2D — the bare SOLID verb is
             // currently the shaded-display toggle (token collision tracked).
             "SOLID" | "SOLID2D" => {
-                use crate::modules::draw::draw::solid2d::Solid2dCommand;
+                use crate::modules::draw::drawing::solid2d::Solid2dCommand;
                 let new_cmd = Solid2dCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "HELIX" => {
-                use crate::modules::draw::draw::helix::HelixCommand;
+                use crate::modules::draw::drawing::helix::HelixCommand;
                 let new_cmd = HelixCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "TRACE" => {
-                use crate::modules::draw::draw::trace::TraceCommand;
+                use crate::modules::draw::drawing::trace::TraceCommand;
                 let new_cmd = TraceCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "CENTERLINE" => {
-                use crate::modules::draw::draw::centerline::CenterLineCommand;
+                use crate::modules::draw::drawing::centerline::CenterLineCommand;
                 let settings = self.tabs[i].scene.centerline_settings();
                 let new_cmd = CenterLineCommand::new(settings);
                 self.command_line.push_info(&new_cmd.prompt());
@@ -559,7 +559,7 @@ impl OpenCADStudio {
                     })
                     .collect();
                 if mark_targets.len() == 1 && handles.len() == 1 {
-                    use crate::modules::draw::draw::dimcenter::CenterMarkReassociateCommand;
+                    use crate::modules::draw::drawing::dimcenter::CenterMarkReassociateCommand;
                     let new_cmd = CenterMarkReassociateCommand::new(mark_targets[0]);
                     self.command_line.push_info(&new_cmd.prompt());
                     self.tabs[i].active_cmd = Some(Box::new(new_cmd));
@@ -598,14 +598,14 @@ impl OpenCADStudio {
             }
 
             "DIMCENTER" => {
-                use crate::modules::draw::draw::dimcenter::DimCenterCommand;
+                use crate::modules::draw::drawing::dimcenter::DimCenterCommand;
                 let new_cmd = DimCenterCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "CENTERMARK" => {
-                use crate::modules::draw::draw::dimcenter::CenterMarkCommand;
+                use crate::modules::draw::drawing::dimcenter::CenterMarkCommand;
                 let settings = self.tabs[i].scene.centerline_settings();
                 let new_cmd = CenterMarkCommand::new(settings);
                 self.command_line.push_info(&new_cmd.prompt());
@@ -613,7 +613,7 @@ impl OpenCADStudio {
             }
 
             "SKETCH" => {
-                use crate::modules::draw::draw::sketch::SketchCommand;
+                use crate::modules::draw::drawing::sketch::SketchCommand;
                 let header = &self.tabs[i].scene.document.header;
                 let new_cmd = SketchCommand::new(
                     header.sketch_type,
@@ -759,7 +759,7 @@ impl OpenCADStudio {
             }
 
             "POINT" | "MULTIPOINT" => {
-                use crate::modules::draw::draw::point::PointCommand;
+                use crate::modules::draw::drawing::point::PointCommand;
                 let new_cmd = if cmd == "MULTIPOINT" {
                     PointCommand::multiple()
                 } else {
@@ -770,21 +770,21 @@ impl OpenCADStudio {
             }
 
             "RAY" => {
-                use crate::modules::draw::draw::ray::RayCommand;
+                use crate::modules::draw::drawing::ray::RayCommand;
                 let new_cmd = RayCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "XLINE" | "CONSTRUCTIONLINE" => {
-                use crate::modules::draw::draw::ray::XLineCommand;
+                use crate::modules::draw::drawing::ray::XLineCommand;
                 let new_cmd = XLineCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "HATCH" => {
-                use crate::modules::draw::draw::hatch::HatchCommand;
+                use crate::modules::draw::drawing::hatch::HatchCommand;
                 let working_plane = if self.tabs[i].editing_model_space() {
                     self.tabs[i].ucs_xform().working_plane()
                 } else {
@@ -823,7 +823,7 @@ impl OpenCADStudio {
             }
 
             "HATCHEDIT" => {
-                use crate::modules::draw::draw::hatchedit::HatcheditCommand;
+                use crate::modules::draw::drawing::hatchedit::HatcheditCommand;
                 // If a single hatch is already selected, skip the pick step.
                 let sel = self.tabs[i].scene.selected_entities();
                 if sel.len() == 1 {
@@ -877,7 +877,7 @@ impl OpenCADStudio {
             }
 
             "GRADIENT" => {
-                use crate::modules::draw::draw::hatch::GradientCommand;
+                use crate::modules::draw::drawing::hatch::GradientCommand;
                 let boundary_sources = self.tabs[i]
                     .scene
                     .boundary_sources_on_plane(crate::command::WorkingPlane::default(), 1.0e-6);
@@ -888,7 +888,7 @@ impl OpenCADStudio {
             }
 
             "BOUNDARY" => {
-                use crate::modules::draw::draw::hatch::BoundaryCommand;
+                use crate::modules::draw::drawing::hatch::BoundaryCommand;
                 let plane = if self.tabs[i].editing_model_space() {
                     self.tabs[i].ucs_xform().working_plane()
                 } else {
@@ -907,28 +907,28 @@ impl OpenCADStudio {
             }
 
             "ELLIPSE" => {
-                use crate::modules::draw::draw::ellipse::EllipseCommand;
+                use crate::modules::draw::drawing::ellipse::EllipseCommand;
                 let new_cmd = EllipseCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "ELLIPSE_AXIS" => {
-                use crate::modules::draw::draw::ellipse::EllipseAxisCommand;
+                use crate::modules::draw::drawing::ellipse::EllipseAxisCommand;
                 let new_cmd = EllipseAxisCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "ELLIPSE_ARC" => {
-                use crate::modules::draw::draw::ellipse::EllipseArcCommand;
+                use crate::modules::draw::drawing::ellipse::EllipseArcCommand;
                 let new_cmd = EllipseArcCommand::new();
                 self.command_line.push_info(&new_cmd.prompt());
                 self.tabs[i].active_cmd = Some(Box::new(new_cmd));
             }
 
             "SPLINE" | "SPLINECV" => {
-                use crate::modules::draw::draw::spline::SplineCommand;
+                use crate::modules::draw::drawing::spline::SplineCommand;
                 let new_cmd = if cmd == "SPLINECV" {
                     SplineCommand::control_vertices()
                 } else {

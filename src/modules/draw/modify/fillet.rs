@@ -476,7 +476,12 @@ fn fillet_entire_lwpolyline(poly: &LwPolyline, radius: f64) -> Option<LwPolyline
         n.saturating_sub(1)
     };
 
-    for i in first_corner..end_corner {
+    for (i, corner) in corners
+        .iter_mut()
+        .enumerate()
+        .take(end_corner)
+        .skip(first_corner)
+    {
         let prev = if i == 0 { n - 1 } else { i - 1 };
 
         // A bulge belongs to the segment starting at that vertex.
@@ -535,7 +540,7 @@ fn fillet_entire_lwpolyline(poly: &LwPolyline, radius: f64) -> Option<LwPolyline
             continue;
         }
 
-        corners[i] = Some(PolylineCornerFillet {
+        *corner = Some(PolylineCornerFillet {
             incoming: tangent_in,
             outgoing: tangent_out,
             bulge: compute_bulge(tangent_in, tangent_out, [arc.center.x, arc.center.y]),
@@ -2356,7 +2361,7 @@ mod tests {
         assert_eq!(keywords(&command), ["P", "R"]);
         // The host hands the restored document back; the cache follows it.
         let mut doc = acadrust::CadDocument::new();
-        doc.add_entity(line(0.0, 0.0, 20.0, 0.0, 7));
+        let _ = doc.add_entity(line(0.0, 0.0, 20.0, 0.0, 7));
         command.on_document_undone(&doc);
         assert_eq!(command.all_entities.len(), 1);
         assert_eq!(command.all_entities[0].common().handle, Handle::new(7));

@@ -161,8 +161,7 @@ impl canvas::Program<Message> for TextPreviewCanvas {
             let available = [bounds.width - 24.0, bounds.height - 34.0];
             let scale = (available[0] / span[0])
                 .min(available[1] / span[1])
-                .min(1.0)
-                .max(0.0);
+                .clamp(0.0, 1.0);
             let middle = [(min[0] + max[0]) * 0.5, (min[1] + max[1]) * 0.5];
             let center = [bounds.width * 0.5, (bounds.height - 18.0) * 0.5];
             let map = |x: f32, y: f32| {

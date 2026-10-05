@@ -1359,11 +1359,11 @@ impl Snapper {
                 return;
             }
             let d2 = dist2(screen, cursor_screen);
-            // `!(d2 < radius2)` (not `d2 >= radius2`) so a NaN distance from
+            // `partial_cmp` is `Less` (not `d2 < radius2` negated) so a NaN distance from
             // degenerate geometry is rejected: with priority selection a NaN
             // would otherwise pass the gate and be chosen on rank alone,
             // feeding a NaN snap point to the renderer. (#118)
-            if !(d2 < radius2) {
+            if !matches!(d2.partial_cmp(&radius2), Some(std::cmp::Ordering::Less)) {
                 return;
             }
             let (tier, sub) = (snap_tier(snap_type), snap_priority(snap_type));
@@ -1443,7 +1443,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_snap_hint);
 
         // ── Endpoint ───────────────────────────────────────────────────────
         if self.is_on(SnapType::Endpoint) {
@@ -1694,7 +1693,6 @@ impl Snapper {
                 }
             }
         }
-        drop(try_ray_intersections);
 
         // ── Intersection — segment-segment intersections (pairwise, gated) ──
         if self.is_on(SnapType::Intersection)
@@ -1956,11 +1954,15 @@ impl Snapper {
                         continue;
                     };
                     let si = &screen_pts[i];
-                    for j in (i + 1)..in_range_wires.len() {
+                    for (j, sj) in screen_pts
+                        .iter()
+                        .enumerate()
+                        .take(in_range_wires.len())
+                        .skip(i + 1)
+                    {
                         let Some(wire_j) = in_range_wires.get(j) else {
                             continue;
                         };
-                        let sj = &screen_pts[j];
                         for ai in 0..wire_i.points.len().saturating_sub(1) {
                             let sa0 = si[ai];
                             let sa1 = si[ai + 1];
@@ -3398,7 +3400,7 @@ pub(crate) fn foot_on_triangle(
     let ac = c - a;
     let n = ab.cross(ac);
     let n2 = n.length_squared();
-    if !(n2 > 1e-24) {
+    if !matches!(n2.partial_cmp(&1e-24), Some(std::cmp::Ordering::Greater)) {
         return None;
     }
     let dist = (base - a).dot(n) / n2.sqrt();

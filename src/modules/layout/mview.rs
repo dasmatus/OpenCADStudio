@@ -7,7 +7,7 @@ use acadrust::types::{Vector2, Vector3};
 use acadrust::{EntityType, Handle};
 
 use crate::command::{CadCommand, CmdOption, CmdResult, InputKind};
-use crate::modules::draw::draw::polyline::{
+use crate::modules::draw::drawing::polyline::{
     arc_sample_points, compute_bulge, seg_exit_tangent, update_tangent_after_arc,
 };
 use crate::modules::{IconKind, ModuleEvent, ToolDef};

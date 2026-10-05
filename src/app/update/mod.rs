@@ -1013,7 +1013,7 @@ impl OpenCADStudio {
 
             Message::ImagePickResult(Ok((path, pw, ph))) => {
                 use crate::command::CadCommand;
-                use crate::modules::draw::draw::raster_image::ImageCommand;
+                use crate::modules::draw::drawing::raster_image::ImageCommand;
                 let path_str = path.to_string_lossy().into_owned();
                 let short = std::path::Path::new(&path_str)
                     .file_name()
@@ -1044,7 +1044,7 @@ impl OpenCADStudio {
 
             Message::ImageEmbedPickResult(Ok(image)) => {
                 use crate::command::CadCommand;
-                use crate::modules::draw::draw::raster_image::ImageCommand;
+                use crate::modules::draw::drawing::raster_image::ImageCommand;
                 self.command_line.push_output(
                     crate::tf!(
                         "IMAGEEMBED  \"{name}\": {w}×{h} px (embedded)",
@@ -1666,7 +1666,7 @@ impl OpenCADStudio {
                     if self.tabs[idx].is_start {
                         self.ribbon.close_dropdown();
                     }
-                    if self.tabs[idx].is_start
+                    if (self.tabs[idx].is_start
                         && matches!(
                             self.active_modal,
                             Some(
@@ -1674,10 +1674,9 @@ impl OpenCADStudio {
                                     | super::ModalKind::LayerStateManager
                                     | super::ModalKind::LayerStateEditor
                             )
-                        )
+                        ))
+                        || self.active_modal == Some(super::ModalKind::LayerStateEditor)
                     {
-                        self.close_active_modal();
-                    } else if self.active_modal == Some(super::ModalKind::LayerStateEditor) {
                         self.close_active_modal();
                     } else if self.active_modal == Some(super::ModalKind::LayerStateManager) {
                         let mut names: Vec<String> = self.tabs[idx]

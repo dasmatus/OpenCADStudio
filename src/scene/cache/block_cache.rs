@@ -1265,8 +1265,8 @@ fn translated_prototype_wire(source: &WireModel, name: &str, delta: [f64; 3]) ->
     let mut wire = source.clone();
     wire.name = name.to_string();
     if let Some(instance) = wire.render_instance.as_mut() {
-        for axis in 0..3 {
-            instance.translation[axis] += delta[axis];
+        for (value, offset) in instance.translation.iter_mut().zip(delta) {
+            *value += offset;
         }
     }
     translate_double_single(&mut wire.points, &mut wire.points_low, delta);

@@ -386,7 +386,7 @@ impl ChainMap {
     }
 
     /// Entity-local -> model.
-    pub(crate) fn to_model(&self, point: Vector3) -> Vector3 {
+    pub(crate) fn to_model(self, point: Vector3) -> Vector3 {
         self.transform.apply(point)
     }
 
@@ -413,7 +413,7 @@ impl ChainMap {
     }
 
     /// Entity-local -> the dimension's own space.
-    pub(crate) fn to_space(&self, point: Vector3) -> Vector3 {
+    pub(crate) fn to_space(self, point: Vector3) -> Vector3 {
         self.model_to_space(self.to_model(point))
     }
 

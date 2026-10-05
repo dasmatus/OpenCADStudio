@@ -42,7 +42,7 @@ impl CadModule for AnnotateModule {
     }
 
     fn ribbon_groups(&self) -> &[RibbonGroup] {
-        use crate::modules::draw::draw::{centerline, dimcenter, revcloud, wipeout};
+        use crate::modules::draw::drawing::{centerline, dimcenter, revcloud, wipeout};
 
         static GROUPS: std::sync::OnceLock<Vec<RibbonGroup>> = std::sync::OnceLock::new();
         GROUPS.get_or_init(|| {

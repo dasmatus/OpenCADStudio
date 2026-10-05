@@ -166,7 +166,7 @@ fn format_signed_length(value: f64) -> String {
             };
             let unit_suffix = if ctx.lunits == 4 { "\"" } else { "" };
             match feet {
-                Some(f) if f == 0.0 => {
+                Some(0.0) => {
                     format!("{}{:.0}{}{}", sign, whole, frac_str, unit_suffix)
                 }
                 Some(f) => format!("{}{:.0}'-{:.0}{}{}", sign, f, whole, frac_str, unit_suffix),
@@ -181,7 +181,7 @@ fn format_signed_length(value: f64) -> String {
 /// scalar even when linear distances use architectural or fractional notation.
 pub fn format_area(value: f64) -> String {
     let ctx = unit_context();
-    let precision = ctx.luprec.max(0).min(15) as usize;
+    let precision = ctx.luprec.clamp(0, 15) as usize;
     if ctx.lunits == 1 {
         format!("{:.*e}", precision, value)
     } else {
@@ -1245,7 +1245,7 @@ mod length_format_tests {
     fn formatted_lengths_read_back() {
         for lunits in [3, 4, 5] {
             for value in [0.995f64, 5.995, 11.999, 23.999, 66.5, 9.25] {
-                let shown = with_units(lunits, if lunits == 3 { 4 } else { 4 }, value);
+                let shown = with_units(lunits, 4, value);
                 let read = parse_length(&shown).unwrap_or_else(|| {
                     panic!("lunits {lunits} wrote {shown:?}, which does not read back")
                 });

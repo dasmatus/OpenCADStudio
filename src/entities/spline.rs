@@ -104,7 +104,9 @@ pub(crate) fn spline_knot_points(spline: &Spline) -> Vec<glam::DVec3> {
         return Vec::new();
     };
     let (from, to) = curve.domain();
-    if !(from.is_finite() && to.is_finite()) || !(to > from) {
+    if !(from.is_finite() && to.is_finite())
+        || !matches!(to.partial_cmp(&from), Some(std::cmp::Ordering::Greater))
+    {
         return Vec::new();
     }
     let span = to - from;

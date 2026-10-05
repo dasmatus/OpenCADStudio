@@ -3019,9 +3019,7 @@ impl Scene {
         source_gen: u64,
         pattern_scale: f32,
     ) -> Option<Arc<Vec<HatchModel>>> {
-        let Some(style) = self.display_plot_style() else {
-            return None;
-        };
+        let style = self.display_plot_style()?;
         // Depth generation rides in the key: the fills below compose their
         // depth from the live depth map, which can move independently of the
         // wire set (a DRAWORDER edit re-ranks without retessellating).

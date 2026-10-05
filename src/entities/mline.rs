@@ -97,7 +97,7 @@ pub(crate) fn rebuild_mline_geometry(mline: &mut MLine) -> bool {
         })
     };
 
-    for index in 0..count {
+    for (index, &point) in flat.iter().enumerate().take(count) {
         let before = direction_before(index);
         let after = direction_after(index);
         let Some(direction) = after.or(before) else {
@@ -105,15 +105,15 @@ pub(crate) fn rebuild_mline_geometry(mline: &mut MLine) -> bool {
         };
         let miter = match (before, after) {
             (Some(before), Some(after)) => {
-                let first_offset = flat[index] + before.perpendicular();
-                let second_offset = flat[index] + after.perpendicular();
+                let first_offset = point + before.perpendicular();
+                let second_offset = point + after.perpendicular();
                 line_line(
                     first_offset.to_array(),
                     before.to_array(),
                     second_offset.to_array(),
                     after.to_array(),
                 )
-                .and_then(|(at, _)| (first_offset + before * at - flat[index]).normalize())
+                .and_then(|(at, _)| (first_offset + before * at - point).normalize())
                 .unwrap_or_else(|| after.perpendicular())
             }
             (Some(direction), None) | (None, Some(direction)) => direction.perpendicular(),
@@ -1267,12 +1267,12 @@ fn mline_perpendicular_offsets(mline: &MLine) -> Vec<Vec<Option<f64>>> {
 }
 
 fn restore_mline_offsets(mline: &mut MLine, offsets: &[Vec<Option<f64>>]) {
-    for index in 0..mline.vertices.len().min(offsets.len()) {
+    for (index, vertex_offsets) in offsets.iter().enumerate().take(mline.vertices.len()) {
         let factor = mline_vertex_factor(mline, index);
         for (segment, offset) in mline.vertices[index]
             .segments
             .iter_mut()
-            .zip(&offsets[index])
+            .zip(vertex_offsets)
         {
             if let Some(offset) = offset {
                 if let Some(first) = segment.parameters.first_mut() {

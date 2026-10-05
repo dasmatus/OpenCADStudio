@@ -803,7 +803,7 @@ impl OpenCADStudio {
                 .iter()
                 .map(|(k, v)| (k.clone(), *v))
                 .collect();
-            items.sort_by(|a, b| b.1.cmp(&a.1));
+            items.sort_by_key(|a| std::cmp::Reverse(a.1));
             items.truncate(200);
             self.block_freq = items.into_iter().collect();
         }
@@ -6599,11 +6599,10 @@ cupsPrintQuality/Print Quality: *Normal High\n";
         );
         let _ = app.on_plot_dlg(PlotDlgMsg::PrinterOptionsReset);
         let _ = app.on_plot_dlg(PlotDlgMsg::PrinterOptionsApply);
-        assert!(app
+        assert!(!app
             .plot_dialog
             .driver_options
-            .get("OCS Test Printer")
-            .is_none());
+            .contains_key("OCS Test Printer"));
         // A failed listing is reported inside the editor, not lost.
         let _ = app.on_plot_dlg(PlotDlgMsg::PrinterProperties);
         let _ = app.on_plot_dlg(PlotDlgMsg::PrinterOptionsLoaded(

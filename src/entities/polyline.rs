@@ -655,9 +655,8 @@ pub(crate) fn polyline2d_global_width(pline: &Polyline2D) -> Option<f64> {
         return None;
     }
     let w0 = w0_start;
-    for i in 1..seg_count {
-        let (sw, ew) =
-            polyline2d_vertex_segment_widths(&verts[i], pline.start_width, pline.end_width);
+    for vertex in verts.iter().take(seg_count).skip(1) {
+        let (sw, ew) = polyline2d_vertex_segment_widths(vertex, pline.start_width, pline.end_width);
         if (sw - ew).abs() > 1e-6 || (sw - w0).abs() > 1e-6 {
             return None;
         }

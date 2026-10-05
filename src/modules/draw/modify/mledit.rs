@@ -96,7 +96,7 @@ impl MlineEditCommand {
                     acadrust::types::Vector3::new(projected.x, projected.y, projected.z);
                 mline.vertices.insert(insert, vertex);
                 crate::entities::mline::rebuild_mline_geometry(&mut mline);
-                crate::modules::draw::draw::mline::sync_mline_element_parameters(
+                crate::modules::draw::drawing::mline::sync_mline_element_parameters(
                     &mut mline,
                     &target.style,
                 );
@@ -226,7 +226,7 @@ impl MlineEditCommand {
                 }
                 mline.vertices.remove(vertex);
                 crate::entities::mline::rebuild_mline_geometry(&mut mline);
-                crate::modules::draw::draw::mline::sync_mline_element_parameters(
+                crate::modules::draw::drawing::mline::sync_mline_element_parameters(
                     &mut mline,
                     &target.style,
                 );
@@ -273,7 +273,10 @@ impl MlineEditCommand {
             }
             _ => return None,
         }
-        crate::modules::draw::draw::mline::sync_mline_element_parameters(&mut mline, &target.style);
+        crate::modules::draw::drawing::mline::sync_mline_element_parameters(
+            &mut mline,
+            &target.style,
+        );
         Some(Self::replace(handle, mline))
     }
 
@@ -997,7 +1000,7 @@ fn move_closest_end(mline: &mut MLine, style: &MLineStyle, index: usize, interse
     mline.vertices[index].position =
         acadrust::types::Vector3::new(intersection.x, intersection.y, intersection.z);
     crate::entities::mline::rebuild_mline_geometry(mline);
-    crate::modules::draw::draw::mline::sync_mline_element_parameters(mline, style);
+    crate::modules::draw::drawing::mline::sync_mline_element_parameters(mline, style);
     restore_shifted_segment_data(mline, segment, normal, source, index == 0);
     if let Some((segment, source)) = peripheral {
         restore_shifted_segment_data(mline, segment, normal, source, index == 0);

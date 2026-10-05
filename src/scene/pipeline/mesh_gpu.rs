@@ -1729,10 +1729,10 @@ fn material_is_transparent(
 fn opacity_image_is_binary_cutout(
     image: &crate::scene::model::material_model::MaterialImage,
 ) -> bool {
-    let mut pixels = image.rgba.chunks_exact(4);
+    let (pixels, remainder) = image.rgba.as_chunks::<4>();
     !image.rgba.is_empty()
-        && pixels.all(|pixel| matches!(pixel[0], 0 | 255))
-        && pixels.remainder().is_empty()
+        && pixels.iter().all(|pixel| matches!(pixel[0], 0 | 255))
+        && remainder.is_empty()
 }
 
 fn material_map_uv(

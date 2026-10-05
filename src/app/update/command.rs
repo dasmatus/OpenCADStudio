@@ -2889,7 +2889,7 @@ impl OpenCADStudio {
                             if let (acadrust::EntityType::MLine(mline), Some(style)) =
                                 (entity, mline_style.as_ref())
                             {
-                                crate::modules::draw::draw::mline::sync_mline_element_parameters(
+                                crate::modules::draw::drawing::mline::sync_mline_element_parameters(
                                     mline, style,
                                 );
                             }
@@ -3519,7 +3519,7 @@ impl OpenCADStudio {
                                                 Some(style),
                                             ) = (entity, mline_style.as_ref())
                                             {
-                                                crate::modules::draw::draw::mline::sync_mline_element_parameters(
+                                                crate::modules::draw::drawing::mline::sync_mline_element_parameters(
                                                             mline, style,
                                                         );
                                             }

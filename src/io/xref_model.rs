@@ -116,8 +116,8 @@ fn root_key(normalized: &str) -> String {
     if b.len() >= 2 && b[0].is_ascii_alphabetic() && b[1] == b':' {
         return lower[..2].to_string();
     }
-    if lower.starts_with("//") {
-        let mut parts = lower[2..].split('/').filter(|s| !s.is_empty());
+    if let Some(rest) = lower.strip_prefix("//") {
+        let mut parts = rest.split('/').filter(|s| !s.is_empty());
         if let (Some(server), Some(share)) = (parts.next(), parts.next()) {
             return format!("//{server}/{share}");
         }

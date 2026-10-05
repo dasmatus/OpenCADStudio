@@ -57,10 +57,10 @@ impl Report {
     pub fn to_log(&self) -> String {
         let mut out = String::new();
         for (from, to, moved) in &self.translated {
-            out.push_str(&crate::tf!("{from} -> {to}  ({moved} object(s))\n").into_owned());
+            out.push_str(&crate::tf!("{from} -> {to}  ({moved} object(s))\n"));
         }
         for (layer, reason) in &self.skipped {
-            out.push_str(&crate::tf!("{layer}: skipped — {reason}\n").into_owned());
+            out.push_str(&crate::tf!("{layer}: skipped — {reason}\n"));
         }
         out
     }

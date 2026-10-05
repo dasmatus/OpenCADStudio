@@ -1174,24 +1174,18 @@ impl Scene {
         if self.document.solid_history_graph(handle).is_none() {
             let create = match field {
                 crate::scene::model::solid_history::PROP_HISTORY => {
-                    if value.eq_ignore_ascii_case("Record") {
-                        true
-                    } else if value.eq_ignore_ascii_case("None") {
-                        return false;
-                    } else {
+                    if !value.eq_ignore_ascii_case("Record") {
                         return false;
                     }
+                    true
                 }
                 crate::scene::model::solid_history::PROP_SHOW_HISTORY
                     if self.document.header.show_solid_history.clamp(0, 2) == 1 =>
                 {
-                    if value.eq_ignore_ascii_case("Yes") {
-                        true
-                    } else if value.eq_ignore_ascii_case("No") {
-                        return false;
-                    } else {
+                    if !value.eq_ignore_ascii_case("Yes") {
                         return false;
                     }
+                    true
                 }
                 _ => return false,
             };

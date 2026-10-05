@@ -281,7 +281,6 @@ impl OpenCADStudio {
     /// Apply an explicit per-step [`DynSpec`](crate::command::DynSpec): rebuild
     /// the boxes from its roles (preserving typed buffers when the role set is
     /// unchanged), and set the guide + anchor.
-
     pub(in crate::app) fn apply_dyn_spec(&mut self, i: usize, spec: crate::command::DynSpec) {
         use crate::app::document::DynFieldEntry;
         let new_roles: Vec<crate::command::DynRole> = spec.fields.iter().map(|f| f.role).collect();
@@ -303,18 +302,18 @@ impl OpenCADStudio {
         self.tabs[i].dyn_ref = spec.ref_point;
     }
 
-    /// Track cursor dwell over a selected entity's grip. Sets
-    /// `grip_hover` while the cursor sits within `GRIP_THRESHOLD_PX` of
-    /// a grip and opens `grip_popup` once the dwell exceeds the
-    /// threshold. Cursor drift clears both.
-    /// After the active Model tile changes, mirror its stored visual style
-    /// into the tab so the picker shows it and the tile renders with it
-    /// (the active tile draws with the tab's live render mode).
+    // Track cursor dwell over a selected entity's grip. Sets
+    // `grip_hover` while the cursor sits within `GRIP_THRESHOLD_PX` of
+    // a grip and opens `grip_popup` once the dwell exceeds the
+    // threshold. Cursor drift clears both.
+    // After the active Model tile changes, mirror its stored visual style
+    // into the tab so the picker shows it and the tile renders with it
+    // (the active tile draws with the tab's live render mode).
 
-    /// Resolve the world point implied by the current dynamic-input field
-    /// values. Locked fields use their typed buffer; the rest fall back to
-    /// the live cursor-derived value. Returns `None` when the field set
-    /// isn't one we know how to turn into a point.
+    // Resolve the world point implied by the current dynamic-input field
+    // values. Locked fields use their typed buffer; the rest fall back to
+    // the live cursor-derived value. Returns `None` when the field set
+    // isn't one we know how to turn into a point.
     /// Hand the active command the current full-precision coordinate frame.
     pub(in crate::app) fn push_ucs_to_cmd(&mut self, i: usize) {
         let plane = if self.tabs[i].editing_model_space() {
@@ -342,7 +341,7 @@ impl OpenCADStudio {
     /// pick the endpoint the pen actually finished on.
     pub(in crate::app) fn update_cont_anchor(&mut self, entity: &acadrust::EntityType) {
         let last = self.last_point;
-        self.cont_anchor = crate::modules::draw::draw::arc::continue_anchor(entity, last);
+        self.cont_anchor = crate::modules::draw::drawing::arc::continue_anchor(entity, last);
     }
 
     pub(in crate::app) fn dyn_resolve_point(&self) -> Option<glam::DVec3> {
@@ -499,7 +498,6 @@ impl OpenCADStudio {
     /// configuration becomes cartesian `[X(buf), Y]`, and a cartesian
     /// `[X, Y]` configuration extends to `[X, Y, Z]`. Default fallthrough
     /// is "advance to next field", matching `Tab`. See #35.
-
     pub(in crate::app) fn dyn_comma_advance(&mut self) {
         use crate::app::document::{DynComponent, DynFieldEntry};
         let i = self.active_tab;
@@ -606,7 +604,6 @@ impl OpenCADStudio {
     /// way the cursor is dragging. Only applies to steps with an `Angle` field;
     /// an explicit `+`/`-` is left untouched. Returns the (possibly re-signed)
     /// text to feed `on_text_input`.
-
     pub(in crate::app) fn dyn_sign_angle_text(&self, i: usize, text: String) -> String {
         let has_angle = self.tabs[i]
             .dyn_fields
@@ -767,7 +764,7 @@ impl OpenCADStudio {
         Some(task)
     }
 
-    /// Mutable access to the currently selected table style.
+    // Mutable access to the currently selected table style.
 
     /// Re-run the active command's preview hook against the current
     /// cursor world position. Keyboard-driven point commits (typed
