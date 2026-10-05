@@ -2086,9 +2086,11 @@ mod cell_tests {
     #[test]
     fn per_run_color_and_font_persist() {
         use acadrust::entities::mtext_format::{MTextColor, MTextFont};
-        let mut p = SpanProperties::default();
-        p.color = Some(MTextColor::Index(1)); // red
-        p.font = Some(MTextFont::with_flags("Arial".to_string(), true, false)); // bold Arial
+        let p = SpanProperties {
+            color: Some(MTextColor::Index(1)), // red
+            font: Some(MTextFont::with_flags("Arial".to_string(), true, false)), // bold Arial
+            ..Default::default()
+        };
         let cells = vec![Cell::Char('X', p)];
         let s = cells_to_doc(&ParagraphProperties::default(), &cells).to_mtext_string();
         let back = parse_mtext(&s, true);

@@ -826,20 +826,22 @@ impl OpenCADStudio {
                     .or_default() += 1;
             }
         }
-        let mut state = DataExtractionState::default();
-        state.selection_handles = selection_handles;
-        state.objects = counts
-            .into_iter()
-            .map(
-                |(name, count)| crate::ui::window::annotation_data::ExtractionObject {
-                    name,
-                    checked: true,
-                    count,
-                },
-            )
-            .collect();
-        state.table_styles = table_styles(doc);
-        state.table_style = doc.header.current_table_style_name.clone();
+        let state = DataExtractionState {
+            selection_handles,
+            objects: counts
+                .into_iter()
+                .map(
+                    |(name, count)| crate::ui::window::annotation_data::ExtractionObject {
+                        name,
+                        checked: true,
+                        count,
+                    },
+                )
+                .collect(),
+            table_styles: table_styles(doc),
+            table_style: doc.header.current_table_style_name.clone(),
+            ..Default::default()
+        };
         self.data_extraction = state;
         self.reset_annotation_modal(ModalKind::DataExtraction);
     }

@@ -740,11 +740,13 @@ mod tests {
 
     #[test]
     fn test_arabic_text_placement() {
-        let mut t = Text::default();
-        t.value = "بسم الله".to_string();
-        t.height = 2.5;
-        t.insertion_point = acadrust::types::Vector3::new(10.0, 20.0, 0.0);
-        t.horizontal_alignment = HA::Left;
+        let t = Text {
+            value: "بسم الله".to_string(),
+            height: 2.5,
+            insertion_point: acadrust::types::Vector3::new(10.0, 20.0, 0.0),
+            horizontal_alignment: HA::Left,
+            ..Default::default()
+        };
 
         let doc = acadrust::CadDocument::default();
         let placement = text_run_placement_at_scale(&t, &doc, 1.0);

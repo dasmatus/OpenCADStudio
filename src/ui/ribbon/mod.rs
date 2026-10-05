@@ -1548,8 +1548,10 @@ mod tests {
 
     #[test]
     fn escape_returns_from_an_extension_submenu_then_closes_the_panel() {
-        let mut ribbon = Ribbon::default();
-        ribbon.open_dropdown = Some("DRAWORDER_FRONT".to_string());
+        let mut ribbon = Ribbon {
+            open_dropdown: Some("DRAWORDER_FRONT".to_string()),
+            ..Default::default()
+        };
 
         assert!(ribbon.escape_extension());
         assert_eq!(ribbon.open_dropdown.as_deref(), Some("modify_extension"));

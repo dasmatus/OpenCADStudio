@@ -382,24 +382,30 @@ mod tests {
 
     #[test]
     fn divide_uses_open_and_closed_marker_counts() {
-        let mut line = Line::default();
-        line.start = Vector3::new(0.0, 0.0, 0.0);
-        line.end = Vector3::new(9.0, 0.0, 0.0);
+        let line = Line {
+            start: Vector3::new(0.0, 0.0, 0.0),
+            end: Vector3::new(9.0, 0.0, 0.0),
+            ..Default::default()
+        };
         let open = divide_entity(&EntityType::Line(line), 3, None);
         assert_eq!(open.len(), 2);
         assert_eq!(point(&open[0]), DVec3::new(3.0, 0.0, 0.0));
 
-        let mut circle = Circle::default();
-        circle.radius = 2.0;
+        let circle = Circle {
+            radius: 2.0,
+            ..Default::default()
+        };
         let closed = divide_entity(&EntityType::Circle(circle), 4, None);
         assert_eq!(closed.len(), 4);
     }
 
     #[test]
     fn measure_starts_at_the_selected_open_end() {
-        let mut line = Line::default();
-        line.start = Vector3::new(0.0, 0.0, 0.0);
-        line.end = Vector3::new(10.0, 0.0, 0.0);
+        let line = Line {
+            start: Vector3::new(0.0, 0.0, 0.0),
+            end: Vector3::new(10.0, 0.0, 0.0),
+            ..Default::default()
+        };
         let markers = measure_entity(
             &EntityType::Line(line),
             4.0,
@@ -413,8 +419,10 @@ mod tests {
 
     #[test]
     fn measure_rejects_an_unbounded_marker_count() {
-        let mut line = Line::default();
-        line.end = Vector3::new(1.0, 0.0, 0.0);
+        let line = Line {
+            end: Vector3::new(1.0, 0.0, 0.0),
+            ..Default::default()
+        };
         assert!(measure_entity(
             &EntityType::Line(line),
             f64::MIN_POSITIVE,

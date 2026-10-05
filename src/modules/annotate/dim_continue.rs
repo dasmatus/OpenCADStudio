@@ -226,12 +226,14 @@ impl DimContinueCommand {
                 let moving = point - *vertex;
                 let (definition, text) =
                     angular_definition_and_text(*vertex, previous, moving, *radius)?;
-                let mut result = DimensionAngular2Ln::default();
-                result.first_point = world(state.plane, *vertex);
-                result.second_point = world(state.plane, *current);
-                result.angle_vertex = world(state.plane, *vertex);
-                result.definition_point = world(state.plane, point);
-                result.dimension_arc = world(state.plane, definition);
+                let mut result = DimensionAngular2Ln {
+                    first_point: world(state.plane, *vertex),
+                    second_point: world(state.plane, *current),
+                    angle_vertex: world(state.plane, *vertex),
+                    definition_point: world(state.plane, point),
+                    dimension_arc: world(state.plane, definition),
+                    ..Default::default()
+                };
                 result.base.definition_point = result.dimension_arc;
                 result.base.text_middle_point = world(state.plane, text);
                 result.base.insertion_point = result.base.text_middle_point;

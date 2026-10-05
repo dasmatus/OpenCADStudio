@@ -803,8 +803,10 @@ mod tests {
         // diagonal arms) back on every launch for every drawing. The flag is
         // session-only now: it is dropped when saving and ignored when a
         // settings file still carries it.
-        let mut settings = UserSettings::default();
-        settings.isometric_drafting = true;
+        let settings = UserSettings {
+            isometric_drafting: true,
+            ..Default::default()
+        };
         let json = serde_json::to_string(&settings).expect("serialize settings");
         assert!(
             !json.contains("isometric_drafting"),

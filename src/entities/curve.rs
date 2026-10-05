@@ -573,10 +573,12 @@ mod tests {
 
     #[test]
     fn a_flat_circle_lands_on_the_world_xy_plane() {
-        let mut circle = CircleEnt::default();
-        circle.center = v3(10.0, 20.0, 4.0);
-        circle.radius = 3.0;
-        circle.normal = v3(0.0, 0.0, 1.0);
+        let circle = CircleEnt {
+            center: v3(10.0, 20.0, 4.0),
+            radius: 3.0,
+            normal: v3(0.0, 0.0, 1.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Circle(circle)).unwrap();
         assert!(curve.plane.is_xy_aligned());
         assert_on(&curve, |t| {
@@ -589,12 +591,14 @@ mod tests {
     fn an_extruded_arc_uses_the_arbitrary_axis_frame() {
         // Normal along −Z: the frame flips, and a converter that ignored it
         // would put the arc on the wrong side of the drawing.
-        let mut arc = ArcEnt::default();
-        arc.center = v3(5.0, 0.0, 2.0);
-        arc.radius = 1.0;
-        arc.start_angle = 0.0;
-        arc.end_angle = FRAC_PI_2;
-        arc.normal = v3(0.0, 0.0, -1.0);
+        let arc = ArcEnt {
+            center: v3(5.0, 0.0, 2.0),
+            radius: 1.0,
+            start_angle: 0.0,
+            end_angle: FRAC_PI_2,
+            normal: v3(0.0, 0.0, -1.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Arc(arc)).unwrap();
         assert!(!curve.plane.is_xy_aligned());
         assert_on(&curve, |t| {
@@ -609,9 +613,11 @@ mod tests {
 
     #[test]
     fn a_level_line_shares_the_world_frame() {
-        let mut line = LineEnt::default();
-        line.start = v3(1.0, 2.0, 7.0);
-        line.end = v3(4.0, 6.0, 7.0);
+        let line = LineEnt {
+            start: v3(1.0, 2.0, 7.0),
+            end: v3(4.0, 6.0, 7.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Line(line)).unwrap();
         assert!(curve.plane.is_xy_aligned(), "{:?}", curve.plane);
         assert_on(&curve, |t| [1.0 + 3.0 * t, 2.0 + 4.0 * t, 7.0]);
@@ -621,9 +627,11 @@ mod tests {
     fn a_sloping_line_still_reports_its_own_points() {
         // No XY frame contains it, so the plane is the upright one through
         // the line. The points are what must not change.
-        let mut line = LineEnt::default();
-        line.start = v3(0.0, 0.0, 0.0);
-        line.end = v3(3.0, 4.0, 12.0);
+        let line = LineEnt {
+            start: v3(0.0, 0.0, 0.0),
+            end: v3(3.0, 4.0, 12.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Line(line)).unwrap();
         assert!(!curve.plane.is_xy_aligned());
         assert_on(&curve, |t| [3.0 * t, 4.0 * t, 12.0 * t]);
@@ -633,30 +641,36 @@ mod tests {
     fn a_vertical_line_is_not_a_degenerate_case() {
         // `along × Z` is zero here, which is where an unguarded normal would
         // collapse the frame and send every point to the origin.
-        let mut line = LineEnt::default();
-        line.start = v3(2.0, 3.0, 0.0);
-        line.end = v3(2.0, 3.0, 10.0);
+        let line = LineEnt {
+            start: v3(2.0, 3.0, 0.0),
+            end: v3(2.0, 3.0, 10.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Line(line)).unwrap();
         assert_on(&curve, |t| [2.0, 3.0, 10.0 * t]);
     }
 
     #[test]
     fn a_zero_length_line_has_no_curve() {
-        let mut line = LineEnt::default();
-        line.start = v3(1.0, 1.0, 1.0);
-        line.end = v3(1.0, 1.0, 1.0);
+        let line = LineEnt {
+            start: v3(1.0, 1.0, 1.0),
+            end: v3(1.0, 1.0, 1.0),
+            ..Default::default()
+        };
         assert!(entity_curve(&EntityType::Line(line)).is_none());
     }
 
     #[test]
     fn an_ellipse_keeps_its_axis_length_and_direction() {
-        let mut ellipse = EllipseEnt::default();
-        ellipse.center = v3(10.0, 5.0, 0.0);
-        ellipse.major_axis = v3(0.0, 4.0, 0.0); // up, length 4
-        ellipse.minor_axis_ratio = 0.5;
-        ellipse.start_parameter = 0.0;
-        ellipse.end_parameter = TAU;
-        ellipse.normal = v3(0.0, 0.0, 1.0);
+        let ellipse = EllipseEnt {
+            center: v3(10.0, 5.0, 0.0),
+            major_axis: v3(0.0, 4.0, 0.0), // up, length 4
+            minor_axis_ratio: 0.5,
+            start_parameter: 0.0,
+            end_parameter: TAU,
+            normal: v3(0.0, 0.0, 1.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Ellipse(ellipse)).unwrap();
         let Curve::Ellipse(arc) = &curve.curve else {
             panic!("expected an ellipse");
@@ -672,13 +686,15 @@ mod tests {
 
     #[test]
     fn an_ellipse_on_an_extruded_plane_stays_on_it() {
-        let mut ellipse = EllipseEnt::default();
-        ellipse.center = v3(0.0, 0.0, 3.0);
-        ellipse.major_axis = v3(2.0, 0.0, 0.0);
-        ellipse.minor_axis_ratio = 0.5;
-        ellipse.start_parameter = 0.0;
-        ellipse.end_parameter = PI;
-        ellipse.normal = v3(0.0, 1.0, 0.0);
+        let ellipse = EllipseEnt {
+            center: v3(0.0, 0.0, 3.0),
+            major_axis: v3(2.0, 0.0, 0.0),
+            minor_axis_ratio: 0.5,
+            start_parameter: 0.0,
+            end_parameter: PI,
+            normal: v3(0.0, 1.0, 0.0),
+            ..Default::default()
+        };
         // The centre is off that plane, so the entity is inconsistent and the
         // projection is what decides. What must hold is that the result is a
         // planar curve whose points all sit on the plane it reports.
@@ -690,14 +706,16 @@ mod tests {
 
     #[test]
     fn a_polyline_carries_its_bulges_and_closure() {
-        let mut polyline = LwPolylineEnt::default();
-        polyline.elevation = 2.0;
-        polyline.is_closed = true;
-        polyline.normal = v3(0.0, 0.0, 1.0);
-        polyline.vertices = vec![
-            LwVertex::with_bulge(Vector2::new(0.0, 0.0), 1.0),
-            LwVertex::from_coords(10.0, 0.0),
-        ];
+        let polyline = LwPolylineEnt {
+            elevation: 2.0,
+            is_closed: true,
+            normal: v3(0.0, 0.0, 1.0),
+            vertices: vec![
+                LwVertex::with_bulge(Vector2::new(0.0, 0.0), 1.0),
+                LwVertex::from_coords(10.0, 0.0),
+            ],
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::LwPolyline(polyline)).unwrap();
         assert!(curve.is_closed());
         // A bulge of 1 is a half circle. Left to right it dips below.
@@ -711,22 +729,26 @@ mod tests {
 
     #[test]
     fn a_two_point_minimum_is_enforced() {
-        let mut polyline = LwPolylineEnt::default();
-        polyline.vertices = vec![LwVertex::from_coords(0.0, 0.0)];
+        let polyline = LwPolylineEnt {
+            vertices: vec![LwVertex::from_coords(0.0, 0.0)],
+            ..Default::default()
+        };
         assert!(entity_curve(&EntityType::LwPolyline(polyline)).is_none());
     }
 
     #[test]
     fn a_flat_spline_converts_and_a_spatial_one_does_not() {
-        let mut spline = SplineEnt::default();
-        spline.degree = 3;
-        spline.fit_points = vec![
-            v3(0.0, 0.0, 5.0),
-            v3(1.0, 2.0, 5.0),
-            v3(3.0, 1.0, 5.0),
-            v3(5.0, 4.0, 5.0),
-        ];
-        spline.normal = v3(0.0, 0.0, 1.0);
+        let mut spline = SplineEnt {
+            degree: 3,
+            fit_points: vec![
+                v3(0.0, 0.0, 5.0),
+                v3(1.0, 2.0, 5.0),
+                v3(3.0, 1.0, 5.0),
+                v3(5.0, 4.0, 5.0),
+            ],
+            normal: v3(0.0, 0.0, 1.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Spline(spline.clone())).unwrap();
         assert!(curve.plane.is_xy_aligned());
         for point in curve.tessellate(20.0) {
@@ -760,8 +782,10 @@ mod tests {
 
     #[test]
     fn spatial_fit_spline_accepts_unset_tangents_and_closes() {
-        let mut spline = SplineEnt::default();
-        spline.degree = 3;
+        let mut spline = SplineEnt {
+            degree: 3,
+            ..Default::default()
+        };
         spline.flags.closed = true;
         spline.fit_points = vec![
             v3(0.0, 0.0, 0.0),
@@ -785,12 +809,14 @@ mod tests {
 
     #[test]
     fn an_arc_offers_the_quadrants_its_sweep_covers() {
-        let mut arc = ArcEnt::default();
-        arc.center = v3(0.0, 0.0, 0.0);
-        arc.radius = 2.0;
-        arc.start_angle = 0.0;
-        arc.end_angle = PI; // the upper half
-        arc.normal = v3(0.0, 0.0, 1.0);
+        let arc = ArcEnt {
+            center: v3(0.0, 0.0, 0.0),
+            radius: 2.0,
+            start_angle: 0.0,
+            end_angle: PI, // the upper half
+            normal: v3(0.0, 0.0, 1.0),
+            ..Default::default()
+        };
         let snap = snap_from(&entity_curve(&EntityType::Arc(arc)).unwrap());
         let quadrants = hints(&snap, SnapHint::Quadrant);
         // 0° and 90° and 180° are on it; 270° is not.
@@ -807,13 +833,15 @@ mod tests {
 
     #[test]
     fn a_polyline_puts_its_vertices_in_the_chain_channel() {
-        let mut polyline = LwPolylineEnt::default();
-        polyline.normal = v3(0.0, 0.0, 1.0);
-        polyline.vertices = vec![
-            LwVertex::from_coords(0.0, 0.0),
-            LwVertex::from_coords(10.0, 0.0),
-            LwVertex::from_coords(10.0, 5.0),
-        ];
+        let polyline = LwPolylineEnt {
+            normal: v3(0.0, 0.0, 1.0),
+            vertices: vec![
+                LwVertex::from_coords(0.0, 0.0),
+                LwVertex::from_coords(10.0, 0.0),
+                LwVertex::from_coords(10.0, 5.0),
+            ],
+            ..Default::default()
+        };
         let snap = snap_from(&entity_curve(&EntityType::LwPolyline(polyline)).unwrap());
         assert_eq!(snap.key_vertices.len(), 3);
         // Midpoints are derived from those by the snap engine, so emitting
@@ -823,9 +851,11 @@ mod tests {
 
     #[test]
     fn a_closed_curve_has_no_ends_to_offer() {
-        let mut circle = CircleEnt::default();
-        circle.radius = 1.0;
-        circle.normal = v3(0.0, 0.0, 1.0);
+        let circle = CircleEnt {
+            radius: 1.0,
+            normal: v3(0.0, 0.0, 1.0),
+            ..Default::default()
+        };
         let snap = snap_from(&entity_curve(&EntityType::Circle(circle)).unwrap());
         assert!(snap.key_vertices.is_empty());
         assert!(hints(&snap, SnapHint::Endpoint).is_empty());
@@ -839,8 +869,10 @@ mod tests {
         // does not model a wrap, so without closing the point list the curve
         // ended somewhere else entirely — and a TRIM against it cut nothing
         // along the seam.
-        let mut spline = SplineEnt::default();
-        spline.degree = 3;
+        let mut spline = SplineEnt {
+            degree: 3,
+            ..Default::default()
+        };
         spline.flags.closed = true;
         spline.fit_points = vec![
             v3(0.0, 0.0, 0.0),
@@ -889,10 +921,12 @@ mod tests {
 
     #[test]
     fn a_zero_normal_falls_back_rather_than_collapsing() {
-        let mut circle = CircleEnt::default();
-        circle.center = v3(1.0, 2.0, 0.0);
-        circle.radius = 1.0;
-        circle.normal = v3(0.0, 0.0, 0.0);
+        let circle = CircleEnt {
+            center: v3(1.0, 2.0, 0.0),
+            radius: 1.0,
+            normal: v3(0.0, 0.0, 0.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Circle(circle)).unwrap();
         assert!(curve.plane.is_xy_aligned());
         assert_eq!(curve.point_at(0.0), [2.0, 2.0, 0.0]);
@@ -900,16 +934,20 @@ mod tests {
 
     #[test]
     fn a_ray_keeps_its_direction_and_a_construction_line_its_extent() {
-        let mut ray = RayEnt::default();
-        ray.base_point = v3(1.0, 1.0, 0.0);
-        ray.direction = v3(2.0, 0.0, 0.0);
+        let ray = RayEnt {
+            base_point: v3(1.0, 1.0, 0.0),
+            direction: v3(2.0, 0.0, 0.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::Ray(ray)).unwrap();
         assert_eq!(curve.extent(), cadkernel::geom2d::Extent::Forward);
         assert_eq!(curve.point_at(1.0), [3.0, 1.0, 0.0]);
 
-        let mut line = XLineEnt::default();
-        line.base_point = v3(0.0, 0.0, 0.0);
-        line.direction = v3(0.0, 3.0, 0.0);
+        let line = XLineEnt {
+            base_point: v3(0.0, 0.0, 0.0),
+            direction: v3(0.0, 3.0, 0.0),
+            ..Default::default()
+        };
         let curve = entity_curve(&EntityType::XLine(line)).unwrap();
         assert_eq!(curve.extent(), cadkernel::geom2d::Extent::Infinite);
         assert_eq!(curve.point_at(-1.0), [0.0, -3.0, 0.0]);

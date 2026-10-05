@@ -282,8 +282,10 @@ impl iced::advanced::text::Highlighter for HistoryHighlighter {
 
 impl CommandLine {
     pub fn new() -> Self {
-        let mut cl = Self::default();
-        cl.history_height = HISTORY_HEIGHT_DEFAULT;
+        let mut cl = Self {
+            history_height: HISTORY_HEIGHT_DEFAULT,
+            ..Default::default()
+        };
         cl.push_info(&crate::tr!("command-line", "ready"));
         cl.push_info(&crate::tr!("command-line", "hint"));
         cl

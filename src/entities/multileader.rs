@@ -2570,8 +2570,10 @@ mod tests {
     #[test]
     fn test_mleader_arabic_text_tessellation() {
         let doc = CadDocument::default();
-        let mut ml = MultiLeader::default();
-        ml.content_type = LeaderContentType::MText;
+        let mut ml = MultiLeader {
+            content_type: LeaderContentType::MText,
+            ..Default::default()
+        };
         ml.context.text_string = "عربي".to_string();
         ml.context.text_height = 10.0;
         ml.path_type = MultiLeaderPathType::StraightLineSegments;
