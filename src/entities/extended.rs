@@ -778,7 +778,7 @@ fn parse_vertices(value: &str) -> Option<Vec<Vector3>> {
         return None;
     }
     let vertices = values
-        .chunks_exact(3)
+        .as_chunks::<3>().0.iter()
         .map(|point| Vector3::new(point[0], point[1], point[2]))
         .collect::<Vec<_>>();
     let valid = vertices
@@ -1390,7 +1390,7 @@ fn properties(entity: &ExtendedEntity) -> Vec<PropSection> {
                     t!("Transform").as_ref(),
                     "ext_coord_transform",
                     data.transform
-                        .chunks_exact(4)
+                        .as_chunks::<4>().0.iter()
                         .map(|row| {
                             format!("{:.6}, {:.6}, {:.6}, {:.6}", row[0], row[1], row[2], row[3])
                         })

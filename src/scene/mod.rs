@@ -309,7 +309,7 @@ impl Scene {
         if !(aperture_px.is_finite() && aperture_px > 0.0) {
             return None;
         }
-        let perp_base = want_perp.then(|| base).flatten();
+        let perp_base = want_perp.then_some(base).flatten();
         let project = |world: glam::DVec3| {
             let ndc = view_rot.project_point3((world - eye).as_vec3());
             [
@@ -412,7 +412,7 @@ impl Scene {
             {
                 continue;
             }
-            for tri in lod.indices.chunks_exact(3) {
+            for tri in lod.indices.as_chunks::<3>().0 {
                 let mut v = [glam::DVec3::ZERO; 3];
                 let mut ok = true;
                 for (slot, index) in v.iter_mut().zip(tri.iter()) {
@@ -2895,7 +2895,7 @@ impl Scene {
         }
         // Complex-linetype glyphs ride the host entity's wire.
         let lt = crate::scene::view::render::linetype_name_for(&self.document, entity);
-        crate::io::linetypes::resolve_complex_lt(&self.document, &lt).is_some()
+        crate::io::linetypes::resolve_complex_lt(&self.document, lt).is_some()
     }
 
     /// Stage the cache categories an entity belongs to before erase removes the
@@ -3538,7 +3538,7 @@ impl Scene {
         }
         self.nav_changed_at
             .get()
-            .map_or(false, |t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
+            .is_some_and(|t| t.elapsed().as_millis() < Self::NAV_SETTLE_MS)
     }
 
     pub(crate) fn record_nav_perf(&self, op: NavPerfOp, started: iced::time::Instant) {
@@ -3591,7 +3591,7 @@ impl Scene {
     /// (hatched) frame actually renders after the cursor stops, even when no
     /// input event would otherwise trigger a redraw. Read-only (no side effect).
     pub fn is_settling(&self) -> bool {
-        self.nav_changed_at.get().map_or(false, |t| {
+        self.nav_changed_at.get().is_some_and(|t| {
             t.elapsed().as_millis() < Self::NAV_SETTLE_MS + 130
         })
     }
@@ -11628,14 +11628,12 @@ mod section_tests {
             bottom_height: 2.0,
             indicator_alpha: 70,
             indicator_color: Color::from_index(9),
-            back_line_vertices: (depth > 0.0)
-                .then(|| {
+            back_line_vertices: if depth > 0.0 { {
                     vertices
                         .iter()
                         .map(|point| *point + Vector3::new(-depth, 0.0, 0.0))
                         .collect()
-                })
-                .unwrap_or_default(),
+                } } else { Default::default() },
             vertices,
             settings_handle: Handle::NULL,
         }

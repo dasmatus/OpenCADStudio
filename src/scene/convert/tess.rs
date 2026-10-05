@@ -396,7 +396,7 @@ fn section_symbol_wires(
                 lines.push([p0[0] as f64, p0[1] as f64, 0.0]);
                 lines.push([p1[0] as f64, p1[1] as f64, 0.0]);
             }
-            for t in g.arrow_fill.chunks_exact(3) {
+            for t in g.arrow_fill.as_chunks::<3>().0 {
                 for p in t {
                     fill.push([p[0] as f64, p[1] as f64, 0.0]);
                 }

@@ -2238,57 +2238,6 @@ impl Scene {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use acadrust::entities::{Circle, DimensionDiameter};
-
-    #[test]
-    fn diameter_angle_sync_records_the_association_for_undo() {
-        let mut scene = Scene::new();
-        let circle = scene.add_entity(EntityType::Circle(Circle::from_center_radius(
-            Vector3::ZERO,
-            5.0,
-        )));
-        let dimension = scene.add_entity(EntityType::Dimension(Dimension::Diameter(
-            DimensionDiameter::new(Vector3::new(5.0, 0.0, 0.0), Vector3::new(-5.0, 0.0, 0.0)),
-        )));
-        scene.attach_dimension_association(dimension, vec![Some(circle)]);
-        let association = scene
-            .document
-            .objects
-            .iter()
-            .find_map(|(handle, object)| match object {
-                ObjectType::Associative(object)
-                    if matches!(
-                        object.data,
-                        AssociativeData::DimensionAssociation(ref association)
-                            if association.dimension == dimension
-                    ) =>
-                {
-                    Some(*handle)
-                }
-                _ => None,
-            })
-            .expect("diameter association");
-
-        scene.begin_undo_recording();
-        let Some(EntityType::Dimension(Dimension::Diameter(diameter))) =
-            scene.document.get_entity_mut(dimension)
-        else {
-            panic!("diameter dimension");
-        };
-        diameter.angle_vertex = Vector3::new(0.0, 5.0, 0.0);
-        scene.sync_diameter_association_angle(dimension);
-
-        let recording = scene.take_undo_recording().expect("undo recording");
-        let (_, objects, _, _) = recording.into_recorded_images();
-        assert!(objects
-            .iter()
-            .any(|(handle, before)| *handle == association && before.is_some()));
-    }
-}
-
 /// Average displacement of the dimension's resolved definition points.
 fn centroid_shift(before: [Option<Vector3>; 2], after: [Option<Vector3>; 2]) -> Vector3 {
     let mut delta = Vector3::new(0.0, 0.0, 0.0);
@@ -2431,4 +2380,55 @@ fn persisted_measurement_scale(
         user_lfac: effective / calculated,
         viewport_compensation: calculated,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use acadrust::entities::{Circle, DimensionDiameter};
+
+    #[test]
+    fn diameter_angle_sync_records_the_association_for_undo() {
+        let mut scene = Scene::new();
+        let circle = scene.add_entity(EntityType::Circle(Circle::from_center_radius(
+            Vector3::ZERO,
+            5.0,
+        )));
+        let dimension = scene.add_entity(EntityType::Dimension(Dimension::Diameter(
+            DimensionDiameter::new(Vector3::new(5.0, 0.0, 0.0), Vector3::new(-5.0, 0.0, 0.0)),
+        )));
+        scene.attach_dimension_association(dimension, vec![Some(circle)]);
+        let association = scene
+            .document
+            .objects
+            .iter()
+            .find_map(|(handle, object)| match object {
+                ObjectType::Associative(object)
+                    if matches!(
+                        object.data,
+                        AssociativeData::DimensionAssociation(ref association)
+                            if association.dimension == dimension
+                    ) =>
+                {
+                    Some(*handle)
+                }
+                _ => None,
+            })
+            .expect("diameter association");
+
+        scene.begin_undo_recording();
+        let Some(EntityType::Dimension(Dimension::Diameter(diameter))) =
+            scene.document.get_entity_mut(dimension)
+        else {
+            panic!("diameter dimension");
+        };
+        diameter.angle_vertex = Vector3::new(0.0, 5.0, 0.0);
+        scene.sync_diameter_association_angle(dimension);
+
+        let recording = scene.take_undo_recording().expect("undo recording");
+        let (_, objects, _, _) = recording.into_recorded_images();
+        assert!(objects
+            .iter()
+            .any(|(handle, before)| *handle == association && before.is_some()));
+    }
 }

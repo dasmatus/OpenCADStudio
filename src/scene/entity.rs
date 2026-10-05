@@ -2095,7 +2095,7 @@ impl Scene {
                     .collect()
             };
             if let Some(refined) =
-                cadkernel::geom2d::refine_spline_boundary(&ring, curves, &project)
+                cadkernel::geom2d::refine_spline_boundary(&ring, curves, project)
             {
                 if boundary.len() - range.len() + refined.len() > MAX_HATCH_MODEL_VERTS {
                     continue;

@@ -14,7 +14,7 @@ impl OpenCADStudio {
                     ""
                 };
                 let parts: Vec<&str> = raw_rest.split_whitespace().collect();
-                let sub = parts.get(0).map(|s| s.to_uppercase()).unwrap_or_default();
+                let sub = parts.first().map(|s| s.to_uppercase()).unwrap_or_default();
                 match sub.as_str() {
                     "" | "LIST" | "?" => {
                         let info: Vec<String> = self.tabs[i]
@@ -513,9 +513,9 @@ impl OpenCADStudio {
                                 .active_ucs
                                 .get_or_insert_with(|| Ucs::new("*ACTIVE*"));
                             ucs.origin = Vector3::new(
-                                wcs_origin.x as f64,
-                                wcs_origin.y as f64,
-                                wcs_origin.z as f64,
+                                wcs_origin.x,
+                                wcs_origin.y,
+                                wcs_origin.z,
                             );
                             active_changed = true;
                             self.command_line.push_output(
@@ -1140,7 +1140,7 @@ impl OpenCADStudio {
                 use acadrust::tables::DimStyle;
                 let raw_rest = cmd.split_once(' ').map(|(_, r)| r.trim()).unwrap_or("");
                 let parts: Vec<&str> = raw_rest.split_whitespace().collect();
-                let sub = parts.get(0).map(|s| s.to_uppercase()).unwrap_or_default();
+                let sub = parts.first().map(|s| s.to_uppercase()).unwrap_or_default();
                 match sub.as_str() {
                     // No sub-command or "DIALOG" → open the DimStyle Manager dialog
                     "" | "DIALOG" | "UI" => {
@@ -1468,7 +1468,7 @@ impl OpenCADStudio {
                     ("STYLE", cmd.trim_start_matches("STYLE").trim())
                 };
                 let parts: Vec<&str> = rest.splitn(3, ' ').collect();
-                let sub = parts.get(0).map(|s| s.to_uppercase()).unwrap_or_default();
+                let sub = parts.first().map(|s| s.to_uppercase()).unwrap_or_default();
                 match sub.as_str() {
                     "" | "DIALOG" | "UI" => {
                         return Some(Task::done(Message::TextStyleDialogOpen));

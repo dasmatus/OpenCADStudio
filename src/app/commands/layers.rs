@@ -455,7 +455,7 @@ impl OpenCADStudio {
                     .collect::<Vec<_>>();
                 let undo = self.begin_layer_undo(i, "LAYON", &names);
                 for name in &names {
-                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(&name) {
+                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(name) {
                         dl.turn_on();
                     }
                 }
@@ -477,7 +477,7 @@ impl OpenCADStudio {
                     .collect::<Vec<_>>();
                 let undo = self.begin_layer_undo(i, "LAYTHW", &names);
                 for name in &names {
-                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(&name) {
+                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(name) {
                         dl.thaw();
                     }
                 }
@@ -637,7 +637,7 @@ impl OpenCADStudio {
                     .collect();
                 let undo = self.begin_layer_undo(i, "LAYUNISO", &names);
                 for name in &names {
-                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(&name) {
+                    if let Some(dl) = self.tabs[i].scene.document.layers.get_mut(name) {
                         dl.turn_on();
                     }
                 }

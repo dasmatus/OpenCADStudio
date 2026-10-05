@@ -676,14 +676,14 @@ impl Grippable for PolyfaceMesh {
         if let Some(v) = self.vertices.get_mut(grip_id) {
             match apply {
                 GripApply::Translate(d) => {
-                    v.location.x += d.x as f64;
-                    v.location.y += d.y as f64;
-                    v.location.z += d.z as f64;
+                    v.location.x += d.x;
+                    v.location.y += d.y;
+                    v.location.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    v.location.x = p.x as f64;
-                    v.location.y = p.y as f64;
-                    v.location.z = p.z as f64;
+                    v.location.x = p.x;
+                    v.location.y = p.y;
+                    v.location.z = p.z;
                 }
             }
         }
@@ -1113,7 +1113,7 @@ fn face_triangle_indices(vertices: &[[f64; 3]], faces: &[Vec<usize>]) -> (Vec<u3
         if polygon.len() < 3 {
             continue;
         }
-        for triangle in triangulate_planar(&polygon).chunks_exact(3) {
+        for triangle in triangulate_planar(&polygon).as_chunks::<3>().0 {
             let mut mapped = [0u32; 3];
             let mut valid = true;
             for corner in 0..3 {
@@ -1135,7 +1135,7 @@ fn face_triangle_indices(vertices: &[[f64; 3]], faces: &[Vec<usize>]) -> (Vec<u3
 
 fn vertex_normals(vertices: &[[f64; 3]], indices: &[u32]) -> Vec<[f32; 3]> {
     let mut normals = vec![[0.0f64; 3]; vertices.len()];
-    for triangle in indices.chunks_exact(3) {
+    for triangle in indices.as_chunks::<3>().0 {
         let (Some(&a), Some(&b), Some(&c)) = (
             vertices.get(triangle[0] as usize),
             vertices.get(triangle[1] as usize),
@@ -1388,14 +1388,14 @@ impl Grippable for Mesh {
         if let Some(v) = self.vertices.get_mut(grip_id) {
             match apply {
                 GripApply::Translate(d) => {
-                    v.x += d.x as f64;
-                    v.y += d.y as f64;
-                    v.z += d.z as f64;
+                    v.x += d.x;
+                    v.y += d.y;
+                    v.z += d.z;
                 }
                 GripApply::Absolute(p) => {
-                    v.x = p.x as f64;
-                    v.y = p.y as f64;
-                    v.z = p.z as f64;
+                    v.x = p.x;
+                    v.y = p.y;
+                    v.z = p.z;
                 }
             }
         }

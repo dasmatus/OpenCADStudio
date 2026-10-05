@@ -31,6 +31,12 @@ pub struct DimBreakCommand {
     picked_entity: Option<EntityType>,
 }
 
+impl Default for DimBreakCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DimBreakCommand {
     pub fn new() -> Self {
         Self {

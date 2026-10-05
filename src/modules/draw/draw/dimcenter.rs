@@ -32,6 +32,12 @@ pub struct DimCenterCommand {
     picked: Option<EntityType>,
 }
 
+impl Default for DimCenterCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl DimCenterCommand {
     pub fn new() -> Self {
         Self { picked: None }

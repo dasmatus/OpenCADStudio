@@ -532,7 +532,7 @@ bg={bg_ms:.1}ms n={view_count}"
                 let current_vertex_grip: Option<usize> = tab
                     .properties
                     .prop_vertex_indicator_active
-                    .then(|| sel_h)
+                    .then_some(sel_h)
                     .flatten()
                     .and_then(|h| {
                         let indexed = match tab.scene.document.get_entity(h) {
@@ -2598,7 +2598,7 @@ impl OpenCADStudio {
                         Some(Message::OsWindowClosed(win_id))
                     }
                     iced::Event::Window(window::Event::Resized(sz)) => {
-                        Some(Message::WindowResized(sz.width as f32, sz.height as f32))
+                        Some(Message::WindowResized(sz.width, sz.height))
                     }
                     iced::Event::Window(window::Event::FileDropped(path)) => {
                         Some(Message::FileDropped(path))

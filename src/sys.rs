@@ -175,7 +175,7 @@ pub fn reveal_in_file_manager(path: &std::path::Path) -> Result<(), String> {
         let folder = path
             .parent()
             .ok_or_else(|| format!("Path has no parent folder: {}", path.display()))?;
-        return open::that(folder).map_err(|e| e.to_string());
+        open::that(folder).map_err(|e| e.to_string())
     }
 
     #[cfg(any(target_os = "windows", target_os = "macos"))]

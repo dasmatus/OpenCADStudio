@@ -69,6 +69,12 @@ enum Step {
     BlockSource,
 }
 
+impl Default for MLeaderCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MLeaderCommand {
     pub fn new() -> Self {
         Self {

@@ -213,7 +213,7 @@ fn emit_image(
     if image.width == 0 || image.height == 0 || expected_byte_count != Some(image.pixels.len()) {
         return Err("Cannot plot bitmap: dimensions do not match its RGBA pixels.".into());
     }
-    if image.verts.len() < 3 || image.verts.len() % 3 != 0 {
+    if image.verts.len() < 3 || !image.verts.len().is_multiple_of(3) {
         return Err("Cannot plot bitmap: incomplete triangle geometry.".into());
     }
     if options.transparency && image.opacity <= 0.0 {
@@ -319,7 +319,7 @@ fn emit_image(
             ops,
             image
                 .verts
-                .chunks_exact(3)
+                .as_chunks::<3>().0.iter()
                 .map(|tri| {
                     tri.iter()
                         .map(|vertex| to_page(vertex.pos, vertex.pos_low))
@@ -330,7 +330,7 @@ fn emit_image(
         draw(ops, [u[0], u[1], v[0], v[1], corners[0][0], corners[0][1]]);
     } else {
         // PDF transforms are affine; perspective sampling is approximate.
-        for triangle in image.verts.chunks_exact(3) {
+        for triangle in image.verts.as_chunks::<3>().0 {
             let page = std::array::from_fn(|i| to_page(triangle[i].pos, triangle[i].pos_low));
             let uv = std::array::from_fn(|i| [triangle[i].uv[0], 1.0 - triangle[i].uv[1]]);
             let matrix = image_triangle_matrix(page, uv)
@@ -383,7 +383,7 @@ pub fn pick_pdf_path_owned(
     let path = crate::sys::blocking_file_dialog()
         .set_parent(parent)
         .set_title(crate::t!("Export as PDF").as_ref())
-        .set_file_name(&format!("{stem}.pdf"))
+        .set_file_name(format!("{stem}.pdf"))
         .add_filter(crate::t!("PDF Files").as_ref(), &["pdf"])
         .add_filter(crate::t!("All Files").as_ref(), &["*"])
         .save_file()?;
@@ -1084,7 +1084,7 @@ fn emit_wire_fills(
                 })
         });
         if let Some(pattern) = styled_pattern {
-            for (triangle_index, triangle) in wire.fill_tris.chunks_exact(3).enumerate() {
+            for (triangle_index, triangle) in wire.fill_tris.as_chunks::<3>().0.iter().enumerate() {
                 let mut boundary = Vec::with_capacity(4);
                 for (point_index, point) in triangle.iter().enumerate() {
                     let index = triangle_index * 3 + point_index;
@@ -1094,7 +1094,7 @@ fn emit_wire_fills(
                 boundary.push(boundary[0]);
                 let hatch = HatchModel {
                     pattern_origin: None,
-                    render_instance: wire.render_instance.clone(),
+                    render_instance: wire.render_instance,
                     world_origin: [0.0, 0.0],
                     boundary: std::sync::Arc::new(boundary),
                     boundary_wcs: None,
@@ -1157,7 +1157,7 @@ fn emit_wire_fills(
                 icc_profile: None,
             }),
         });
-        for (triangle_index, triangle) in wire.fill_tris.chunks_exact(3).enumerate() {
+        for (triangle_index, triangle) in wire.fill_tris.as_chunks::<3>().0.iter().enumerate() {
             let mut points = Vec::with_capacity(3);
             for (point_index, &[x, y, _]) in triangle.iter().enumerate() {
                 let index = triangle_index * 3 + point_index;
@@ -1603,7 +1603,7 @@ fn emit_text(
                             icc_profile: None,
                         }),
                     });
-                    for tri in ge.fill_tris.chunks_exact(3) {
+                    for tri in ge.fill_tris.as_chunks::<3>().0 {
                         ops.push(Op::DrawPolygon {
                             polygon: Polygon {
                                 rings: vec![PolygonRing {

@@ -25,6 +25,12 @@ pub struct MatchPropCommand {
     src: Handle,
 }
 
+impl Default for MatchPropCommand {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl MatchPropCommand {
     pub fn new() -> Self {
         Self { src: Handle::NULL }

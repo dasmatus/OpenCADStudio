@@ -255,7 +255,7 @@ pub fn pack_background_color(c: &acadrust::types::Color) -> i32 {
     (match c {
         Color::ByLayer => 0xC0000000u32,
         Color::ByBlock => 0xC1000000u32,
-        Color::Index(i) => 0xC3000000u32 | (*i as u8 as u32),
+        Color::Index(i) => 0xC3000000u32 | (*i as u32),
         _ => {
             let (r, g, b) = c.rgb().unwrap_or((255, 255, 255));
             0xC2000000u32 | ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
@@ -1032,15 +1032,14 @@ impl Grippable for Hatch {
                 self.rotate_pattern_about_origin(delta);
                 self.pattern_angle = angle;
             }
-            A::HatchScale => {
-                if value > 0.0 {
+            A::HatchScale
+                if value > 0.0 => {
                     if self.pattern_scale > 1e-12 {
                         let factor = value / self.pattern_scale;
                         self.scale_pattern_about_origin(factor);
                     }
                     self.pattern_scale = value;
                 }
-            }
             _ => {}
         }
     }

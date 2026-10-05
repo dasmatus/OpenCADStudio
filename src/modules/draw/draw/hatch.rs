@@ -711,7 +711,7 @@ impl CadCommand for HatchCommand {
             if let Some((_, color, transparency)) = &self.inherited {
                 CmdResult::CommitStyledHatch {
                     hatch,
-                    color: color.clone(),
+                    color: *color,
                     transparency: *transparency,
                 }
             } else {
@@ -730,7 +730,7 @@ impl CadCommand for HatchCommand {
                 entity_style: self
                     .inherited
                     .as_ref()
-                    .map(|(_, color, transparency)| (color.clone(), *transparency)),
+                    .map(|(_, color, transparency)| (*color, *transparency)),
             }
         } else if self.retain_boundaries {
             CmdResult::CommitHatchWithBoundaries {
@@ -744,12 +744,12 @@ impl CadCommand for HatchCommand {
                 entity_style: self
                     .inherited
                     .as_ref()
-                    .map(|(_, color, transparency)| (color.clone(), *transparency)),
+                    .map(|(_, color, transparency)| (*color, *transparency)),
             }
         } else if let Some((_, color, transparency)) = &self.inherited {
             CmdResult::CommitStyledHatch {
                 hatch: self.make_hatch(rings),
-                color: color.clone(),
+                color: *color,
                 transparency: *transparency,
             }
         } else {
@@ -1074,7 +1074,7 @@ impl CadCommand for GradientCommand {
                 match resolve_hatch_rings(&self.outlines, xy) {
                     Some(rings) => {
                         self.missed = false;
-                        return CmdResult::CommitHatch(self.make_hatch(rings));
+                        CmdResult::CommitHatch(self.make_hatch(rings))
                     }
                     None => {
                         self.missed = true;
@@ -1585,13 +1585,13 @@ impl CadCommand for BoundaryCommand {
         let hovered = self.picked_region([local.x, local.y]);
         let mut rings: Vec<&Vec<[f64; 2]>> = Vec::new();
         for ring in self.point_regions.iter().flat_map(|region| region.iter()) {
-            if !rings.iter().any(|existing| *existing == ring) {
+            if !rings.contains(&ring) {
                 rings.push(ring);
             }
         }
         if let Some(region) = &hovered {
             for ring in region {
-                if !rings.iter().any(|existing| *existing == ring) {
+                if !rings.contains(&ring) {
                     rings.push(ring);
                 }
             }

@@ -1261,7 +1261,7 @@ pub(crate) fn resolve_image_file(raw: &str, base_dir: Option<&Path>) -> Option<S
     if joined.is_file() {
         return Some(joined.to_string_lossy().into_owned());
     }
-    let name = raw.rsplit(|c| c == '/' || c == '\\').next().unwrap_or(raw);
+    let name = raw.rsplit(['/', '\\']).next().unwrap_or(raw);
     let cand = base_dir.join(name);
     if cand.is_file() {
         return Some(cand.to_string_lossy().into_owned());
@@ -2344,11 +2344,8 @@ fn fix_viewport_status_flags(doc: &mut CadDocument) {
 /// reader, so arms for them here would convert twice.
 fn fix_dxf_dimension_rotations(doc: &mut CadDocument) {
     for entity in doc.entities_mut() {
-        match entity {
-            EntityType::Shape(s) => {
-                s.rotation = s.rotation.to_radians();
-            }
-            _ => {}
+        if let EntityType::Shape(s) = entity {
+            s.rotation = s.rotation.to_radians();
         }
     }
 }

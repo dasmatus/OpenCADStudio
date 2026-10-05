@@ -236,7 +236,7 @@ impl StatusBar {
                 if scale_is_model { 150.0 } else { 120.0 },
             )
         } else {
-            status_pill(scale_label).into()
+            status_pill(scale_label)
         };
         // Build the right-side pills, honouring the user's per-pill visibility.
         // They live in a flex-wrap flow (WrapFlow) so they spill onto extra rows
@@ -260,7 +260,7 @@ impl StatusBar {
                 }
                 _ => crate::tr!("gpu", "pill-tip"),
             };
-            pills.push(tip(warning_pill(label, Message::GpuWarningOpen), detail.into()).into());
+            pills.push(tip(warning_pill(label, Message::GpuWarningOpen), detail.into()));
         }
         if vis(StatusPill::Coords) {
             let coords_label = format_coords(cursor_world, last_point, coords_mode, picking);
@@ -268,8 +268,7 @@ impl StatusBar {
                 tip(
                     action_pill(&coords_label, Message::CycleCoordsMode),
                     t!("Cursor coordinates ($COORDS)\nClick to cycle: static / live / polar"),
-                )
-                .into(),
+                ),
             );
         }
         // Not a `StatusPill` (so not user-hideable yet): invisible until the
@@ -289,8 +288,7 @@ impl StatusBar {
                     } else {
                         t!("Remaining degrees of freedom in the current parametric constraint scope")
                     },
-                )
-                .into(),
+                ),
             );
         }
         // Each click removes one flagged constraint.
@@ -302,8 +300,7 @@ impl StatusBar {
                         Message::ResolveOneParametricConflict,
                     ),
                     t!("One or more parametric constraints conflict or are redundant\nClick to remove one and re-solve"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Ortho) {
@@ -311,8 +308,7 @@ impl StatusBar {
                 tip(
                     toggle_pill(crate::ui::icons::ST_ORTHO, ortho_mode, Message::ToggleOrtho),
                     t!("Orthogonal Mode\nF8"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Lwt) {
@@ -324,8 +320,7 @@ impl StatusBar {
                         Message::ToggleLineweightDisplay,
                     ),
                     t!("Show Lineweight\nLWDISPLAY"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Polar) {
@@ -338,8 +333,7 @@ impl StatusBar {
                         polar_increment_deg,
                         polar_custom_input,
                     ),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Dyn) {
@@ -347,8 +341,7 @@ impl StatusBar {
                 tip(
                     toggle_pill(crate::ui::icons::ST_DYN, dyn_input, Message::ToggleDynInput),
                     t!("Dynamic Input\nF12"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Otrack) {
@@ -356,8 +349,7 @@ impl StatusBar {
                 tip(
                     toggle_pill(crate::ui::icons::ST_OTRACK, otrack, Message::ToggleOTrack),
                     t!("Object Snap Tracking\nF11"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Osnap) {
@@ -371,8 +363,7 @@ impl StatusBar {
                         isometric_drafting,
                         iso_plane,
                     ),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Space) {
@@ -380,8 +371,7 @@ impl StatusBar {
                 tip(
                     space_mode_btn(&current_layout, in_mspace),
                     t!("PAPER: double-click viewport to enter MSPACE\nMODEL: click to switch to Model Space"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Scale) {
@@ -396,8 +386,7 @@ impl StatusBar {
                         Message::ToggleAnnotationVisibility,
                     ),
                     t!("Show Annotation Objects"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::AnnoAutoAdd) {
@@ -409,8 +398,7 @@ impl StatusBar {
                         Message::ToggleAnnotationAutoAdd,
                     ),
                     t!("Automatically Add Scales"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::VpScaleSync) {
@@ -423,8 +411,7 @@ impl StatusBar {
                             Message::SyncViewportAnnotationScale,
                         ),
                         t!("Viewport / Annotation Scale Sync"),
-                    )
-                    .into(),
+                    ),
                 );
             }
         }
@@ -440,8 +427,7 @@ impl StatusBar {
                     ),
                     crate::ui::popup::units_popup::menu_entries(linear_format),
                     140.0,
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Transparency) {
@@ -453,8 +439,7 @@ impl StatusBar {
                         Message::ToggleTransparencyDisplay,
                     ),
                     t!("Show Transparency\nForce opaque when off"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Isolate) {
@@ -471,8 +456,7 @@ impl StatusBar {
                     ),
                     crate::ui::popup::isolate_popup::menu_entries(has_selection, isolation_active),
                     160.0,
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::QuickProps) {
@@ -484,8 +468,7 @@ impl StatusBar {
                         Message::ToggleQuickProperties,
                     ),
                     t!("Quick Properties\nFloating panel on selection"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::SelFilter) {
@@ -505,8 +488,7 @@ impl StatusBar {
                         selection_filter,
                     ),
                     180.0,
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::SelCycle) {
@@ -518,17 +500,15 @@ impl StatusBar {
                         Message::ToggleSelectionCycling,
                     ),
                     t!("Selection Cycling\nRepeat-click to step through overlapping objects"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::Vp) && !vp_label.is_empty() {
             pills.push(
                 tip(
-                    status_pill(vp_label).into(),
+                    status_pill(vp_label),
                     t!("Viewport count in active layout"),
-                )
-                .into(),
+                ),
             );
         }
         if vis(StatusPill::CleanScreen) {
@@ -540,8 +520,7 @@ impl StatusBar {
                         Message::ToggleCleanScreen,
                     ),
                     t!("Clean Screen\nHide ribbon and panels"),
-                )
-                .into(),
+                ),
             );
         }
         // Customization handle: opens the pill show/hide menu.
@@ -554,8 +533,7 @@ impl StatusBar {
                 ),
                 statusbar_menu::customization_entries(config),
                 200.0,
-            )
-            .into(),
+            ),
         );
         let right_status = iced::widget::Row::with_children(pills)
             .spacing(2.0)
@@ -587,8 +565,7 @@ impl StatusBar {
                         reorderable_layouts.clone(),
                         switch_msg,
                         "SB_LAYOUT_TAB",
-                    )
-                    .into(),
+                    ),
                 );
             }
             for name in block_tabs {
@@ -603,11 +580,10 @@ impl StatusBar {
                         Arc::from(Vec::<String>::new()),
                         switch_msg,
                         "SB_BLOCK_TAB",
-                    )
-                    .into(),
+                    ),
                 );
             }
-            left.push(add_btn.into());
+            left.push(add_btn);
         }
         let left_area = iced::widget::Row::with_children(left)
             .spacing(2.0)

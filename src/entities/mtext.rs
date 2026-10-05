@@ -580,22 +580,22 @@ fn apply_geom_prop(t: &mut MText, field: &str, value: &str) {
 fn apply_grip(t: &mut MText, grip_id: usize, apply: GripApply) {
     match (grip_id, apply) {
         (0, GripApply::Absolute(p)) => {
-            t.insertion_point.x = p.x as f64;
-            t.insertion_point.y = p.y as f64;
-            t.insertion_point.z = p.z as f64;
+            t.insertion_point.x = p.x;
+            t.insertion_point.y = p.y;
+            t.insertion_point.z = p.z;
         }
         (0, GripApply::Translate(d)) => {
-            t.insertion_point.x += d.x as f64;
-            t.insertion_point.y += d.y as f64;
-            t.insertion_point.z += d.z as f64;
+            t.insertion_point.x += d.x;
+            t.insertion_point.y += d.y;
+            t.insertion_point.z += d.z;
         }
         (1, GripApply::Absolute(p)) => {
             // Project onto the flow axis the grip is drawn on, undoing the
             // attachment-side factor so dragging the grip on either side of
             // the insertion widens the same box.
             let (dir, k) = width_grip_axis(t);
-            let dx = p.x as f64 - t.insertion_point.x;
-            let dy = p.y as f64 - t.insertion_point.y;
+            let dx = p.x - t.insertion_point.x;
+            let dy = p.y - t.insertion_point.y;
             let projected = dx * dir.x + dy * dir.y;
             let width = (projected / k).max(0.0);
             let column_count = clamp_mtext_column_count(t.column_data.column_count);
@@ -612,9 +612,9 @@ fn apply_grip(t: &mut MText, grip_id: usize, apply: GripApply) {
             let (sin, cos) = t.rotation.sin_cos();
             let down = glam::DVec3::new(sin, -cos, 0.0);
             let delta = glam::DVec3::new(
-                p.x as f64 - t.insertion_point.x,
-                p.y as f64 - t.insertion_point.y,
-                p.z as f64 - t.insertion_point.z,
+                p.x - t.insertion_point.x,
+                p.y - t.insertion_point.y,
+                p.z - t.insertion_point.z,
             );
             let (_, vertical) = attach_anchors(t);
             let factor = match vertical {
@@ -635,8 +635,8 @@ fn apply_grip(t: &mut MText, grip_id: usize, apply: GripApply) {
         (3, GripApply::Absolute(p)) => {
             let (dir, k) = width_grip_axis(t);
             let delta = glam::DVec3::new(
-                p.x as f64 - t.insertion_point.x,
-                p.y as f64 - t.insertion_point.y,
+                p.x - t.insertion_point.x,
+                p.y - t.insertion_point.y,
                 0.0,
             );
             t.column_data.width = (delta.dot(dir) / k).max(0.01);
@@ -644,8 +644,8 @@ fn apply_grip(t: &mut MText, grip_id: usize, apply: GripApply) {
         (4, GripApply::Absolute(p)) => {
             let (dir, k) = width_grip_axis(t);
             let delta = glam::DVec3::new(
-                p.x as f64 - t.insertion_point.x,
-                p.y as f64 - t.insertion_point.y,
+                p.x - t.insertion_point.x,
+                p.y - t.insertion_point.y,
                 0.0,
             );
             t.column_data.gutter = (delta.dot(dir) / k - t.column_data.width).max(0.0);
@@ -662,8 +662,8 @@ fn apply_transform(t: &mut MText, tr: &EntityTransform) {
             p1,
             p2,
         );
-        let dx = (p2.x - p1.x) as f64;
-        let dy = (p2.y - p1.y) as f64;
+        let dx = p2.x - p1.x;
+        let dy = p2.y - p1.y;
         let line_angle = dy.atan2(dx);
         entity.rotation = 2.0 * line_angle - entity.rotation;
     });

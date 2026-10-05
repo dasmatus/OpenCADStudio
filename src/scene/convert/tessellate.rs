@@ -478,7 +478,7 @@ fn split_mixed_polyline(
             (Vec::new(), Vec::new())
         };
         let line_world_width = straight_widths.iter().copied().fold(0.0f32, f32::max);
-        let has_line_taper = straight_widths.first().map_or(false, |&w0| {
+        let has_line_taper = straight_widths.first().is_some_and(|&w0| {
             straight_widths.iter().any(|&w| (w - w0).abs() > 1e-6)
         });
         let taper_widths = if has_line_taper || straight_widths.iter().any(|&w| w > 1e-6) {
@@ -1257,7 +1257,6 @@ pub fn tessellate(
                 let key_vertices: Vec<[f64; 3]> = te
                     .key_vertices
                     .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
                     .collect();
 
                 // Derive the pick box from the rendered glyph quads.
@@ -1718,7 +1717,6 @@ pub fn tessellate(
                         let key_vertices: Vec<[f64; 3]> = te
                             .key_vertices
                             .into_iter()
-                            .map(|[kx, ky, kz]| [kx, ky, kz])
                             .collect();
                         return vec![WireModel {
                             bg_adapt: None,
@@ -1779,7 +1777,6 @@ pub fn tessellate(
                 let key_vertices: Vec<[f64; 3]> = te
                     .key_vertices
                     .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
                     .collect();
                 let (fill_tris, fill_tris_low) = points_to_ds(te.fill_tris);
                 // Only a real 3-D mesh surface (PolyfaceMesh / PolygonMesh /
@@ -2014,7 +2011,6 @@ pub fn tessellate(
                 let key_vertices = te
                     .key_vertices
                     .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
                     .collect();
                 let station_data = crate::scene::model::wire_model::encode_pattern_stations(
                     stations,
@@ -2064,7 +2060,6 @@ pub fn tessellate(
                 let key_vertices: Vec<[f64; 3]> = te
                     .key_vertices
                     .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
                     .collect();
                 // A wide polyline with PLINEGEN=0 arrives here: same shader-band
                 // treatment as the Contour arm, restarting the dash per segment.
@@ -2164,7 +2159,6 @@ pub fn tessellate(
                 let key_vertices: Vec<[f64; 3]> = te
                     .key_vertices
                     .into_iter()
-                    .map(|[x, y, z]| [x, y, z])
                     .collect();
 
                 if has_arc && can_split {
@@ -2946,7 +2940,7 @@ pub(crate) fn append_arrow(g: &mut DimGeom, tip: Vec3, dir: Vec3, arrow: &ArrowK
                 let point = transform(point);
                 g.dim_lines.push([point.x, point.y, point.z]);
             }
-            for triangle in fill.chunks_exact(3) {
+            for triangle in fill.as_chunks::<3>().0 {
                 push_tri(
                     &mut g.arrow_fill,
                     transform(&triangle[0]),

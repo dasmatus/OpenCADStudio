@@ -695,7 +695,7 @@ impl OpenCADStudio {
                                 if vp.id > 1 && vp.common.owner_handle == layout_block {
                                     Some((
                                         vp.id,
-                                        vp.center.clone(),
+                                        vp.center,
                                         vp.width,
                                         vp.height,
                                         crate::scene::vp_effective_scale(
@@ -2259,7 +2259,7 @@ mod tests {
         });
         // Table was created fresh by HATCHTOBACK, so undo should remove it or leave it empty of the hatch.
         let has_hatch =
-            table_after_undo.map_or(false, |t| t.entries().any(|e| e.entity_handle == h_hatch));
+            table_after_undo.is_some_and(|t| t.entries().any(|e| e.entity_handle == h_hatch));
         assert!(!has_hatch, "Undo must revert the SortEntitiesTable entry");
     }
 
@@ -2801,7 +2801,7 @@ mod tests {
 
         // 1. Shortcut 'F' -> Front
         let mut cmd = DrawOrderCommand::new(vec![h_hatch]);
-        assert_eq!(cmd.input_kind().wants_text(), true);
+        assert!(cmd.input_kind().wants_text());
         let res = cmd.on_text_input("F");
         match res {
             Some(crate::command::CmdResult::Relaunch(c, handles)) => {

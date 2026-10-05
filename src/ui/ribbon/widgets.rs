@@ -619,7 +619,7 @@ pub(super) fn render_small<'a>(
                 .style(tip_style);
 
             PosReport::new(
-                *id,
+                id,
                 row![icon_with_tip, arr_with_tip].spacing(0).height(ROW_H),
             )
             .into()
@@ -682,7 +682,7 @@ pub(super) fn render_small<'a>(
             let face_tip = format!("{}\n{} {}", localized_label, t!("Command:"), last);
             let arrow_tip = format!("{} {}", localized_label, t!("options"));
             PosReport::new(
-                *id,
+                id,
                 row![
                     tooltip(face_btn, make_tip(face_tip), TipPos::Right)
                         .gap(6.0)
@@ -943,7 +943,7 @@ pub(super) fn render_large<'a>(item: &RibbonItem, ctx: &RenderCtx<'_>) -> Elemen
             icon,
             items,
             default,
-        } => render_large_dropdown(*id, *icon, Some(*label), items, *default, ctx),
+        } => render_large_dropdown(id, *icon, Some(*label), items, default, ctx),
 
         RibbonItem::LabeledDropdown {
             id,
@@ -951,7 +951,7 @@ pub(super) fn render_large<'a>(item: &RibbonItem, ctx: &RenderCtx<'_>) -> Elemen
             icon,
             items,
             default,
-        } => render_large_dropdown(*id, *icon, Some(*label), items, *default, ctx),
+        } => render_large_dropdown(id, *icon, Some(*label), items, default, ctx),
 
         RibbonItem::ToolGrid { columns } => columns
             .iter()
@@ -982,7 +982,7 @@ pub(super) fn render_large<'a>(item: &RibbonItem, ctx: &RenderCtx<'_>) -> Elemen
             icon,
             items,
             default,
-        } => render_large_dropdown(*id, *icon, None, items, *default, ctx),
+        } => render_large_dropdown(id, *icon, None, items, default, ctx),
 
         RibbonItem::LayerComboGroup { row2, row3 } => {
             const TOOL_BUTTON_W: f32 = 26.0;
@@ -1195,7 +1195,7 @@ pub(super) fn render_large<'a>(item: &RibbonItem, ctx: &RenderCtx<'_>) -> Elemen
 
             let mut col_items: Vec<Element<Message>> =
                 vec![
-                    container(row![PosReport::new(*combo_id, combo_btn), items_panel].spacing(0))
+                    container(row![PosReport::new(combo_id, combo_btn), items_panel].spacing(0))
                         .width(Fill)
                         .into(),
                 ];

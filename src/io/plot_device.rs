@@ -556,11 +556,11 @@ mod tests {
         };
         let paper = roll.paper();
         assert_eq!(
-            PlotDevice::Pdf.margins_mm(&paper, &[roll.clone()]),
+            PlotDevice::Pdf.margins_mm(&paper, std::slice::from_ref(&roll)),
             Margins::uniform(3.0)
         );
         assert_eq!(
-            PlotDevice::None.margins_mm(&paper, &[roll.clone()]),
+            PlotDevice::None.margins_mm(&paper, std::slice::from_ref(&roll)),
             Margins::uniform(3.0)
         );
         // An unknown printer falls back to the user's margins too.

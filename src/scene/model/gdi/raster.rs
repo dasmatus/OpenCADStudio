@@ -76,7 +76,7 @@ impl Canvas {
                 continue;
             }
             xs.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
-            for pair in xs.chunks_exact(2) {
+            for pair in xs.as_chunks::<2>().0 {
                 let xa = pair[0].max(self.clip.0).max(0.0).round() as usize;
                 let xb = pair[1].min(self.clip.2).min(self.w as f32).round() as usize;
                 for x in xa..xb.min(self.w) {
@@ -88,7 +88,7 @@ impl Canvas {
 
     /// Fill a flat triangle list (groups of 3 vertices) — used for glyphs.
     pub fn fill_tris(&mut self, tris: &[[f32; 2]], c: Rgba) {
-        for t in tris.chunks_exact(3) {
+        for t in tris.as_chunks::<3>().0 {
             let (a, b, d) = (t[0], t[1], t[2]);
             let ymin = a[1].min(b[1]).min(d[1]).max(self.clip.1).max(0.0);
             let ymax = a[1].max(b[1]).max(d[1]).min(self.clip.3).min(self.h as f32);

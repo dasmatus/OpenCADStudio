@@ -100,14 +100,14 @@ impl OpenCADStudio {
 
     pub(super) fn on_tab_close(&mut self, idx: usize) -> Task<Message> {
         // Start tab is fixed — close requests on it are no-ops.
-        if self.tabs.get(idx).map_or(false, |t| t.is_start) {
+        if self.tabs.get(idx).is_some_and(|t| t.is_start) {
             return Task::none();
         }
         // Closing a tab shifts indices / the active tab. The attribute
         // editor holds a document-local handle into one tab, so drop it
         // now rather than risk it applying to a different tab's document.
         self.cancel_attr_editor();
-        if self.tabs.get(idx).map_or(false, |t| t.dirty) {
+        if self.tabs.get(idx).is_some_and(|t| t.dirty) {
             self.pending_close = Some(crate::app::PendingClose::Tab(idx));
             return self.open_unsaved_dialog_window();
         }
@@ -2447,9 +2447,9 @@ impl OpenCADStudio {
                             self.tabs[i].scene.document.get_entity_mut(*handle)
                         {
                             vp.ucs_handle = ucs.handle;
-                            vp.ucs_origin = ucs.origin.clone();
-                            vp.ucs_x_axis = ucs.x_axis.clone();
-                            vp.ucs_y_axis = ucs.y_axis.clone();
+                            vp.ucs_origin = ucs.origin;
+                            vp.ucs_x_axis = ucs.x_axis;
+                            vp.ucs_y_axis = ucs.y_axis;
                             vp.ucs_per_viewport = true;
                         }
                     }
@@ -2468,8 +2468,8 @@ impl OpenCADStudio {
                         if let Some(acadrust::EntityType::Viewport(vp)) =
                             self.tabs[i].scene.document.get_entity_mut(*handle)
                         {
-                            vp.view_target = view.target.clone();
-                            vp.view_direction = view.direction.clone();
+                            vp.view_target = view.target;
+                            vp.view_direction = view.direction;
                             if view.height > 0.0 {
                                 vp.view_height = view.height;
                             }

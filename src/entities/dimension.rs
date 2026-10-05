@@ -7050,7 +7050,7 @@ fn reduce_fraction(mut n: u64, mut d: u64) -> String {
     if n == 0 {
         return String::new();
     }
-    while n % 2 == 0 && d % 2 == 0 {
+    while n.is_multiple_of(2) && d.is_multiple_of(2) {
         n /= 2;
         d /= 2;
     }

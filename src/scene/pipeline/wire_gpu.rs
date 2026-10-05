@@ -531,7 +531,7 @@ fn pack_color(color: [f32; 4]) -> [u8; 4] {
 /// non-dash-first patterns keep the legacy centred phase.
 fn wire_distances(wire: &WireModel) -> (Vec<f32>, f32, f32) {
     let n = wire.points.len();
-    let explicit = wire.pattern_stations.len() >= n + 1;
+    let explicit = wire.pattern_stations.len() > n;
     let (mut dists, has_break, total) = if explicit {
         (
             wire.pattern_stations[..n].to_vec(),

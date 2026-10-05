@@ -89,7 +89,7 @@ pub fn parse_obj(src: &str, color: [f32; 4]) -> Option<MeshModel> {
     // A vertex the file gives no usable normal (the file lists none, the face
     // omits its normal indices, or an index is out of range) takes its face
     // normal instead of staying zero.
-    for tri in indices.chunks_exact(3) {
+    for tri in indices.as_chunks::<3>().0 {
         if tri.iter().all(|&v| has_normal[v as usize]) {
             continue;
         }

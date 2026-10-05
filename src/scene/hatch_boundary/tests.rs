@@ -133,7 +133,7 @@ fn narrow_fill_preserves_corners_holes_and_shared_origin() {
         let (vertices, indices) = model.fill_mesh();
         assert!(!indices.is_empty());
         let mut filled_area = 0.0;
-        for triangle in indices.chunks_exact(3) {
+        for triangle in indices.as_chunks::<3>().0 {
             let [a, b, c] = [triangle[0], triangle[1], triangle[2]]
                 .map(|i| vertices[i as usize].map(f64::from));
             let twice_area = (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);

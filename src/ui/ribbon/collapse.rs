@@ -301,7 +301,7 @@ impl<'a> Widget<Message, Theme, Renderer> for CollapsePanels<'a> {
         // The row is "tight" once any panel has dropped to its small icon — the
         // last, most cramped state. The tab bar hides its mode selector then.
         if let Some(out) = &self.tight_out {
-            out.store(levels.iter().any(|&l| l == Level::Tight), Ordering::Relaxed);
+            out.store(levels.contains(&Level::Tight), Ordering::Relaxed);
         }
         *self.levels.borrow_mut() = levels.clone();
 

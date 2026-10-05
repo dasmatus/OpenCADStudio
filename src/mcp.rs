@@ -1150,9 +1150,7 @@ fn handle_message(
 ) -> Option<Value> {
     let id = message.get("id").cloned();
     let method = message.get("method").and_then(Value::as_str)?;
-    if id.is_none() {
-        return None;
-    }
+    id.as_ref()?;
     let id = id.unwrap();
     let params = message.get("params").cloned().unwrap_or_else(|| json!({}));
     if let Some(requested) = params["_meta"]["io.modelcontextprotocol/protocolVersion"].as_str() {
