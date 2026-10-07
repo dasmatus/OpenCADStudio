@@ -2613,8 +2613,10 @@ mod tests {
     #[test]
     fn unresolved_inline_font_falls_back_to_style_font() {
         let base = "txt";
-        let mut state = RunState::default();
-        state.font = Some("__definitely_not_an_installed_font__".to_string());
+        let state = RunState {
+            font: Some("__definitely_not_an_installed_font__".to_string()),
+            ..Default::default()
+        };
 
         assert_eq!(resolve_font(&state, base), base);
 

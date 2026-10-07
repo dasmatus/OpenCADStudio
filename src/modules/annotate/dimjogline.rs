@@ -241,14 +241,16 @@ impl CadCommand for DimJogLineCommand {
             0.3,
             std::f64::consts::FRAC_PI_2,
         )?;
-        let mut preview = WireModel::default();
-        preview.name = "dimjog_preview".into();
-        preview.points = points
-            .into_iter()
-            .map(|point| point.map(|value| value as f32))
-            .collect();
-        preview.color = WireModel::CYAN;
-        preview.line_weight_px = 1.2;
+        let preview = WireModel {
+            name: "dimjog_preview".into(),
+            points: points
+                .into_iter()
+                .map(|point| point.map(|value| value as f32))
+                .collect(),
+            color: WireModel::CYAN,
+            line_weight_px: 1.2,
+            ..Default::default()
+        };
         Some(preview)
     }
 }

@@ -41,6 +41,18 @@ def cargo_version():
     return re.search(r'^version = "([^"]+)"', Path("Cargo.toml").read_text(encoding="utf-8"), re.M)[1]
 
 
+def latest_release():
+    """Return the latest published tag, or None before the first release."""
+    try:
+        return gh("release", "view", "--json", "tagName")["tagName"]
+    except subprocess.CalledProcessError:
+        # gh exits 1 with "release not found" when nothing is published yet;
+        # any other failure leaves releases listed, so re-raise it.
+        if gh("release", "list", "--limit", "1", "--json", "tagName"):
+            raise
+        return None
+
+
 def display_version(cargo):
     year, week, patch = cargo.split(".")
     if len(year) == 4 and year.startswith("20") and patch == "0":
@@ -63,7 +75,8 @@ def release_notes(previous, tag, repo, head="HEAD"):
         "Interface, web and plugins": [],
         "Maintenance": [],
     }
-    entries = run("git", "log", "--first-parent", "--format=%s%x1f%b%x1e", f"{previous}..{head}")
+    revisions = f"{previous}..{head}" if previous else head
+    entries = run("git", "log", "--first-parent", "--format=%s%x1f%b%x1e", revisions)
     for entry in entries.split("\x1e"):
         if "\x1f" not in entry:
             continue
@@ -91,7 +104,10 @@ def release_notes(previous, tag, repo, head="HEAD"):
             # ponytail: six recent entries per section; full history is linked below.
             lines += [f"- {subject}" for subject in subjects[:6]]
             lines += [""]
-    lines += [f"**Full Changelog:** https://github.com/{repo}/compare/{previous}...{tag}", ""]
+    if previous:
+        lines += [f"**Full Changelog:** https://github.com/{repo}/compare/{previous}...{tag}", ""]
+    else:
+        lines += [f"**Full Changelog:** https://github.com/{repo}/commits/{tag}", ""]
     return "\n".join(lines)
 
 
@@ -102,7 +118,7 @@ def prepare(publish):
     current = datetime.now(timezone.utc)
     tag = current.strftime("v%G.%V")
     version = versions(tag)
-    latest = gh("release", "view", "--json", "tagName")["tagName"]
+    latest = latest_release()
     if publish and os.environ.get("GITHUB_REF") != "refs/heads/main":
         raise ValueError("Weekly releases must run on main")
     existing = run("git", "tag", "--list", tag)
@@ -116,7 +132,7 @@ def prepare(publish):
                 raise ValueError("Existing weekly release metadata is invalid")
             output({"ready": str(publish).lower(), "tag": tag, "commit": sha})
             return
-    elif run("git", "rev-list", "--count", f"{latest}..HEAD") == "0":
+    elif latest and run("git", "rev-list", "--count", f"{latest}..HEAD") == "0":
         output({"ready": "false"})
         return
     notes = release_notes(latest, tag, repo, tag if existing else "HEAD")

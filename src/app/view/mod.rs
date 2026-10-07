@@ -497,10 +497,10 @@ bg={bg_ms:.1}ms n={view_count}"
             // Hold a single `Ref<'_, SelectionState>` for the whole overlay
             // block. The `vp_size` and `last_move_pos` reads below become
             // field accesses on `sel_ref` (no redundant `borrow()`s), and
-            // the final widget call takes `Arc::clone(&selection)` — atomic
-            // bump per frame instead of a deep `SelectionState` clone.
+            // the final widget call takes `Rc::clone(&selection)` — a
+            // refcount bump per frame instead of a deep `SelectionState` clone.
             // `sel_ref` is a borrowed view for field reads; the widget owns
-            // the Arc clone. No `selection` mutation occurs inside this block.
+            // the Rc clone. No `selection` mutation occurs inside this block.
             let sel_ref = tab.scene.selection.borrow();
             let snap_info = tab.snap_result.map(|s| (s.screen, s.snap_type));
             let snap_ext_base = tab.snap_result.and_then(|s| s.extension_base);
@@ -901,7 +901,7 @@ bg={bg_ms:.1}ms n={view_count}"
                     .collect()
             };
             crate::ui::overlay::selection_overlay(
-                std::sync::Arc::clone(&tab.scene.selection),
+                std::rc::Rc::clone(&tab.scene.selection),
                 snap_info,
                 snap_ext_base,
                 snap_ext_base2,

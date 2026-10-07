@@ -1297,16 +1297,18 @@ mod tests {
 
     #[test]
     fn knot_points_evaluate_distinct_interior_knots() {
-        let mut spline = Spline::default();
-        spline.degree = 3;
-        spline.control_points = vec![
-            acadrust::types::Vector3::new(0.0, 0.0, 0.0),
-            acadrust::types::Vector3::new(1.0, 2.0, 0.0),
-            acadrust::types::Vector3::new(3.0, 3.0, 1.0),
-            acadrust::types::Vector3::new(5.0, 2.0, 0.0),
-            acadrust::types::Vector3::new(6.0, 0.0, 1.0),
-        ];
-        spline.knots = vec![0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 1.0];
+        let spline = Spline {
+            degree: 3,
+            control_points: vec![
+                acadrust::types::Vector3::new(0.0, 0.0, 0.0),
+                acadrust::types::Vector3::new(1.0, 2.0, 0.0),
+                acadrust::types::Vector3::new(3.0, 3.0, 1.0),
+                acadrust::types::Vector3::new(5.0, 2.0, 0.0),
+                acadrust::types::Vector3::new(6.0, 0.0, 1.0),
+            ],
+            knots: vec![0.0, 0.0, 0.0, 0.0, 0.5, 1.0, 1.0, 1.0, 1.0],
+            ..Default::default()
+        };
         let pts = spline_knot_points(&spline);
         assert_eq!(pts.len(), 1, "one interior knot value: {pts:?}");
         let curve = nurbs3(&spline).expect("control-point spline builds");
@@ -1324,20 +1326,24 @@ mod tests {
         // Interpolated curves invent their own knots at the fit nodes, which
         // already snap as endpoints — re-offering them as knots would double
         // every marker.
-        let mut spline = Spline::default();
-        spline.degree = 3;
-        spline.fit_points = vec![
-            acadrust::types::Vector3::new(0.0, 0.0, 0.0),
-            acadrust::types::Vector3::new(4.0, 0.0, 1.0),
-            acadrust::types::Vector3::new(4.0, 3.0, 2.0),
-        ];
+        let spline = Spline {
+            degree: 3,
+            fit_points: vec![
+                acadrust::types::Vector3::new(0.0, 0.0, 0.0),
+                acadrust::types::Vector3::new(4.0, 0.0, 1.0),
+                acadrust::types::Vector3::new(4.0, 3.0, 2.0),
+            ],
+            ..Default::default()
+        };
         assert!(spline_knot_points(&spline).is_empty());
     }
 
     #[test]
     fn fit_bounds_accept_closed_curves_with_unset_tangents() {
-        let mut spline = Spline::default();
-        spline.degree = 3;
+        let mut spline = Spline {
+            degree: 3,
+            ..Default::default()
+        };
         spline.flags.closed = true;
         spline.control_points.push(acadrust::types::Vector3::ZERO);
         spline.fit_points = vec![
@@ -1361,12 +1367,14 @@ mod tests {
 
     #[test]
     fn fit_tolerance_is_editable_and_rejects_invalid_values() {
-        let mut spline = Spline::default();
-        spline.fit_points = vec![
-            acadrust::types::Vector3::ZERO,
-            acadrust::types::Vector3::new(1.0, 0.0, 0.0),
-        ];
-        spline.fit_tolerance = 0.25;
+        let mut spline = Spline {
+            fit_points: vec![
+                acadrust::types::Vector3::ZERO,
+                acadrust::types::Vector3::new(1.0, 0.0, 0.0),
+            ],
+            fit_tolerance: 0.25,
+            ..Default::default()
+        };
 
         let tolerance = properties(&spline)
             .into_iter()
@@ -1385,11 +1393,13 @@ mod tests {
 
     #[test]
     fn tangent_properties_edit_only_the_stored_component() {
-        let mut spline = Spline::default();
-        spline.fit_points = vec![
-            acadrust::types::Vector3::ZERO,
-            acadrust::types::Vector3::new(1.0, 1.0, 0.0),
-        ];
+        let mut spline = Spline {
+            fit_points: vec![
+                acadrust::types::Vector3::ZERO,
+                acadrust::types::Vector3::new(1.0, 1.0, 0.0),
+            ],
+            ..Default::default()
+        };
 
         let start_y = properties(&spline)
             .into_iter()
@@ -1407,15 +1417,17 @@ mod tests {
 
     #[test]
     fn showing_derived_fit_points_does_not_change_the_curve() {
-        let mut spline = Spline::default();
-        spline.degree = 3;
-        spline.control_points = vec![
-            acadrust::types::Vector3::new(0.0, 0.0, 0.0),
-            acadrust::types::Vector3::new(1.0, 3.0, 0.0),
-            acadrust::types::Vector3::new(4.0, 3.0, 0.0),
-            acadrust::types::Vector3::new(5.0, 0.0, 0.0),
-        ];
-        spline.knots = cadkernel::space::clamped_uniform_knots(3, 4);
+        let mut spline = Spline {
+            degree: 3,
+            control_points: vec![
+                acadrust::types::Vector3::new(0.0, 0.0, 0.0),
+                acadrust::types::Vector3::new(1.0, 3.0, 0.0),
+                acadrust::types::Vector3::new(4.0, 3.0, 0.0),
+                acadrust::types::Vector3::new(5.0, 0.0, 0.0),
+            ],
+            knots: cadkernel::space::clamped_uniform_knots(3, 4),
+            ..Default::default()
+        };
         let before = nurbs3(&spline).unwrap().point_at(0.37);
 
         assert!(prepare_fit_point_view(&mut spline));

@@ -9378,10 +9378,12 @@ mod parametric_constraint_undo_tests {
     fn horizontal_minor_axis_rotates_an_ellipse_around_its_center() {
         let mut app = OpenCADStudio::new_for_test();
         let _ = app.automation_op(r#"{"op":"new"}"#);
-        let mut ellipse = acadrust::entities::Ellipse::default();
-        ellipse.center = acadrust::types::Vector3::new(3.0, 7.0, 0.0);
-        ellipse.major_axis = acadrust::types::Vector3::new(3.0, 4.0, 0.0);
-        ellipse.minor_axis_ratio = 0.4;
+        let ellipse = acadrust::entities::Ellipse {
+            center: acadrust::types::Vector3::new(3.0, 7.0, 0.0),
+            major_axis: acadrust::types::Vector3::new(3.0, 4.0, 0.0),
+            minor_axis_ratio: 0.4,
+            ..Default::default()
+        };
         let handle = app.tabs[app.active_tab]
             .scene
             .add_entity(acadrust::EntityType::Ellipse(ellipse));

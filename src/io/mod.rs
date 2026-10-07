@@ -2239,7 +2239,7 @@ pub(crate) fn is_entity_corrupt(e: &EntityType) -> bool {
                     let m2 = e.major_axis.x * e.major_axis.x
                         + e.major_axis.y * e.major_axis.y
                         + e.major_axis.z * e.major_axis.z;
-                    !m2.is_finite() || m2 < 1.0e-20 || m2 > 1.0e20
+                    !m2.is_finite() || !(1.0e-20..=1.0e20).contains(&m2)
                 }
                 || !e.minor_axis_ratio.is_finite()
                 || e.minor_axis_ratio.abs() < 1.0e-10

@@ -1449,9 +1449,11 @@ mod tests {
     use acadrust::Vector3;
 
     fn make_test_polyline2d(count: usize, start_w: f64, end_w: f64) -> Polyline2D {
-        let mut pl = Polyline2D::default();
-        pl.start_width = start_w;
-        pl.end_width = end_w;
+        let mut pl = Polyline2D {
+            start_width: start_w,
+            end_width: end_w,
+            ..Default::default()
+        };
         for i in 0..count {
             pl.vertices
                 .push(Vertex2D::new(Vector3::new(i as f64 * 10.0, 0.0, 0.0)));

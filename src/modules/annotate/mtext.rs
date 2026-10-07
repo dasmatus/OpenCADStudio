@@ -160,15 +160,17 @@ impl MTextCommand {
 
     fn open_editor(&self, opposite: DVec3) -> CmdResult {
         let (insertion, width, boundary_height) = self.boundary_geometry(opposite);
-        let mut template = MText::default();
-        template.insertion_point = Vector3::new(insertion.x, insertion.y, insertion.z);
-        template.height = self.height;
-        template.rectangle_width = width.max(0.0);
-        template.rectangle_height = (boundary_height > 1e-9).then_some(boundary_height);
-        template.rotation = self.rotation;
-        template.style = self.style.clone();
-        template.attachment_point = self.attachment;
-        template.line_spacing_factor = self.line_spacing;
+        let mut template = MText {
+            insertion_point: Vector3::new(insertion.x, insertion.y, insertion.z),
+            height: self.height,
+            rectangle_width: width.max(0.0),
+            rectangle_height: (boundary_height > 1e-9).then_some(boundary_height),
+            rotation: self.rotation,
+            style: self.style.clone(),
+            attachment_point: self.attachment,
+            line_spacing_factor: self.line_spacing,
+            ..Default::default()
+        };
         template.column_data.column_type = self.column_type;
         if self.column_type != 0 {
             template.column_data.column_count =

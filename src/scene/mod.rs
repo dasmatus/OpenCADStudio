@@ -1969,7 +1969,7 @@ pub struct Scene {
     /// it during layout; every pane-grid geometry calculation reads it on the
     /// next frame so a pane cannot become narrower than its controls.
     model_pane_min_px: std::sync::Arc<std::sync::atomic::AtomicU32>,
-    pub selection: std::sync::Arc<std::cell::RefCell<SelectionState>>,
+    pub selection: std::rc::Rc<std::cell::RefCell<SelectionState>>,
     /// The CAD document — single source of truth for all entities.
     pub document: CadDocument,
     /// Last chain-compatible dimension created this session.
@@ -2527,7 +2527,7 @@ impl Scene {
             // One pane mapped to tile 0 — matches the single default tile above.
             model_panes: iced::widget::pane_grid::State::new(0).0,
             model_pane_min_px: std::sync::Arc::new(std::sync::atomic::AtomicU32::new(0)),
-            selection: std::sync::Arc::new(std::cell::RefCell::new(SelectionState::default())),
+            selection: std::rc::Rc::new(std::cell::RefCell::new(SelectionState::default())),
             document: CadDocument::new(),
             last_created_dimension: None,
             object_data_cache: crate::entities::object_data::ObjectDataCache::default(),
@@ -8191,7 +8191,8 @@ impl Scene {
                 };
                 let sectioned;
                 let set = if let Some((section, body)) = live_section.and_then(|section| {
-                    self.section_source_body(handle).map(|body| (section, body))
+                    // Not `zip`: that would build the source body even with no live section.
+                    Some((section, self.section_source_body(handle)?))
                 }) {
                     match Self::section_body(
                         &body,
@@ -12972,23 +12973,18 @@ mod redraw_tests {
 }
 
 #[cfg(test)]
-mod selection_arc_tests {
+mod selection_rc_tests {
     use super::Scene;
 
     #[test]
-    fn selection_is_arc_not_refcell() {
+    fn selection_is_shared_not_cloned() {
         let scene = Scene::new();
         let tn = std::any::type_name_of_val(&scene.selection);
         assert!(
-            tn.contains("Arc"),
-            "selection should be Arc<SelectionState>, got {}",
+            tn.contains("Rc<"),
+            "selection should be Rc<RefCell<SelectionState>>, got {}",
             tn
         );
-    }
-
-    #[test]
-    fn selection_overlay_takes_arc() {
-        assert!(true);
     }
 }
 
@@ -13145,17 +13141,23 @@ mod layout_cache_tests {
     #[test]
     fn resident_wires_are_zoom_independent_and_gpu_analytical() {
         let mut s = Scene::new();
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 100.0;
+        let circle = acadrust::entities::Circle {
+            radius: 100.0,
+            ..Default::default()
+        };
         let handle = s.add_entity(EntityType::Circle(circle));
 
         // Far camera: distance is large
-        let mut cam_far = Camera::default();
-        cam_far.distance = 1000.0;
+        let cam_far = Camera {
+            distance: 1000.0,
+            ..Default::default()
+        };
 
         // Close camera: distance is small
-        let mut cam_close = Camera::default();
-        cam_close.distance = 1.0;
+        let cam_close = Camera {
+            distance: 1.0,
+            ..Default::default()
+        };
 
         let wires_far = s.model_tile_wires_arc(0, &cam_far, 1.0, 1000.0);
         let circle_wire_far = wires_far
@@ -13183,14 +13185,18 @@ mod layout_cache_tests {
     fn block_circles_and_arcs_extract_as_analytical_gpu_instances() {
         let mut s = Scene::new();
         // Create initial entities
-        let mut circle = acadrust::entities::Circle::default();
-        circle.radius = 50.0;
+        let circle = acadrust::entities::Circle {
+            radius: 50.0,
+            ..Default::default()
+        };
         let c_h = s.add_entity(EntityType::Circle(circle));
 
-        let mut arc = acadrust::entities::Arc::default();
-        arc.radius = 25.0;
-        arc.start_angle = 0.0;
-        arc.end_angle = std::f64::consts::PI;
+        let arc = acadrust::entities::Arc {
+            radius: 25.0,
+            start_angle: 0.0,
+            end_angle: std::f64::consts::PI,
+            ..Default::default()
+        };
         let a_h = s.add_entity(EntityType::Arc(arc));
 
         let line = acadrust::entities::Line::from_points(
