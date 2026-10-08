@@ -42,9 +42,11 @@ fn block_text_depth_composes_through_the_instance_path() {
 
     // Child 1: a spacer so the text sits two sibling steps above the wipe,
     // the same gap as the real BS33-11 mark blocks.
-    let mut spacer = acadrust::entities::Line::default();
-    spacer.start = Vector3::new(-10.0, -10.0, 0.0);
-    spacer.end = Vector3::new(10.0, 10.0, 0.0);
+    let spacer = acadrust::entities::Line {
+        start: Vector3::new(-10.0, -10.0, 0.0),
+        end: Vector3::new(10.0, 10.0, 0.0),
+        ..Default::default()
+    };
     let mut spacer_e = EntityType::Line(spacer);
     spacer_e.common_mut().owner_handle = br_h;
     let _ = scene.document.add_entity(spacer_e).unwrap();
@@ -63,9 +65,11 @@ fn block_text_depth_composes_through_the_instance_path() {
     // per-sibling spacing at a handful of 24-bit quanta, where an oversized
     // wipeout depth bias would swallow it).
     for i in 0..600 {
-        let mut line = acadrust::entities::Line::default();
-        line.start = Vector3::new(f64::from(i) * 10.0 - 3000.0, -50.0, 0.0);
-        line.end = Vector3::new(f64::from(i) * 10.0 - 3000.0, 50.0, 0.0);
+        let line = acadrust::entities::Line {
+            start: Vector3::new(f64::from(i) * 10.0 - 3000.0, -50.0, 0.0),
+            end: Vector3::new(f64::from(i) * 10.0 - 3000.0, 50.0, 0.0),
+            ..Default::default()
+        };
         let _ = scene.document.add_entity(EntityType::Line(line));
     }
 
